@@ -22,6 +22,7 @@ public class Generator {
 	 * @author tir
 	 * @param tableName
 	 * @param domainIndependentCols : May be null, and it specifies what columns HAVE TO be considered as domainIndependent.
+	 * @param duplicateRatio : Probability of generating a duplicate value while populating the columns
 	 * 
 	 * Pump the table, column by column. Each element will be randomly chosen 
 	 * according to the distribution of the database. Primary keys, instead, will
@@ -34,14 +35,16 @@ public class Generator {
 	 * Domain independend columns can also be inferred, by looking at the projection and comparing it 
 	 * against the total number of tuples in the table <b>tableName</b>
 	 */
-	public void pumpTable(String tableName, int nRows, Schema schema, boolean inferDomainIndependent){		
-		
+	public void pumpTable(String tableName, int nRows, Schema schema, boolean inferDomainIndependent, float duplicateRatio){		
 		
 		String templateInsert = createInsertTemplate(schema);
 		PreparedStatement stmt = null;
 		
 		try {
 			stmt = conn.prepareStatement(templateInsert);
+			System.out.println(templateInsert);
+			// Disable auto-commit
+			conn.setAutoCommit(false);
 			
 			for( int j = 0; j < nRows; ++j ){
 				
@@ -50,9 +53,9 @@ public class Generator {
 				for( String colName : schema.getColNames() ){
 					switch(schema.getType(colName)){
 					case INT: {
-						Domain<Integer> dom = (Domain<Integer>) schema.getDomain(colName);
-						int debug = random.getRandomInt(dom);
-						stmt.setInt(++i, random.getRandomInt(dom));
+//						int rand = random.getRandomInt(schema, colName);
+						stmt.setInt(++i, random.getRandomInt(schema, colName));
+						break;
 					}
 					case CHAR:
 						break;
@@ -73,8 +76,8 @@ public class Generator {
 					case TEXT:
 						break;
 					case VARCHAR : {
-						Domain<String> dom = (Domain<String>) schema.getDomain(colName);
-						stmt.setString(++i, random.getRandomString(dom));
+//						String rand = random.getRandomString(schema, colName);
+						stmt.setString(++i, random.getRandomString(schema, colName));
 						break;
 					}
 
@@ -83,8 +86,12 @@ public class Generator {
 					}
 				}
 				stmt.addBatch();
+				
+				if(j % 1000 == 1){ stmt.executeBatch(); conn.commit(); }
+				
 			} // End of REPEAT nRows
-			stmt.executeBatch();			
+			stmt.executeBatch();	
+			conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -103,7 +110,7 @@ public class Generator {
 		Map<String, Domain<?>> domains = new HashMap<String, Domain<?>>();
 
 		try {
-			Template t = new Template("select ? from "+s.getTableName()+" group by ?;");
+			Template t = new Template("select ? from "+s.getTableName()+";");
 			PreparedStatement stmt;
 						
 			for( String colName : s.getColNames() ){
@@ -114,7 +121,6 @@ public class Generator {
 					// TODO One has to understand whether the domain is dependent to the db size or not.
 					
 					t.setNthPlaceholder(1, "min("+colName+"), max("+colName+")");
-					t.setNthPlaceholder(2, colName);
 					
 					stmt = conn.prepareStatement(t.getFilled());
 					ResultSet result = stmt.executeQuery();
@@ -185,7 +191,7 @@ public class Generator {
 			if( i < s.getNumColumns() - 1 )
 				insertQuery.append(", ");
 		}
-		insertQuery.append(");");
+		insertQuery.append(")");
 		
 		return insertQuery.toString();
 	}
@@ -201,6 +207,28 @@ public class Generator {
 			// Field - Type - Null - Default - Extra
 			while(result.next()){
 				schema.addField(result.getString(1), result.getString(2));
+				
+				// Primary keys need to be all different
+				if( result.getString(3).equals("PRI") ) 
+					schema.setAllDifferent(result.getString(1), true);
+				else schema.setAllDifferent(result.getString(1), false);
+			}
+			
+			// Now let's retrieve foreign keys
+			String informationSchemaQuery = 
+					"select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME"
+					+ " from INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
+					+ "	where TABLE_NAME = ? and constraint_schema = ?"
+					+ " and REFERENCED_TABLE_NAME != 'null'";
+					
+			stmt = conn.prepareStatement(informationSchemaQuery);
+			stmt.setString(1, tableName);
+			stmt.setString(2, conn.getCatalog());
+			
+			result = stmt.executeQuery();
+			
+			while(result.next()){
+				schema.setForeignKey(result.getString(2), result.getString(5), result.getString(4));
 			}
 		}
 		catch(SQLException e){

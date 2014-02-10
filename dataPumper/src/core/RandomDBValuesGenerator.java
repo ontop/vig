@@ -3,6 +3,7 @@ package core;
 import java.util.Random;
 
 import basicDatatypes.Domain;
+import basicDatatypes.Schema;
 
 public class RandomDBValuesGenerator {
 	private Random rand;
@@ -13,13 +14,30 @@ public class RandomDBValuesGenerator {
 		cnt = 0;
 	}
 	
-	public int getRandomInt(Domain<Integer> dom){
+	public int getRandomInt(Schema schema, String colName){
+		Domain<Integer> dom = (Domain<Integer>) schema.getDomain(colName);
 		if( dom.isDbIndependent() ){
 			return dom.getValues().get(rand.nextInt(dom.getValues().size()));
 		}
-		// TODO Wrong, as it works only for natural numbers
-		return dom.max == 
-				dom.min ? rand.nextInt() : rand.nextInt( (dom.max - dom.min) + 1 ) + dom.min;
+		else if( schema.allDifferent(colName) ){
+			return ++cnt; // To be sure they are all different 
+		}
+		int max = dom.max.intValue();
+		int min = dom.min.intValue();
+		
+		return max == min ? 
+				rand.nextInt() % 100000 : rand.nextInt( max - min ) + min;
+	}
+	
+	public String getRandomString(Schema schema, String colName){
+		Domain<String> dom = (Domain<String>) schema.getDomain(colName);
+		if( dom != null){
+			if( dom.isDbIndependent() ){
+				return dom.getValues().get(rand.nextInt(dom.getValues().size()));
+			}
+		}
+		//TODO This will return all different things, that maybe is unwanted
+		return "randomString"+(++cnt);
 	}
 	
 	public String getRandomString(Domain<String> dom){
@@ -28,6 +46,7 @@ public class RandomDBValuesGenerator {
 				return dom.getValues().get(rand.nextInt(dom.getValues().size()));
 			}
 		}
+		//TODO This will return all different things, that maybe is unwanted
 		return "randomString"+(++cnt);
 	}
 }

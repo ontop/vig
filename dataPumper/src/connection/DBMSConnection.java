@@ -27,7 +27,7 @@ public class DBMSConnection {
 
 		String url = 
 				jdbcConnector + "://" + databaseUrl 
-				+ "?user=" + username 
+				+ "?useServerPrepStmts=false&rewriteBatchedStatements=true&user=" + username 
 				+ "&password=" + password;
 		try {
 			connection = DriverManager.getConnection(url, username, password);
