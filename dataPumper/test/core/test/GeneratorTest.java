@@ -3,7 +3,10 @@ package core.test;
 import static org.junit.Assert.*;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import basicDatatypes.Schema;
@@ -21,11 +24,52 @@ public class GeneratorTest {
 	private static String username = "tir";
 	private static String password = "";
 	
+	private DBMSConnection db;
+	private Connection conn;
+	
+	@Before
+	public void setUp(){
+		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
+		conn = db.getConnection();
+	}
+	
+	@After
+	public void tearDown(){
+		try {
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testPumpDatabase(){
+		Generator gen = new Generator(conn);
+		Schema schema = gen.getTableSchema("example");
+		gen.fillDomainBoundaries(schema);
+		gen.createInsertTemplate(schema);
+		gen.pumpTable("example", 10, schema, true);
+	}
+	
+	@Test
+	public void testFillDomainBoundaries(){
+		
+		Generator gen = new Generator(conn);
+		Schema schema = gen.getTableSchema("example");
+		gen.fillDomainBoundaries(schema);
+		
+		System.out.println(schema.getDomain("id").max);
+		System.out.println(schema.getDomain("id").min);
+		
+		try {
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	@Test
 	public void testGetTableSchema() {
-		DBMSConnection db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
-		Connection conn = db.getConnection();
 		
 		Generator gen = new Generator(conn);
 		Schema schema = gen.getTableSchema("example");
@@ -35,13 +79,19 @@ public class GeneratorTest {
 	
 	@Test
 	public void testCreateInsertTemplate(){		
-		DBMSConnection db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
-		Connection conn = db.getConnection();
 		
 		Generator gen = new Generator(conn);
-		
 		Schema schema = gen.getTableSchema("example");
 		
 		System.out.println(gen.createInsertTemplate(schema));
+	}
+	
+	@Test
+	public void testSomething(){
+		
+		Generator gen = new Generator(conn);
+		Schema schema = gen.getTableSchema("allTypes");
+		
+		System.out.println(schema);
 	}
 }
