@@ -2,6 +2,9 @@ package core.test;
 
 //import static org.junit.Assert.*;
 
+
+import org.apache.log4j.Logger;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,6 +24,8 @@ import core.Generator;
  *
  */
 public class GeneratorTest {
+	
+	
 	private static String jdbcConnector = "jdbc:mysql";
 	private static String databaseUrl = "localhost/ciao";
 	private static String username = "tir";
@@ -35,6 +40,8 @@ public class GeneratorTest {
 	private DBMSConnection db1;
 	private Connection conn;
 	private Connection conn1;
+
+	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
 	@Before
 	public void setUp(){
@@ -70,8 +77,8 @@ public class GeneratorTest {
 		Schema schema = gen.getTableSchema("example");
 		gen.fillDomainBoundaries(schema);
 		
-		System.out.println(schema.getDomain("id").max);
-		System.out.println(schema.getDomain("id").min);
+		logger.debug(schema.getDomain("id").max);
+		logger.debug(schema.getDomain("id").min);
 		
 		try {
 			conn.close();
@@ -86,12 +93,13 @@ public class GeneratorTest {
 		Generator gen = new Generator(conn);
 		Schema schema = gen.getTableSchema("example");
 		
-		System.out.println(schema);
+		logger.debug(schema);
 		
 		gen = new Generator(conn1);
 		schema = gen.getTableSchema("baaArea");
 		
-		System.out.println(schema);
+		logger.debug(schema);
+		
 	}
 	
 	@Test

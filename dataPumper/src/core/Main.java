@@ -23,8 +23,10 @@ public class Main {
 		Schema schema = gen.getTableSchema("example");
 		gen.fillDomainBoundaries(schema);
 		gen.createInsertTemplate(schema);
-		gen.pumpTable("example", 100000, schema, true, 0);
-		
+		long a = System.currentTimeMillis(); 
+		gen.pumpTable("example", 1000000, schema, true, 0);
+		long b = System.currentTimeMillis();
+		System.out.println("Elapsed: " + (b - a) + "msec");
 	}
 	
 }

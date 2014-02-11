@@ -87,7 +87,7 @@ public class Generator {
 				}
 				stmt.addBatch();
 				
-				if(j % 1000 == 1){ stmt.executeBatch(); conn.commit(); }
+//				if(j % 1000 == 1){ stmt.executeBatch(); conn.commit(); }
 				
 			} // End of REPEAT nRows
 			stmt.executeBatch();	
