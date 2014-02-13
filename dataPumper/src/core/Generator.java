@@ -1,10 +1,13 @@
 package core;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import basicDatatypes.*;
@@ -53,7 +56,6 @@ public class Generator {
 				for( String colName : schema.getColNames() ){
 					switch(schema.getType(colName)){
 					case INT: {
-//						int rand = random.getRandomInt(schema, colName);
 						stmt.setInt(++i, random.getRandomInt(schema, colName));
 						break;
 					}
@@ -76,7 +78,6 @@ public class Generator {
 					case TEXT:
 						break;
 					case VARCHAR : {
-//						String rand = random.getRandomString(schema, colName);
 						stmt.setString(++i, random.getRandomString(schema, colName));
 						break;
 					}
@@ -197,7 +198,7 @@ public class Generator {
 	}
 	
 	public Schema getTableSchema(String tableName){
-		Schema schema = new Schema();
+		Schema schema = new Schema(tableName);
 		
 		try{
 			PreparedStatement stmt;
@@ -234,7 +235,30 @@ public class Generator {
 		catch(SQLException e){
 			e.printStackTrace();
 		}
-		schema.setTableName(tableName);
 		return schema;
+	}
+	/**
+	 * It retrieves all the table names from the database
+	 * 
+	 * @param dbName
+	 * @return 
+	 */
+	public List<String> getAllTableNamesOf(String dbName){
+		
+		List<String> tableNames = new LinkedList<String>();
+		
+		// Get all the schemas
+		try {
+			DatabaseMetaData dbmd = conn.getMetaData();
+			
+			ResultSet rs = dbmd.getTables(dbName, null, null, null);
+			
+			while( rs.next() ){
+				tableNames.add(rs.getString(3));
+			}			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return tableNames;
 	}
 };

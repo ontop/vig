@@ -12,20 +12,15 @@ public class Schema{
 	private Map<String, MySqlDatatypes> map;
 	private Map<String, Boolean> mAllDifferentFlags;
 	private Map<String, Domain<?>> domains = null;
-	private Map<String, ResultSet> mProjections = null;
 	private Map<String, String> mForeignKeys;
-	private String tableName;
+	private Map<String, Integer> mMaximumChaseCreation;
+	private final String tableName;  // Final in order to avoid the well-known "mutability" problem with the <i>equals</i> method.
 	private List<String> orderedKeys = null;
-	public Schema(){
+	public Schema(String tableName){
+		this.tableName = tableName;
 		map = new HashMap<String, MySqlDatatypes>();
 		mAllDifferentFlags = new HashMap<String, Boolean>();
 		mForeignKeys = new HashMap<String, String>();
-		//TODO
-		// Now, I likely need to produce some duplicates not only w.r.t. 
-		// fresh values that I am going to add, but also w.r.t. the 
-		// old initial content of the database. Reason why I keep 
-		// projections (maybe with some limit)
-		mProjections = new HashMap<String, ResultSet>(); //TODO This thing is quite heavy, but needed for duplicate insertion on "old" values
 	}
 	
 	public void addField(String colName, String fieldName){
@@ -40,10 +35,6 @@ public class Schema{
 		else if( fieldName.startsWith("multilinestring") ) map.put(colName, MySqlDatatypes.MULTILINESTRING);
 		else if( fieldName.startsWith("polygon") ) map.put(colName, MySqlDatatypes.POLYGON);
 		else if( fieldName.startsWith("multipolygon") ) map.put(colName, MySqlDatatypes.MULTIPOLYGON);
-	}
-	
-	public void addProjection(String colName, ResultSet projection){
-		mProjections.put(colName, projection);
 	}
 	
 	public void setDomains(Map<String, Domain<?>> domains){
@@ -66,12 +57,7 @@ public class Schema{
 			orderedKeys = new ArrayList<String>(map.keySet());
 		}
 		return orderedKeys;
-	}
-	
-	public void setTableName(String tableName){
-		this.tableName = tableName;
-	}
-	
+	}	
 	public String getTableName(){
 		return tableName;
 	}
@@ -109,9 +95,23 @@ public class Schema{
 	public void setForeignKey(String fk, String refColumn, String refTable){
 		mForeignKeys.put(fk, refTable + "." + refColumn);
 	}
+	
+	public List<String> getFks(){
+		return new ArrayList<String>(mForeignKeys.keySet());
+	}
 
 	public boolean isIndependent() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	@Override
+	public boolean equals(Object s){
+		if(! (s instanceof Schema) ) return false;
+		
+		return this.getTableName().equals(((Schema)s).getTableName());
+	}
+	@Override
+	public int hashCode(){
+		return this.getTableName().hashCode();
 	}
 }
