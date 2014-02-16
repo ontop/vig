@@ -67,10 +67,18 @@ public class Generator {
 			chasedValues.clear();  
 			duplicateValues.clear();
 			
+			Map<String, Integer> mNumChases = new HashMap<String, Integer>();
+			
 			for( Column column : schema.getColumns() ){
-				chasedValues.put(column.getName(), fillChase(column, schema.getTableName()));
+				chasedValues.put(column.getName(), fillChase(column, schema.getTableName(), mNumChases));
 				duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows));
 			}
+			
+			// TODO With this approach, I do not know how many chased elements I am going to insert
+			// TODO But I can retrieve the number, with a count query (can I?)
+			// TODO Also, please select distinct
+			// TODO I shall not pick all of the dups I have to insert from the original table --- as I am currently doing, wrongly---, but just a 
+			//      suitable percentage from that
 			
 			// TODO
 			// What are the domains in which to take random values?
@@ -85,7 +93,7 @@ public class Generator {
 					
 					if( canAdd(nRows, j, column.getNumberChasedElements()) )  
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextChased(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
-					else if( canAdd(nRows, j, column.getDuplicatesDistribution()) )
+					else if( canAdd(nRows, j, column.getNumberToAddP()) )
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextDuplicate(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
 					else
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextRandom(schema, column));
@@ -117,10 +125,19 @@ public class Generator {
 		
 		int nDups = Math.round((nRowsToInsert + curRows) * ratio); 
 		
+		if(nDups > curRows)
+			nDups = curRows;
+		
+		if(curRows - nDups < 0){
+			logger.debug(tableName);
+			logger.debug(curRows);
+			logger.debug(nDups);
+			logger.debug("ratio: "+ratio);
+		}
 		int indexMin = random.getRandomInt(curRows - nDups);
 		int indexMax = indexMin + nDups;
 		
-		String queryString = "SELECT "+column.getName()+ "FROM "+tableName+" LIMIT "+indexMin+", "+indexMax;
+		String queryString = "SELECT "+column.getName()+ " FROM "+tableName+" LIMIT "+indexMin+", "+indexMax;
 		
 		try{
 			PreparedStatement stmt = dbmsConn.getPreparedStatement(queryString);
@@ -132,12 +149,19 @@ public class Generator {
 		return result;
 	}
 	
-
-	private Queue<ResultSet> fillChase(Column column, String tableName) {
+	/**
+	 * Side effect on <b>numChased</b>
+	 * @param column
+	 * @param tableName
+	 * @param numChased
+	 * @return
+	 */
+	private Queue<ResultSet> fillChase(Column column, String tableName, Map<String, Integer> mNumChases) {
 		Queue<ResultSet> result = new LinkedList<ResultSet>(); 
 		
 		// SELECT referredByCol FROM referredByTable WHERE referredByCol NOT IN (SELECT column.name() FROM schema.name()); 
-		Template query = new Template("SELECT ? FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
+		Template query = new Template("SELECT DISTINCT ? FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
+		Template queryCount = new Template("SELECT COUNT(DISTINCT ?) FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
 		
 		for( QualifiedName referencedBy : column.referencedBy() ){
 			// Fill the query
@@ -147,10 +171,20 @@ public class Generator {
 			query.setNthPlaceholder(4, column.getName());
 			query.setNthPlaceholder(5, tableName);
 			
+			queryCount.setNthPlaceholder(1,referencedBy.getColName());
+			queryCount.setNthPlaceholder(2, referencedBy.getTableName());
+			queryCount.setNthPlaceholder(3, referencedBy.getColName());
+			queryCount.setNthPlaceholder(4, column.getName());
+			queryCount.setNthPlaceholder(5, tableName);
+			
 			try {
 				PreparedStatement stmt = dbmsConn.getPreparedStatement(query);
 				ResultSet rs = stmt.executeQuery();
 				result.add(rs);
+				
+				PreparedStatement stmt1 = dbmsConn.getPreparedStatement(queryCount);
+				ResultSet rs1 = stmt1.executeQuery();
+				mNumChases.put(column.getName(), rs1.getInt(1));
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -205,6 +239,7 @@ public class Generator {
 	}
 
 	private boolean canAdd(int total, int current, int modulo) {
+		if(modulo == 0) return false;
 		if( total % modulo == 0 )
 			return current % (total / modulo) == 0;
 		return current % (total / (modulo + 1)) == 0;

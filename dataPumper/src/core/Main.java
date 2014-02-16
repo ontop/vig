@@ -28,32 +28,15 @@ public class Main {
 	
 	public static void main(String[] args){
 		
-		System.out.println(100 % (5));
+		DBMSConnection dbmsConn = new DBMSConnection("jdbc:mysql", "localhost/ciao", "tir", "");
+		Generator gen = new Generator(dbmsConn);
 		
-//		DBMSConnection dbmsConn = new DBMSConnection("jdbc:mysql", "localhost/ciao", "tir", "");
-//		Connection conn = dbmsConn.getConnection();
-//		Generator gen = new Generator(conn);
-//		
-//		DBMSConnection dbmsConn1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
-//		Connection conn1 = dbmsConn1.getConnection();
-//		Generator gen1 = new Generator(conn1);
-//		
-////		SchemaOrderer schOr = new SchemaOrderer(gen, dbmsConn.getDbName());
-////		List<Schema> schemas = schOr.getOrderedSchemas();
-////		
-////		logger.debug(schemas);
-//
-//		SchemaOrderer schOr1 = new SchemaOrderer(gen1, dbmsConn1.getDbName());
-//		List<Schema> schemas1 = schOr1.getOrderedSchemas();
-//		
-//		logger.debug(schemas1);
-		
-//		Schema schema = gen.getTableSchema("example");
-//		gen.fillDomainBoundaries(schema);
-//		gen.createInsertTemplate(schema);
-//		long a = System.currentTimeMillis(); 
-//		gen.pumpTable("example", 1000000, schema, true, 0);
-//		long b = System.currentTimeMillis();
-//		System.out.println("Elapsed: " + (b - a) + "msec");
+		DBMSConnection dbmsConn1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
+		Generator gen1 = new Generator(dbmsConn1);
+
+		long a = System.currentTimeMillis(); 
+		gen.pumpTable(1000000, dbmsConn.getSchema("example"));
+		long b = System.currentTimeMillis();
+		System.out.println("Elapsed: " + (b - a) + "msec");
 	}
 }

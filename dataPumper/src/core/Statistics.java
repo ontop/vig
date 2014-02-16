@@ -32,7 +32,10 @@ public class Statistics {
 	
 	public float naiveStrategy(String columnName, String tableName){
 		
-		return sizeProjection(columnName, tableName) / nRows(columnName, tableName); 
+		int nRows = nRows(columnName, tableName);
+		int sizeProjection = sizeProjection(columnName, tableName);
+		
+		return (nRows - sizeProjection) / nRows; 
 	}
 	
 	public int nRows(String columnName, String tableName){
