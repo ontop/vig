@@ -27,23 +27,26 @@ public class Main {
 	private static Logger logger = Logger.getLogger(Main.class.getCanonicalName());
 	
 	public static void main(String[] args){
-		DBMSConnection dbmsConn = new DBMSConnection("jdbc:mysql", "localhost/ciao", "tir", "");
-		Connection conn = dbmsConn.getConnection();
-		Generator gen = new Generator(conn);
 		
-		DBMSConnection dbmsConn1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
-		Connection conn1 = dbmsConn1.getConnection();
-		Generator gen1 = new Generator(conn1);
+		System.out.println(100 % (5));
 		
-//		SchemaOrderer schOr = new SchemaOrderer(gen, dbmsConn.getDbName());
-//		List<Schema> schemas = schOr.getOrderedSchemas();
+//		DBMSConnection dbmsConn = new DBMSConnection("jdbc:mysql", "localhost/ciao", "tir", "");
+//		Connection conn = dbmsConn.getConnection();
+//		Generator gen = new Generator(conn);
 //		
-//		logger.debug(schemas);
-
-		SchemaOrderer schOr1 = new SchemaOrderer(gen1, dbmsConn1.getDbName());
-		List<Schema> schemas1 = schOr1.getOrderedSchemas();
-		
-		logger.debug(schemas1);
+//		DBMSConnection dbmsConn1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
+//		Connection conn1 = dbmsConn1.getConnection();
+//		Generator gen1 = new Generator(conn1);
+//		
+////		SchemaOrderer schOr = new SchemaOrderer(gen, dbmsConn.getDbName());
+////		List<Schema> schemas = schOr.getOrderedSchemas();
+////		
+////		logger.debug(schemas);
+//
+//		SchemaOrderer schOr1 = new SchemaOrderer(gen1, dbmsConn1.getDbName());
+//		List<Schema> schemas1 = schOr1.getOrderedSchemas();
+//		
+//		logger.debug(schemas1);
 		
 //		Schema schema = gen.getTableSchema("example");
 //		gen.fillDomainBoundaries(schema);

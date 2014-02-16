@@ -1,24 +1,38 @@
 package core;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
+
+import connection.DBMSConnection;
+import core.test.GeneratorTest;
 import basicDatatypes.*;
 
+import org.apache.log4j.Logger;
+
 public class Generator {
-	private Connection conn;
+	private DBMSConnection dbmsConn;
 	private RandomDBValuesGenerator random;
+	private Statistics statistics;
 	
-	public Generator(Connection conn){
-		this.conn = conn;
+	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
+	
+	// Internal state
+	private Map<String, Queue<ResultSet>> chasedValues;
+	private Map<String, ResultSet> duplicateValues;
+		
+	public Generator(DBMSConnection dbmsConn){
+		this.dbmsConn = dbmsConn;
 		random = new RandomDBValuesGenerator();
+		this.statistics = new Statistics(dbmsConn);
+		
+		chasedValues = new HashMap<String, Queue<ResultSet>>();
+		duplicateValues = new HashMap<String, ResultSet>();
 	}
 	
 	/**
@@ -38,61 +52,48 @@ public class Generator {
 	 * Domain independend columns can also be inferred, by looking at the projection and comparing it 
 	 * against the total number of tuples in the table <b>tableName</b>
 	 */
-	public void pumpTable(String tableName, int nRows, Schema schema, boolean inferDomainIndependent, float duplicateRatio){		
+	public void pumpTable(int nRows, Schema schema){		
 		
-		String templateInsert = createInsertTemplate(schema);
+		String templateInsert = dbmsConn.createInsertTemplate(schema);
 		PreparedStatement stmt = null;
 		
 		try {
-			stmt = conn.prepareStatement(templateInsert);
-			System.out.println(templateInsert);
+			stmt = dbmsConn.getPreparedStatement(templateInsert);
+			logger.debug(templateInsert);
+			
 			// Disable auto-commit
-			conn.setAutoCommit(false);
+			dbmsConn.setAutoCommit(false);
+			
+			chasedValues.clear();  
+			duplicateValues.clear();
+			
+			for( Column column : schema.getColumns() ){
+				chasedValues.put(column.getName(), fillChase(column, schema.getTableName()));
+				duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows));
+			}
+			
+			// TODO
+			// What are the domains in which to take random values?
+			// Let's do it later
+			
+			// TODO The max_cycle thing
 			
 			for( int j = 0; j < nRows; ++j ){
 				
-				// By understanding the types, one can decide what to generate
-				int i = 0;
-				for( String colName : schema.getColNames() ){
-					switch(schema.getType(colName)){
-					case INT: {
-						stmt.setInt(++i, random.getRandomInt(schema, colName));
-						break;
-					}
-					case CHAR:
-						break;
-					case DATETIME:
-						break;
-					case LINESTRING:
-						break;
-					case LONGTEXT:
-						break;
-					case MULTILINESTRING:
-						break;
-					case MULTIPOLYGON:
-						break;
-					case POINT:
-						break;
-					case POLYGON:
-						break;
-					case TEXT:
-						break;
-					case VARCHAR : {
-						stmt.setString(++i, random.getRandomString(schema, colName));
-						break;
-					}
-
-					default:
-						break;
-					}
+				int columnIndex = 0;
+				for( Column column : schema.getColumns() ){
+					
+					if( canAdd(nRows, j, column.getNumberChasedElements()) )  
+						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextChased(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+					else if( canAdd(nRows, j, column.getDuplicatesDistribution()) )
+						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextDuplicate(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+					else
+						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextRandom(schema, column));
 				}
 				stmt.addBatch();
-				
-//				if(j % 1000 == 1){ stmt.executeBatch(); conn.commit(); }
-				
-			} // End of REPEAT nRows
+			} 
 			stmt.executeBatch();	
-			conn.commit();
+			dbmsConn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -100,165 +101,112 @@ public class Generator {
 
 	/**
 	 * 
-	 * @param s
-	 * @return
-	 * 
-	 * Types in FactPages db
-	 * int, datetime, varchar, decimal, char, text, longtext, point, linestring, polygon, multipolygon, multilinestring
+	 * @param column
+	 * @param tableName
+	 * @param nRowsToInsert
+	 * @return A result set containing the number of duplicates that need to be inserted
 	 */
-	public void fillDomainBoundaries(Schema s){
+	private ResultSet fillDuplicates(Column column, String tableName, int nRowsToInsert) {
 		
-		Map<String, Domain<?>> domains = new HashMap<String, Domain<?>>();
-
-		try {
-			Template t = new Template("select ? from "+s.getTableName()+";");
-			PreparedStatement stmt;
-						
-			for( String colName : s.getColNames() ){
-				
-				switch(s.getType(colName)){
-				case INT : {
-					
-					// TODO One has to understand whether the domain is dependent to the db size or not.
-					
-					t.setNthPlaceholder(1, "min("+colName+"), max("+colName+")");
-					
-					stmt = conn.prepareStatement(t.getFilled());
-					ResultSet result = stmt.executeQuery();
-										
-					while( result.next() ){
-						domains.put(colName, new Domain<Integer>(result.getInt(1), result.getInt(2)));
-					}
-					break;
-				}
-				case CHAR : {
-					break;
-				}
-				case VARCHAR : {
-					break;
-				}
-				case TEXT : {
-					break;
-				}
-				case LONGTEXT : {
-					break;
-				}
-				case DATETIME : {
-					// Not sure whether etc.
-					break;
-				}
-				case POINT : {
-					break;
-				}
-				case LINESTRING : {
-					break;
-				}
-				case MULTILINESTRING : {
-					break;
-				}
-				case POLYGON : {
-					break;
-				}
-				case MULTIPOLYGON : {
-					break;
-				}
-				}
-			}
-		}catch(SQLException e){
-			e.printStackTrace();
-		}
-		s.setDomains(domains);
-	}
-	/**
-	 * 
-	 * @author tir
-	 * @param s: Schema of the table for which an insert query has to be created
-	 * @return A template insert query with a suitable number of place-holders
-	 */
-	public String createInsertTemplate(Schema s){
-		StringBuilder insertQuery = new StringBuilder();
-		insertQuery.append("INSERT into "+s.getTableName()+" (");
-		int i = 0;
+		ResultSet result = null;
 		
-		for( String colName : s.getColNames() ){
-			insertQuery.append(colName);
-			if( ++i < s.getNumColumns() )
-				insertQuery.append(", ");
-		}
-		insertQuery.append(") VALUES (");
+		// First of all, I need to understand the distribution of duplicates. Window analysis!
+		float ratio = statistics.naiveStrategy(column.getName(), tableName);
 		
-		for( i = 0; i < s.getNumColumns(); ++i ){
-			insertQuery.append("?");
-			if( i < s.getNumColumns() - 1 )
-				insertQuery.append(", ");
-		}
-		insertQuery.append(")");
+		int curRows = statistics.nRows(column.getName(), tableName);
 		
-		return insertQuery.toString();
-	}
-	
-	public Schema getTableSchema(String tableName){
-		Schema schema = new Schema(tableName);
+		int nDups = Math.round((nRowsToInsert + curRows) * ratio); 
+		
+		int indexMin = random.getRandomInt(curRows - nDups);
+		int indexMax = indexMin + nDups;
+		
+		String queryString = "SELECT "+column.getName()+ "FROM "+tableName+" LIMIT "+indexMin+", "+indexMax;
 		
 		try{
-			PreparedStatement stmt;
-			stmt = conn.prepareStatement("DESCRIBE "+tableName);
-			ResultSet result = stmt.executeQuery();
-			
-			// Field - Type - Null - Default - Extra
-			while(result.next()){
-				schema.addField(result.getString(1), result.getString(2));
-				
-				// Primary keys need to be all different
-				if( result.getString(3).equals("PRI") ) 
-					schema.setAllDifferent(result.getString(1), true);
-				else schema.setAllDifferent(result.getString(1), false);
-			}
-			
-			// Now let's retrieve foreign keys
-			String informationSchemaQuery = 
-					"select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME"
-					+ " from INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
-					+ "	where TABLE_NAME = ? and constraint_schema = ?"
-					+ " and REFERENCED_TABLE_NAME != 'null'";
-					
-			stmt = conn.prepareStatement(informationSchemaQuery);
-			stmt.setString(1, tableName);
-			stmt.setString(2, conn.getCatalog());
-			
+			PreparedStatement stmt = dbmsConn.getPreparedStatement(queryString);
 			result = stmt.executeQuery();
-			
-			while(result.next()){
-				schema.setForeignKey(result.getString(2), result.getString(5), result.getString(4));
-			}
-		}
-		catch(SQLException e){
-			e.printStackTrace();
-		}
-		return schema;
-	}
-	/**
-	 * It retrieves all the table names from the database
-	 * 
-	 * @param dbName
-	 * @return 
-	 */
-	public List<String> getAllTableNamesOf(String dbName){
-		
-		List<String> tableNames = new LinkedList<String>();
-		
-		// Get all the schemas
-		try {
-			DatabaseMetaData dbmd = conn.getMetaData();
-			
-			ResultSet rs = dbmd.getTables(dbName, null, null, null);
-			
-			while( rs.next() ){
-				tableNames.add(rs.getString(3));
-			}			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return tableNames;
+		
+		return result;
+	}
+	
+
+	private Queue<ResultSet> fillChase(Column column, String tableName) {
+		Queue<ResultSet> result = new LinkedList<ResultSet>(); 
+		
+		// SELECT referredByCol FROM referredByTable WHERE referredByCol NOT IN (SELECT column.name() FROM schema.name()); 
+		Template query = new Template("SELECT ? FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
+		
+		for( QualifiedName referencedBy : column.referencedBy() ){
+			// Fill the query
+			query.setNthPlaceholder(1,referencedBy.getColName());
+			query.setNthPlaceholder(2, referencedBy.getTableName());
+			query.setNthPlaceholder(3, referencedBy.getColName());
+			query.setNthPlaceholder(4, column.getName());
+			query.setNthPlaceholder(5, tableName);
+			
+			try {
+				PreparedStatement stmt = dbmsConn.getPreparedStatement(query);
+				ResultSet rs = stmt.executeQuery();
+				result.add(rs);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	private String pickNextDuplicate(Schema schema, Column column) {
+		
+		ResultSet duplicatesToInsert = duplicateValues.get(column.getName());
+		String result = null;
+		
+		try {
+			if( !duplicatesToInsert.next() ) return null;
+			result = duplicatesToInsert.getString(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	private String pickNextRandom(Schema schema, Column column) {
+		return null;
+	}
+
+	private String pickNextChased(Schema schema, Column column) {
+		
+		Queue<ResultSet> chased = chasedValues.get(column.getName());
+		ResultSet curSet = chased.peek();
+
+		if(curSet == null){ // This shall not happen
+			logger.debug("Problem: Picked a null in chased vector"); 
+			return null;
+		}
+		try {
+			if(curSet.next()){
+				return curSet.getString(1);
+			}
+			else{ // Pick next ResultSet
+				chased.poll();
+				curSet = chased.peek();
+				if(curSet == null ) return null;
+				
+				if( curSet.next() == false ) 
+					logger.debug("Problem: No element in a non-empty ResultSet");
+				curSet.getString(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}		
+		return null;
+	}
+
+	private boolean canAdd(int total, int current, int modulo) {
+		if( total % modulo == 0 )
+			return current % (total / modulo) == 0;
+		return current % (total / (modulo + 1)) == 0;
 	}
 };

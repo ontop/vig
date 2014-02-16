@@ -2,17 +2,16 @@ package basicDatatypes.test;
 
 import static org.junit.Assert.*;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
+//import org.apache.log4j.Logger;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import basicDatatypes.Schema;
 import connection.DBMSConnection;
-import core.Generator;
 
 public class SchemaTest {
 	
@@ -21,26 +20,25 @@ public class SchemaTest {
 	private static String username = "fish";
 	private static String password = "fish";
 	
-	private DBMSConnection db;
-	private Connection conn;
-	private Generator gen;
+//	private static Logger logger = Logger.getLogger(SchemaTest.class.getCanonicalName());
 	
-	@Before
-	public void setUp() throws Exception {
+	private static DBMSConnection db;
+	
+	@BeforeClass
+	public static void setUp() throws Exception {
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
-		conn = db.getConnection();
-		gen = new Generator(conn);
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterClass
+	public static void tearDown() throws Exception {
+		db.close();
 	}
 
 	@Test
 	public void testEqualsTo() {
 		
-		Schema s1 = gen.getTableSchema("baaArea");
-		Schema s2 = gen.getTableSchema("baaArea");
+		Schema s1 = db.getSchema("baaArea");
+		Schema s2 = db.getSchema("baaArea");
 		
 		assertTrue(s1.equals(s2));
 		

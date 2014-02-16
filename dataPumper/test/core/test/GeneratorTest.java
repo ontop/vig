@@ -61,55 +61,55 @@ public class GeneratorTest {
 		}
 	}
 	
-	@Test
-	public void testPumpDatabase(){
-		Generator gen = new Generator(conn);
-		Schema schema = gen.getTableSchema("example");
-		gen.fillDomainBoundaries(schema);
-		gen.createInsertTemplate(schema);
-		gen.pumpTable("example", 10000, schema, true, 0);
-	}
-	
-	@Test
-	public void testFillDomainBoundaries(){
-		
-		Generator gen = new Generator(conn);
-		Schema schema = gen.getTableSchema("example");
-		gen.fillDomainBoundaries(schema);
-		
-		logger.debug(schema.getDomain("id").max);
-		logger.debug(schema.getDomain("id").min);
-		
-		try {
-			conn.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	@Test
-	public void testGetTableSchema() {
-		
-		Generator gen = new Generator(conn);
-		Schema schema = gen.getTableSchema("example");
-		
-		logger.debug(schema);
-		
-		gen = new Generator(conn1);
-		schema = gen.getTableSchema("baaArea");
-		
-		logger.debug(schema);
-		
-	}
-	
-	@Test
-	public void testCreateInsertTemplate(){		
-		
-		Generator gen = new Generator(conn);
-		Schema schema = gen.getTableSchema("example");
-		
-		System.out.println(gen.createInsertTemplate(schema));
-	}
+//	@Test
+//	public void testPumpDatabase(){
+//		Generator gen = new Generator(conn);
+//		Schema schema = gen.getTableSchema("example");
+//		gen.fillDomainBoundaries(schema);
+//		gen.createInsertTemplate(schema);
+//		gen.pumpTable("example", 10000, schema, true, 0);
+//	}
+//	
+//	@Test
+//	public void testFillDomainBoundaries(){
+//		
+//		Generator gen = new Generator(conn);
+//		Schema schema = gen.getTableSchema("example");
+//		gen.fillDomainBoundaries(schema);
+//		
+//		logger.debug(schema.getDomain("id").max);
+//		logger.debug(schema.getDomain("id").min);
+//		
+//		try {
+//			conn.close();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
+//	
+//	@Test
+//	public void testGetTableSchema() {
+//		
+//		Generator gen = new Generator(conn);
+//		Schema schema = gen.getTableSchema("example");
+//		
+//		logger.debug(schema);
+//		
+//		gen = new Generator(conn1);
+//		schema = gen.getTableSchema("baaArea");
+//		
+//		logger.debug(schema);
+//		
+//	}
+//	
+//	@Test
+//	public void testCreateInsertTemplate(){		
+//		
+//		Generator gen = new Generator(conn);
+//		Schema schema = gen.getTableSchema("example");
+//		
+//		System.out.println(gen.createInsertTemplate(schema));
+//	}
 	
 	@Test
 	public void testSomething(){

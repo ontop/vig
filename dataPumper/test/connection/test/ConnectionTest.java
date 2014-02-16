@@ -9,6 +9,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Statement;
@@ -27,9 +31,20 @@ public class ConnectionTest {
 	private static String username = "tir";
 	private static String password = "";
 	
+	private static DBMSConnection database;
+	
+	@BeforeClass
+	public static void setUp(){
+		database = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
+	}
+	
+	@AfterClass
+	public static void tearDown(){
+		database.close();
+	}
+	
 	@Test
 	public void testGetConnection() {
-		DBMSConnection database = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		
 		Connection conn = database.getConnection();
 		
@@ -42,20 +57,16 @@ public class ConnectionTest {
 		ResultSet result = stmt.executeQuery();
 		
 		while(result.next()){
-			System.out.println(result.getString(1) + " " + result.getInt(2));
+			System.out.println(result.getString(1) + " " + result.getString(2));
 		}
 		
-		conn.close();
-		
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
 	@Test
 	public void testInsertTuples() {
-		DBMSConnection database = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		
 		Connection conn = database.getConnection();
 		
@@ -88,15 +99,15 @@ public class ConnectionTest {
 				ResultSetMetaData rsmd=res.getMetaData();
 				System.out.println(rsmd.getColumnTypeName(1));
 				System.out.println(rsmd.getColumnTypeName(2));
-				rsmd.getColumnType(1);
-				rsmd.getColumnLabel(1);
-				rsmd.getColumnDisplaySize(1);
-				
-				System.out.println(result.getString(7));
-				
-				System.out.println(catalog); // Prints the name of the db
-				System.out.println(tableName);
-				System.out.println(schema);
+//				rsmd.getColumnType(1);
+//				rsmd.getColumnLabel(1);
+//				rsmd.getColumnDisplaySize(1);
+//				
+//				System.out.println(result.getString(7));
+//				
+//				System.out.println(catalog); // Prints the name of the db
+//				System.out.println(tableName);
+//				System.out.println(schema);
 			}
 		
 		} catch (SQLException e) {
@@ -107,9 +118,7 @@ public class ConnectionTest {
 	
 	@Test
 	public void testGetDbName(){
-		DBMSConnection database = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
-		System.out.println(database.getDbName());
-		//TODO Remove this ugly sysout
+		System.out.println("testGetDbName: "+database.getDbName());
 	}
 
 }
