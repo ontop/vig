@@ -122,7 +122,7 @@ public class GeneratorTest {
 		
 		Generator gen = new Generator(db);
 		
-		gen.pumpTable(20, db.getSchema("trivial"));
+		gen.pumpTable(3, db.getSchema("trivial"));
 		
 	}
 	

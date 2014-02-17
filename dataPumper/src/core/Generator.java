@@ -3,7 +3,6 @@ package core;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -92,7 +91,6 @@ public class Generator {
 			// Let's do it later
 			
 			// TODO The max_cycle thing
-			
 			for( int j = 0; j < nRows; ++j ){
 				
 				int columnIndex = 0;
@@ -101,7 +99,7 @@ public class Generator {
 					if( mNumChases.containsKey(column.getName()) && canAdd(nRows, j, mNumChases.get(column.getName())) )  {
 						
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextChased(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
-					
+						
 					}
 					else if( canAdd(nRows, j, mNumDuplicates.get(column.getName()) ) ){
 						
@@ -110,16 +108,20 @@ public class Generator {
 							if( !mFreshDuplicates.containsKey(column.getName()) )
 								logger.error("No fresh duplicates available for column "+column.getName() );
 							nextDuplicate = mFreshDuplicates.get(column.getName()).poll();
+							if( nextDuplicate == null ) {
+								logger.error("No good poll action");	
+							}
 						}
-						dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+							dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
 					}
 					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
-						
 						String generatedRandom = random.getRandomValue(column);
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
+						
 						// Add the random value to the "toInsert" duplicates
 						int freshGenerated = mFreshGenerated.get(column.getName());
-						if( ++freshGenerated < mNumDuplicatesFromFresh.get(column.getName()) ){
+						if( freshGenerated++ < mNumDuplicatesFromFresh.get(column.getName()) ){
+							logger.debug(mNumDuplicatesFromFresh.get(column.getName()));
 							mFreshGenerated.put(column.getName(), freshGenerated);
 							mFreshDuplicates.get(column.getName()).add(generatedRandom);
 						}
@@ -158,20 +160,26 @@ public class Generator {
 		
 		int curRows = statistics.nRows(column.getName(), tableName);
 		
-		int nDups = Math.round((nRowsToInsert + curRows) * ratio); // This is the total number of duplicates that need to be inserted
+		int nDups = /*Math.round*/(int)((nRowsToInsert + curRows) * ratio); // This is the total number of duplicates that have to be in the final table
 		
-		mNumDuplicates.put(column.getName(), nDups);
+		int toAddDups = nDups - (curRows - statistics.sizeProjection(column.getName(), tableName));
+		
+		mNumDuplicates.put(column.getName(), toAddDups);
 		
 		// Now, establish how many rows I want to take from the current content
-		int nDupsFromCurCol = Math.round(curRows * ratio);
+		int nDupsFromCurCol = /*Math.round*/(int)((curRows / (curRows + nRowsToInsert)) * ratio);
 		
 		// And how many rows I want to take from fresh randomly generated values.
-		mNumDuplicatesFromFresh.put(column.getName(), nDups - nDupsFromCurCol);
+		mNumDuplicatesFromFresh.put(column.getName(), toAddDups - nDupsFromCurCol);
 		
 		// Point to the rows that I want to duplicate
 		if( curRows <= nDupsFromCurCol ) logger.error("curRows= "+curRows+", nDupsFromCol= "+nDupsFromCurCol);
 		int indexMin = random.getRandomInt(curRows - nDupsFromCurCol);
 		int indexMax = indexMin + nDupsFromCurCol;
+		
+		--indexMax; // Because LIMIT 3,4 retrieves 2 columns and NOT 1.
+		
+		if( indexMax < indexMin ) return null;
 		
 		String queryString = "SELECT "+column.getName()+ " FROM "+tableName+" LIMIT "+indexMin+", "+indexMax;
 		
@@ -236,6 +244,7 @@ public class Generator {
 	private String pickNextDupFromOldValues(Schema schema, Column column) {
 		
 		ResultSet duplicatesToInsert = duplicateValues.get(column.getName());
+		if(duplicatesToInsert == null) return null;
 		String result = null;
 		
 		try {
@@ -276,9 +285,9 @@ public class Generator {
 	}
 
 	private boolean canAdd(int total, int current, int modulo) {
-		if(modulo == 0) return false;
-		if( total % modulo == 0 )
-			return current % (total / modulo) == 0;
-		return current % (total / (modulo + 1)) == 0;
+		if(modulo == 0 || current == 0) return false;
+		if(current == total-1 && modulo != 0) return true;
+		
+		return current % (total / modulo) == 0;
 	}
 };
