@@ -4,11 +4,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
+
 import utils.Pair;
 import connection.DBMSConnection;
+import core.test.GeneratorTest;
 
 public class Statistics {
 	private DBMSConnection dbmsConn;
+	
+	private static Logger logger = Logger.getLogger(Statistics.class.getCanonicalName());
 	
 	public Statistics(DBMSConnection dbmsConn){
 		this.dbmsConn = dbmsConn;
@@ -33,9 +38,12 @@ public class Statistics {
 	public float naiveStrategy(String columnName, String tableName){
 		
 		int nRows = nRows(columnName, tableName);
+		if( nRows == 0 ) return 0; // No rows in the table
 		int sizeProjection = sizeProjection(columnName, tableName);
 		
-		return (nRows - sizeProjection) / nRows; 
+		float ratio = (float)(nRows - sizeProjection) / (float)nRows;
+		
+		return ratio; 
 	}
 	
 	public int nRows(String columnName, String tableName){

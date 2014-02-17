@@ -3,6 +3,8 @@ package core.test;
 //import static org.junit.Assert.*;
 
 
+import static org.junit.Assert.*;
+
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -11,7 +13,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import basicDatatypes.Schema;
@@ -27,38 +31,99 @@ public class GeneratorTest {
 	
 	
 	private static String jdbcConnector = "jdbc:mysql";
-	private static String databaseUrl = "localhost/ciao";
-	private static String username = "tir";
-	private static String password = "";
+	private static String databaseUrl = "10.7.20.39:3306/pumperTest";
+	private static String username = "test";
+	private static String password = "ontop2014";
 	
 	private static String jdbcConnector1 = "jdbc:mysql";
 	private static String databaseUrl1 = "10.7.20.39:3306/npd";
 	private static String username1 = "fish";
 	private static String password1 = "fish";
 	
-	private DBMSConnection db;
-	private DBMSConnection db1;
-	private Connection conn;
-	private Connection conn1;
+	private static DBMSConnection db;
+	private static DBMSConnection db1;
+	private static Connection conn;
+	private static Connection conn1;
+	
+	// Parameters
+	private static int nRowsToInsert = 10;
 
 	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
-	@Before
-	public void setUp(){
+	@BeforeClass
+	
+	public static void setUp(){
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		conn = db.getConnection();
 		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
 		conn1 = db1.getConnection();
 	}
 	
-	@After
-	public void tearDown(){
+	@AfterClass
+	public static void tearDown(){
 		try {
 			conn.close();
 			conn1.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testPumpTable(){
+		
+		PreparedStatement init = db.getPreparedStatement("DELETE FROM trivial");
+		
+		try {
+			init.execute();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		
+		Generator gen = new Generator(db);
+		long startTime = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("trivial"));
+		long endTime = System.currentTimeMillis();
+		logger.debug("Pumping time to insert "+nRowsToInsert+" columns: "+(endTime - startTime)+" msec.");
+		
+		String query = "SELECT count(*) FROM trivial";
+		
+		PreparedStatement stmt = db.getPreparedStatement(query);
+		
+		ResultSet result;
+		try {
+			result = stmt.executeQuery();
+		
+			if(result.next()) assertTrue(result.getInt(1) == nRowsToInsert); // Careful, it is the ''next'' which moves the cursor (how awful)
+		
+			init.execute(); // Re-init
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testRatioDupsPumpTable(){
+		PreparedStatement init = db.getPreparedStatement("DELETE FROM trivial");
+		
+		try {
+			init.execute();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		
+		PreparedStatement insertions = db.getPreparedStatement("INSERT INTO trivial VALUES (1,'ciao'), (2,'ciriciao'), (1,'ciriciriciao')");
+		
+		try {
+			insertions.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		Generator gen = new Generator(db);
+		
+		gen.pumpTable(20, db.getSchema("trivial"));
+		
 	}
 	
 //	@Test

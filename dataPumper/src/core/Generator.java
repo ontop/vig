@@ -64,12 +64,15 @@ public class Generator {
 		Map<String, Integer> mNumDuplicatesFromFresh = new HashMap<String, Integer>(); // It holds the number of duplicates
 		                                                                               // ---among fresh values--- that need to be inserted
 		
-		Queue<String> freshDuplicates = new LinkedList<String>(); // TODO Is this too much memory consuming?
-		int freshGenerated = 0; // Keeps the number of randomly generated values
+		Map<String, Integer> mFreshGenerated = new HashMap<String, Integer>(); // It keeps fresh generated values, column by column
+		Map<String, Queue<String>> mFreshDuplicates = new HashMap<String, Queue<String>>(); // TODO Is this too much memory consuming?
 		
 		for( Column column : schema.getColumns() ){
 			chasedValues.put(column.getName(), fillChase(column, schema.getTableName(), mNumChases));
 			duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows, mNumDuplicates, mNumDuplicatesFromFresh));
+			
+			mFreshGenerated.put(column.getName(), 0);
+			mFreshDuplicates.put(column.getName(), new LinkedList<String>());
 		}
 		
 		// ----- END INIT ----- //
@@ -95,7 +98,7 @@ public class Generator {
 				int columnIndex = 0;
 				for( Column column : schema.getColumns() ){
 					
-					if( canAdd(nRows, j, mNumChases.get(column.getName())) )  {
+					if( mNumChases.containsKey(column.getName()) && canAdd(nRows, j, mNumChases.get(column.getName())) )  {
 						
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextChased(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
 					
@@ -104,18 +107,21 @@ public class Generator {
 						
 						String nextDuplicate = pickNextDupFromOldValues(schema, column);
 						if( nextDuplicate == null ){ // Necessary to start picking duplicates from freshly generated values
-							nextDuplicate = freshDuplicates.poll();
+							if( !mFreshDuplicates.containsKey(column.getName()) )
+								logger.error("No fresh duplicates available for column "+column.getName() );
+							nextDuplicate = mFreshDuplicates.get(column.getName()).poll();
 						}
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
-					
 					}
 					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
 						
 						String generatedRandom = random.getRandomValue(column);
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 						// Add the random value to the "toInsert" duplicates
+						int freshGenerated = mFreshGenerated.get(column.getName());
 						if( ++freshGenerated < mNumDuplicatesFromFresh.get(column.getName()) ){
-							freshDuplicates.add(generatedRandom); 
+							mFreshGenerated.put(column.getName(), freshGenerated);
+							mFreshDuplicates.get(column.getName()).add(generatedRandom);
 						}
 					}
 				}
@@ -126,6 +132,7 @@ public class Generator {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		dbmsConn.setAutoCommit(true);
 	}
 
 	/**
@@ -143,19 +150,26 @@ public class Generator {
 		// First of all, I need to understand the distribution of duplicates. Window analysis!
 		float ratio = statistics.naiveStrategy(column.getName(), tableName);
 		
+		if( ratio == 0 ){
+			mNumDuplicates.put(column.getName(), 0);
+			mNumDuplicatesFromFresh.put(column.getName(), 0);
+			return null; // Either no duplicates or no row at all
+		}
+		
 		int curRows = statistics.nRows(column.getName(), tableName);
 		
 		int nDups = Math.round((nRowsToInsert + curRows) * ratio); // This is the total number of duplicates that need to be inserted
 		
-		mNumDuplicates.put(tableName, nDups);
+		mNumDuplicates.put(column.getName(), nDups);
 		
 		// Now, establish how many rows I want to take from the current content
 		int nDupsFromCurCol = Math.round(curRows * ratio);
 		
 		// And how many rows I want to take from fresh randomly generated values.
-		mNumDuplicatesFromFresh.put(tableName, nDups - nDupsFromCurCol);
+		mNumDuplicatesFromFresh.put(column.getName(), nDups - nDupsFromCurCol);
 		
 		// Point to the rows that I want to duplicate
+		if( curRows <= nDupsFromCurCol ) logger.error("curRows= "+curRows+", nDupsFromCol= "+nDupsFromCurCol);
 		int indexMin = random.getRandomInt(curRows - nDupsFromCurCol);
 		int indexMax = indexMin + nDupsFromCurCol;
 		
