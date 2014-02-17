@@ -2,6 +2,7 @@ package core;
 
 import java.util.Random;
 
+import basicDatatypes.Column;
 import basicDatatypes.Schema;
 
 public class RandomDBValuesGenerator {
@@ -13,7 +14,47 @@ public class RandomDBValuesGenerator {
 		cnt = 0;
 	}
 	
-	public int getRandomInt(Schema schema, String colName){
+	public String getRandomValue(Column column){
+		
+		String result = null;
+		
+		switch(column.getType()){
+		case INT: {
+			Integer resultInt = getRandomInt(column);
+			result = resultInt.toString();
+			break;
+		}
+		case CHAR:
+			break;
+		case DATETIME:
+			break;
+		case LINESTRING:
+			break;
+		case LONGTEXT:
+			break;
+		case MULTILINESTRING:
+			break;
+		case MULTIPOLYGON:
+			break;
+		case POINT:
+			break;
+		case POLYGON:
+			break;
+		case TEXT:
+			break;
+		case VARCHAR : {
+			result = getRandomString(column);
+			break;
+		}
+		
+		default:
+			break;
+		}
+		
+		return result;
+	}
+	
+	public int getRandomInt(Column column){
 //		Domain<Integer> dom = (Domain<Integer>) schema.getDomain(colName);
 //		if( dom.isDbIndependent() ){
 //			return dom.getValues().get(rand.nextInt(dom.getValues().size()));
@@ -30,7 +71,7 @@ public class RandomDBValuesGenerator {
 		return rand.nextInt(10000000);
 	}
 	
-	public String getRandomString(Schema schema, String colName){
+	public String getRandomString(Column column){
 //		Domain<String> dom = (Domain<String>) schema.getDomain(colName);
 //		if( dom != null){
 //			if( dom.isDbIndependent() ){

@@ -3,11 +3,11 @@ package core;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-
 
 import connection.DBMSConnection;
 import core.test.GeneratorTest;
@@ -23,8 +23,8 @@ public class Generator {
 	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
 	// Internal state
-	private Map<String, Queue<ResultSet>> chasedValues;
-	private Map<String, ResultSet> duplicateValues;
+	private Map<String, Queue<ResultSet>> chasedValues; // Pointers to ResultSets storing chased values for each column
+	private Map<String, ResultSet> duplicateValues;     // Pointers to ResultSets storing duplicate values for each column
 		
 	public Generator(DBMSConnection dbmsConn){
 		this.dbmsConn = dbmsConn;
@@ -54,6 +54,26 @@ public class Generator {
 	 */
 	public void pumpTable(int nRows, Schema schema){		
 		
+		// INIT
+
+		chasedValues.clear();  
+		duplicateValues.clear();
+		
+		Map<String, Integer> mNumChases = new HashMap<String, Integer>(); // It holds the number of chased elements for each column
+		Map<String, Integer> mNumDuplicates = new HashMap<String, Integer>(); // It holds the number of duplicates that have to be inserted
+		Map<String, Integer> mNumDuplicatesFromFresh = new HashMap<String, Integer>(); // It holds the number of duplicates
+		                                                                               // ---among fresh values--- that need to be inserted
+		
+		Queue<String> freshDuplicates = new LinkedList<String>(); // TODO Is this too much memory consuming?
+		int freshGenerated = 0; // Keeps the number of randomly generated values
+		
+		for( Column column : schema.getColumns() ){
+			chasedValues.put(column.getName(), fillChase(column, schema.getTableName(), mNumChases));
+			duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows, mNumDuplicates, mNumDuplicatesFromFresh));
+		}
+		
+		// ----- END INIT ----- //
+		
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
 		PreparedStatement stmt = null;
 		
@@ -63,23 +83,7 @@ public class Generator {
 			
 			// Disable auto-commit
 			dbmsConn.setAutoCommit(false);
-			
-			chasedValues.clear();  
-			duplicateValues.clear();
-			
-			Map<String, Integer> mNumChases = new HashMap<String, Integer>();
-			
-			for( Column column : schema.getColumns() ){
-				chasedValues.put(column.getName(), fillChase(column, schema.getTableName(), mNumChases));
-				duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows));
-			}
-			
-			// TODO With this approach, I do not know how many chased elements I am going to insert
-			// TODO But I can retrieve the number, with a count query (can I?)
-			// TODO Also, please select distinct
-			// TODO I shall not pick all of the dups I have to insert from the original table --- as I am currently doing, wrongly---, but just a 
-			//      suitable percentage from that
-			
+
 			// TODO
 			// What are the domains in which to take random values?
 			// Let's do it later
@@ -91,12 +95,29 @@ public class Generator {
 				int columnIndex = 0;
 				for( Column column : schema.getColumns() ){
 					
-					if( canAdd(nRows, j, column.getNumberChasedElements()) )  
+					if( canAdd(nRows, j, mNumChases.get(column.getName())) )  {
+						
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextChased(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
-					else if( canAdd(nRows, j, column.getNumberToAddP()) )
-						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextDuplicate(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
-					else
-						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextRandom(schema, column));
+					
+					}
+					else if( canAdd(nRows, j, mNumDuplicates.get(column.getName()) ) ){
+						
+						String nextDuplicate = pickNextDupFromOldValues(schema, column);
+						if( nextDuplicate == null ){ // Necessary to start picking duplicates from freshly generated values
+							nextDuplicate = freshDuplicates.poll();
+						}
+						dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+					
+					}
+					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
+						
+						String generatedRandom = random.getRandomValue(column);
+						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
+						// Add the random value to the "toInsert" duplicates
+						if( ++freshGenerated < mNumDuplicatesFromFresh.get(column.getName()) ){
+							freshDuplicates.add(generatedRandom); 
+						}
+					}
 				}
 				stmt.addBatch();
 			} 
@@ -112,9 +133,10 @@ public class Generator {
 	 * @param column
 	 * @param tableName
 	 * @param nRowsToInsert
-	 * @return A result set containing the number of duplicates that need to be inserted
+	 * @return A result set containing the number of duplicates---taken from the original set--- that need to be inserted
 	 */
-	private ResultSet fillDuplicates(Column column, String tableName, int nRowsToInsert) {
+	private ResultSet fillDuplicates(Column column, String tableName, int nRowsToInsert, 
+			Map<String, Integer> mNumDuplicates, Map<String, Integer> mNumDuplicatesFromFresh) {
 		
 		ResultSet result = null;
 		
@@ -123,19 +145,19 @@ public class Generator {
 		
 		int curRows = statistics.nRows(column.getName(), tableName);
 		
-		int nDups = Math.round((nRowsToInsert + curRows) * ratio); 
+		int nDups = Math.round((nRowsToInsert + curRows) * ratio); // This is the total number of duplicates that need to be inserted
 		
-		if(nDups > curRows)
-			nDups = curRows;
+		mNumDuplicates.put(tableName, nDups);
 		
-		if(curRows - nDups < 0){
-			logger.debug(tableName);
-			logger.debug(curRows);
-			logger.debug(nDups);
-			logger.debug("ratio: "+ratio);
-		}
-		int indexMin = random.getRandomInt(curRows - nDups);
-		int indexMax = indexMin + nDups;
+		// Now, establish how many rows I want to take from the current content
+		int nDupsFromCurCol = Math.round(curRows * ratio);
+		
+		// And how many rows I want to take from fresh randomly generated values.
+		mNumDuplicatesFromFresh.put(tableName, nDups - nDupsFromCurCol);
+		
+		// Point to the rows that I want to duplicate
+		int indexMin = random.getRandomInt(curRows - nDupsFromCurCol);
+		int indexMax = indexMin + nDupsFromCurCol;
 		
 		String queryString = "SELECT "+column.getName()+ " FROM "+tableName+" LIMIT "+indexMin+", "+indexMax;
 		
@@ -184,7 +206,12 @@ public class Generator {
 				
 				PreparedStatement stmt1 = dbmsConn.getPreparedStatement(queryCount);
 				ResultSet rs1 = stmt1.executeQuery();
-				mNumChases.put(column.getName(), rs1.getInt(1));
+				if(mNumChases.containsKey(column.getName())){
+					mNumChases.put(column.getName(), mNumChases.get(column.getName()) + rs.getInt(1)); // Add to the current value
+				}
+				else{
+					mNumChases.put(column.getName(), rs1.getInt(1)); // Create a new entry for the column
+				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -192,7 +219,7 @@ public class Generator {
 		return result;
 	}
 
-	private String pickNextDuplicate(Schema schema, Column column) {
+	private String pickNextDupFromOldValues(Schema schema, Column column) {
 		
 		ResultSet duplicatesToInsert = duplicateValues.get(column.getName());
 		String result = null;
@@ -204,10 +231,6 @@ public class Generator {
 			e.printStackTrace();
 		}
 		return result;
-	}
-
-	private String pickNextRandom(Schema schema, Column column) {
-		return null;
 	}
 
 	private String pickNextChased(Schema schema, Column column) {
