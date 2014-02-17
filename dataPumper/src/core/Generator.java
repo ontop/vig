@@ -14,10 +14,12 @@ import basicDatatypes.*;
 
 import org.apache.log4j.Logger;
 
+import utils.Statistics;
+
 public class Generator {
 	private DBMSConnection dbmsConn;
 	private RandomDBValuesGenerator random;
-	private Statistics statistics;
+	private Distribution distribution;
 	
 	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
@@ -28,7 +30,7 @@ public class Generator {
 	public Generator(DBMSConnection dbmsConn){
 		this.dbmsConn = dbmsConn;
 		random = new RandomDBValuesGenerator();
-		this.statistics = new Statistics(dbmsConn);
+		this.distribution = new Distribution(dbmsConn);
 		
 		chasedValues = new HashMap<String, Queue<ResultSet>>();
 		duplicateValues = new HashMap<String, ResultSet>();
@@ -103,11 +105,14 @@ public class Generator {
 					}
 					else if( canAdd(nRows, j, mNumDuplicates.get(column.getName()) ) ){
 						
+						Statistics.addInt(schema.getTableName()+"."+column.getName()+" canAdd", 1);
+						
 						String nextDuplicate = pickNextDupFromOldValues(schema, column);
 						if( nextDuplicate == null ){ // Necessary to start picking duplicates from freshly generated values
 							if( !mFreshDuplicates.containsKey(column.getName()) )
 								logger.error("No fresh duplicates available for column "+column.getName() );
 							nextDuplicate = mFreshDuplicates.get(column.getName()).poll();
+							logger.debug("Polling");
 							if( nextDuplicate == null ) {
 								logger.error("No good poll action");	
 							}
@@ -115,8 +120,11 @@ public class Generator {
 							dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
 					}
 					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
+						
 						String generatedRandom = random.getRandomValue(column);
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
+						
+						Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
 						
 						// Add the random value to the "toInsert" duplicates
 						int freshGenerated = mFreshGenerated.get(column.getName());
@@ -150,7 +158,8 @@ public class Generator {
 		ResultSet result = null;
 		
 		// First of all, I need to understand the distribution of duplicates. Window analysis!
-		float ratio = statistics.naiveStrategy(column.getName(), tableName);
+		float ratio = distribution.naiveStrategy(column.getName(), tableName);
+		Statistics.addFloat(tableName+"."+column.getName()+" dups ratio", ratio);
 		
 		if( ratio == 0 ){
 			mNumDuplicates.put(column.getName(), 0);
@@ -158,11 +167,15 @@ public class Generator {
 			return null; // Either no duplicates or no row at all
 		}
 		
-		int curRows = statistics.nRows(column.getName(), tableName);
+		int curRows = distribution.nRows(column.getName(), tableName);
 		
 		int nDups = /*Math.round*/(int)((nRowsToInsert + curRows) * ratio); // This is the total number of duplicates that have to be in the final table
 		
-		int toAddDups = nDups - (curRows - statistics.sizeProjection(column.getName(), tableName));
+		Statistics.addInt(tableName+"."+column.getName()+"final total dups", nDups);
+		
+		int toAddDups = nDups - (curRows - distribution.sizeProjection(column.getName(), tableName));
+		
+		Statistics.addInt(tableName+"."+column.getName()+"to add dups", toAddDups);
 		
 		mNumDuplicates.put(column.getName(), toAddDups);
 		
@@ -287,7 +300,8 @@ public class Generator {
 	private boolean canAdd(int total, int current, int modulo) {
 		if(modulo == 0 || current == 0) return false;
 		if(current == total-1 && modulo != 0) return true;
-		
-		return current % (total / modulo) == 0;
+		float thing = (float)current % ((float)total / (float)modulo);
+		logger.debug(thing);
+		return thing < 1;
 	}
 };

@@ -10,12 +10,12 @@ import utils.Pair;
 import connection.DBMSConnection;
 import core.test.GeneratorTest;
 
-public class Statistics {
+public class Distribution {
 	private DBMSConnection dbmsConn;
 	
-	private static Logger logger = Logger.getLogger(Statistics.class.getCanonicalName());
+	private static Logger logger = Logger.getLogger(Distribution.class.getCanonicalName());
 	
-	public Statistics(DBMSConnection dbmsConn){
+	public Distribution(DBMSConnection dbmsConn){
 		this.dbmsConn = dbmsConn;
 	}
 	

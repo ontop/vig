@@ -12,13 +12,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import basicDatatypes.Schema;
+import utils.Statistics;
 import connection.DBMSConnection;
 import core.Generator;
 
@@ -122,7 +120,15 @@ public class GeneratorTest {
 		
 		Generator gen = new Generator(db);
 		
-		gen.pumpTable(3, db.getSchema("trivial"));
+		gen.pumpTable(20, db.getSchema("trivial"));
+				
+		assertEquals(6, Statistics.getIntStat("trivial.id canAdd"));
+		
+		try {
+			init.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
