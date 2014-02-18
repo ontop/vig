@@ -2,25 +2,30 @@ package core;
 
 import java.util.Random;
 
+import org.apache.log4j.Logger;
+
+import core.test.GeneratorTest;
 import basicDatatypes.Column;
 import basicDatatypes.Schema;
 
 public class RandomDBValuesGenerator {
 	private Random rand;
-	private int cnt;
+	private int cnt; 
+	
+	private static Logger logger = Logger.getLogger(RandomDBValuesGenerator.class.getCanonicalName());
 	
 	public RandomDBValuesGenerator(){
 		rand = new Random();
 		cnt = 0;
 	}
 	
-	public String getRandomValue(Column column){
+	public String getRandomValue(Column column, int nRows){
 		
 		String result = null;
 		
 		switch(column.getType()){
 		case INT: {
-			Integer resultInt = getRandomInt(column);
+			Integer resultInt = getRandomInt(column, nRows);
 			result = resultInt.toString();
 			break;
 		}
@@ -54,7 +59,7 @@ public class RandomDBValuesGenerator {
 		return result;
 	}
 	
-	public int getRandomInt(Column column){
+	public int getRandomInt(Column column, int nRows){
 //		Domain<Integer> dom = (Domain<Integer>) schema.getDomain(colName);
 //		if( dom.isDbIndependent() ){
 //			return dom.getValues().get(rand.nextInt(dom.getValues().size()));
@@ -62,13 +67,27 @@ public class RandomDBValuesGenerator {
 //		else if( schema.allDifferent(colName) ){
 //			return ++cnt; // To be sure they are all different 
 //		}
-//		int max = dom.max.intValue();
-//		int min = dom.min.intValue();
-//		
-//		return max == min ? 
-//				rand.nextInt() % 100000 : rand.nextInt( max - min ) + min;
 		
-		return rand.nextInt(10000000);
+		if( column.isAllDifferent() ){
+//			logger.debug("isAllDiff");
+			int allDiffCnt = (int)column.getLastInserted();
+			column.setLastInserted(++allDiffCnt);
+			
+			return allDiffCnt;
+		}
+		
+		if( column.getMaxValue() - column.getMinValue() < nRows ){ // TODO Maybe nRows is a too small value in the comparison
+			// Not enough space to generate all rows
+			// Choose a random number
+			return rand.nextInt(100000000);
+		}
+		
+		// Normal stuff. Pick a random in the interval
+		int max = (int)column.getMaxValue();
+		int min = (int)column.getMinValue();
+		
+		return max == min ? 
+				rand.nextInt() % 100000 : rand.nextInt( max - min ) + min;		
 	}
 	
 	public String getRandomString(Column column){

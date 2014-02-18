@@ -216,8 +216,20 @@ public class DBMSConnection {
 				schema.addColumn(result.getString(1), result.getString(2));
 				
 				// Primary keys need to be all different
-				if( result.getString(3).equals("PRI") ) 
+				logger.info(result.getString(4));
+				if( result.getString(4).equals("PRI") ){
+					// Now. This means that every column participating in a primary key will have the 
+					// allDifferent boolean set to TRUE. This implies that every freshly generated value will be different
+					// than what already there. However, if one of these columns contains duplicates, then duplicates
+					// will be inserted in that column as well (look at pumpTable, "canAdd" method).
+					// Meaning that there is the possibility that a duplicate ROW is generated.
+					// TODO Think about a fix.
+					// 1) FactPages has got multicolumn pks.
+					// 2) Maybe just SET check false, so that when it will re-set check TRUE then duplicate rows 
+					//    will be automatically removed.
+					
 					schema.getColumn(result.getString(1)).setAllDifferent();
+				}
 			}
 			
 			// Now let's retrieve foreign keys
@@ -237,6 +249,10 @@ public class DBMSConnection {
 				schema.getColumn(result.getString(2))
 				.referencesTo().add(new QualifiedName(result.getString(4), result.getString(5)));
 			}
+		
+			// Now, let's fill the Min & Max information
+			fillDomainBoundaries(schema);
+		
 		}
 		catch(SQLException e){
 			e.printStackTrace();
@@ -276,76 +292,72 @@ public class DBMSConnection {
 	}
 	
 	/**
-	 * 
+	 * TODO Complete the switch
+	 * TODO Since I have dates and polygons, maybe it is better to use String fields rather than doubles
 	 * @param s
 	 * @return
 	 * 
 	 * Types in FactPages db
 	 * int, datetime, varchar, decimal, char, text, longtext, point, linestring, polygon, multipolygon, multilinestring
 	 */
-//	public void fillDomainBoundaries(Schema s){
-//		
-//		Map<String, Domain<?>> domains = new HashMap<String, Domain<?>>();
-//
-//		try {
-//			Template t = new Template("select ? from "+s.getTableName()+";");
-//			PreparedStatement stmt;
-//						
-//			for( String colName : s.getColNames() ){
-//				
-//				switch(s.getType(colName)){
-//				case INT : {
-//					
-//					// TODO One has to understand whether the domain is dependent to the db size or not.
-//					boolean independent = false;
-//					if(isIndependent()) independent = true; 
-//					
-//					t.setNthPlaceholder(1, "min("+colName+"), max("+colName+")");
-//					
-//					stmt = conn.prepareStatement(t.getFilled());
-//					ResultSet result = stmt.executeQuery();
-//										
-//					while( result.next() ){
-//						domains.put(colName, new Domain<Integer>(result.getInt(1), result.getInt(2)));
-//					}
-//					break;
-//				}
-//				case CHAR : {
-//					break;
-//				}
-//				case VARCHAR : {
-//					break;
-//				}
-//				case TEXT : {
-//					break;
-//				}
-//				case LONGTEXT : {
-//					break;
-//				}
-//				case DATETIME : {
-//					// Not sure whether etc.
-//					break;
-//				}
-//				case POINT : {
-//					break;
-//				}
-//				case LINESTRING : {
-//					break;
-//				}
-//				case MULTILINESTRING : {
-//					break;
-//				}
-//				case POLYGON : {
-//					break;
-//				}
-//				case MULTIPOLYGON : {
-//					break;
-//				}
-//				}
-//			}
-//		}catch(SQLException e){
-//			e.printStackTrace();
-//		}
-//		s.setDomains(domains);
-//	}	
+	private void fillDomainBoundaries(Schema s){
+		
+		try {
+			Template t = new Template("select ? from "+s.getTableName()+";");
+			PreparedStatement stmt;
+						
+			for( Column c : s.getColumns() ){
+				String colName = c.getName();
+				
+				switch(c.getType()){
+				case INT : {
+										
+					t.setNthPlaceholder(1, "min("+colName+"), max("+colName+")");
+					
+					stmt = connection.prepareStatement(t.getFilled());
+					ResultSet result = stmt.executeQuery();
+										
+					if( result.next() ){
+						c.setMinValue(result.getInt(1));
+						c.setMaxValue(result.getInt(2));
+					}
+					break;
+				}
+				case CHAR : {
+					break;
+				}
+				case VARCHAR : {
+					break;
+				}
+				case TEXT : {
+					break;
+				}
+				case LONGTEXT : {
+					break;
+				}
+				case DATETIME : {
+					// Not sure whether etc.
+					break;
+				}
+				case POINT : {
+					break;
+				}
+				case LINESTRING : {
+					break;
+				}
+				case MULTILINESTRING : {
+					break;
+				}
+				case POLYGON : {
+					break;
+				}
+				case MULTIPOLYGON : {
+					break;
+				}
+				}
+			}
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+	}	
 };

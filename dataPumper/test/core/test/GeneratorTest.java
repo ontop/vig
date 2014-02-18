@@ -33,15 +33,15 @@ public class GeneratorTest {
 	private static String username = "test";
 	private static String password = "ontop2014";
 	
-	private static String jdbcConnector1 = "jdbc:mysql";
-	private static String databaseUrl1 = "10.7.20.39:3306/npd";
-	private static String username1 = "fish";
-	private static String password1 = "fish";
+//	private static String jdbcConnector1 = "jdbc:mysql";
+//	private static String databaseUrl1 = "10.7.20.39:3306/npd";
+//	private static String username1 = "fish";
+//	private static String password1 = "fish";
 	
 	private static DBMSConnection db;
-	private static DBMSConnection db1;
+//	private static DBMSConnection db1;
 	private static Connection conn;
-	private static Connection conn1;
+//	private static Connection conn1;
 	
 	// Parameters
 	private static int nRowsToInsert = 10;
@@ -53,15 +53,15 @@ public class GeneratorTest {
 	public static void setUp(){
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		conn = db.getConnection();
-		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
-		conn1 = db1.getConnection();
+//		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
+//		conn1 = db1.getConnection();
 	}
 	
 	@AfterClass
 	public static void tearDown(){
 		try {
 			conn.close();
-			conn1.close();
+//			conn1.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -82,7 +82,7 @@ public class GeneratorTest {
 		long startTime = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("trivial"));
 		long endTime = System.currentTimeMillis();
-		logger.debug("Pumping time to insert "+nRowsToInsert+" columns: "+(endTime - startTime)+" msec.");
+		logger.info("Pumping time to insert "+nRowsToInsert+" rows: "+(endTime - startTime)+" msec.");
 		
 		String query = "SELECT count(*) FROM trivial";
 		
@@ -128,8 +128,36 @@ public class GeneratorTest {
 			init.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}		
+	}
+	
+	@Test
+	public void testUnaryPkey(){
+		PreparedStatement init = db.getPreparedStatement("DELETE FROM pkeyTest");
+		
+		try {
+			init.execute();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
 		}
 		
+		Generator gen = new Generator(db);
+		
+		gen.pumpTable(1000, db.getSchema("pkeyTest"));
+		
+		// Get the count of the final number of rows
+		PreparedStatement check = db.getPreparedStatement("SELECT count(distinct id) FROM pkeyTest");
+		
+		try {
+			ResultSet result = check.executeQuery();
+			result.next();
+			logger.info(result.getInt(1));
+			assertEquals(1000, result.getInt(1));
+			
+//			init.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 //	@Test
@@ -181,22 +209,4 @@ public class GeneratorTest {
 //		
 //		System.out.println(gen.createInsertTemplate(schema));
 //	}
-	
-	@Test
-	public void testSomething(){
-		
-		try {
-			PreparedStatement stmt = conn1.prepareStatement("select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where TABLE_NAME='baaArea' and constraint_schema = 'npd' and REFERENCED_TABLE_NAME != 'null'");
-						
-			ResultSet rs = stmt.executeQuery();
-			
-			while(rs.next()){
-				System.out.println(rs.getString(1) + "   " + rs.getString(2));
-			}
-		
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-	}
 }

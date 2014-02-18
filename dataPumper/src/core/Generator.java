@@ -12,6 +12,7 @@ import connection.DBMSConnection;
 import core.test.GeneratorTest;
 import basicDatatypes.*;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import utils.Statistics;
@@ -34,6 +35,8 @@ public class Generator {
 		
 		chasedValues = new HashMap<String, Queue<ResultSet>>();
 		duplicateValues = new HashMap<String, ResultSet>();
+		
+		logger.setLevel(Level.INFO);
 	}
 	
 	/**
@@ -121,7 +124,7 @@ public class Generator {
 					}
 					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
 						
-						String generatedRandom = random.getRandomValue(column);
+						String generatedRandom = random.getRandomValue(column, nRows);
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 						
 						Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);

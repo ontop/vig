@@ -14,14 +14,45 @@ public class Column{
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
 	private List<QualifiedName> referencedBy; // that.name subseteq this.name
 	
+	private double maxValue;
+	private double minValue;
+	private double lastInserted; // In case of allDifferent
+	
 	public Column(String name, MySqlDatatypes type){
 		this.name = name;
 		this.type = type;
 		this.independent = false;
 		this.allDifferent = false;
 		this.autoincrement = false;
+		this.maxValue = 0;
+		this.minValue = 0;
+		this.lastInserted = 0;
 		referencesTo = new ArrayList<QualifiedName>();
 		referencedBy = new ArrayList<QualifiedName>();
+	}
+	
+	public void setLastInserted(double lastInserted){
+		this.lastInserted = lastInserted;
+	}
+	
+	public double getLastInserted(){
+		return lastInserted;
+	}
+	
+	public void setMaxValue(double max){
+		maxValue = max;
+	}
+	
+	public double getMaxValue(){
+		return maxValue;
+	}
+	
+	public void setMinValue(double min){
+		minValue = min;
+	}
+	
+	public double getMinValue(){
+		return minValue;
 	}
 	
 	public void setAutoIncrement(){
