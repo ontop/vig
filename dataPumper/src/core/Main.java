@@ -41,7 +41,7 @@ public class Main {
 		while(schemas.hasNext()){
 			Schema schema = schemas.dequeue();
 			List<Schema> toChase = null;
-			if(schema.isFilled()){
+			if(schema.isFilled()){ // 
 				toChase = gen.pumpTable(0, schema);
 			}
 			else{
