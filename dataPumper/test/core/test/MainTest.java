@@ -1,0 +1,79 @@
+package core.test;
+
+import static org.junit.Assert.*;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import basicDatatypes.Schema;
+import basicDatatypes.Template;
+import connection.DBMSConnection;
+import core.Main;
+
+public class MainTest {
+	
+	private static String jdbcConnector = "jdbc:mysql";
+	private static String databaseUrl = "10.7.20.39:3306/pumperTest";
+	private static String username = "test";
+	private static String password = "ontop2014";
+	
+	private static DBMSConnection db;
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		
+		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
+		// INIT
+		db.setForeignCheckOff();
+		for( String sName : db.getAllTableNames() ){
+			
+			Template temp = new Template("delete from ?");
+			temp.setNthPlaceholder(1, sName);
+			
+			PreparedStatement init = db.getPreparedStatement(temp);
+			
+			try {
+				init.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		db.setForeignCheckOn();
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+		// INIT
+		db.setForeignCheckOff();
+		for( String sName : db.getAllTableNames() ){
+					
+			Template temp = new Template("delete from ?");
+			temp.setNthPlaceholder(1, sName);
+			
+			PreparedStatement init = db.getPreparedStatement(temp);
+			
+			try {
+				init.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		db.setForeignCheckOn();
+		db.close();
+	}
+	
+	@Test
+	public void testPumpDatabase() {
+		Main main = new Main();
+		
+		db.setForeignCheckOff();
+		db.setUniqueCheckOff();
+		main.pumpDatabase(db, 1000000);
+		db.setUniqueCheckOn();
+		db.setForeignCheckOn();
+	}
+}
