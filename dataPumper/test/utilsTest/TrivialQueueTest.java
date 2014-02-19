@@ -18,6 +18,7 @@ public class TrivialQueueTest {
 
 	@Test
 	public void testEnqueueDequeue(){
+		
 		queue.enqueue(1);
 		queue.enqueue(2);
 		queue.enqueue(3);
@@ -31,4 +32,14 @@ public class TrivialQueueTest {
 		assertTrue(queue.toString().equals("[2, 3]"));
 	}
 
+	@Test
+	public void testContains(){
+		queue.enqueue(1);
+		queue.enqueue(2);
+		queue.enqueue(3);
+		
+		queue.contains(1);
+		
+		assertTrue(queue.contains(1));
+	}
 }

@@ -154,10 +154,30 @@ public class GeneratorTest {
 			logger.info(result.getInt(1));
 			assertEquals(1000, result.getInt(1));
 			
-//			init.execute();
+			init.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testForeignKeysBinary(){
+		// fKeyA.value -> fKeyB.value
+		// fKeyB.id -> fKeyA.id
+		
+		PreparedStatement init = db.getPreparedStatement("DELETE FROM fKeyA");
+		PreparedStatement init1 = db.getPreparedStatement("DELETE FROM fkeyB");
+		
+		try {
+			init.execute();
+			init1.execute();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		
+		Generator gen = new Generator(db);
+		
+//		gen.p TODO pumpDatabase needed.
 	}
 	
 //	@Test

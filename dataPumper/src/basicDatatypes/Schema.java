@@ -8,10 +8,21 @@ import basicDatatypes.MySqlDatatypes;
 public class Schema{
 	private List<Column> columns;
 	private final String tableName;  // Final in order to avoid the well-known "mutability" problem with the <i>equals</i> method.
+	
+	private boolean filledFlag; // It keeps the information whether this schema has been already pumped once
 
 	public Schema(String tableName){
 		this.tableName = tableName;
 		columns = new ArrayList<Column>();
+		filledFlag = false;
+	}
+	
+	public void setFilled(){
+		filledFlag = true;
+	}
+	
+	public boolean isFilled(){
+		return filledFlag;
 	}
 	
 	public void addColumn(String colName, String typeString){
@@ -52,7 +63,7 @@ public class Schema{
 	}
 	
 	public String toString(){
-		return columns.toString();
+		return tableName;
 	}
 
 	public boolean isIndependent() {
@@ -70,4 +81,5 @@ public class Schema{
 		return this.getTableName().hashCode();
 		
 	}
+	
 }

@@ -4,9 +4,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import core.test.GeneratorTest;
 import basicDatatypes.Column;
-import basicDatatypes.Schema;
 
 public class RandomDBValuesGenerator {
 	private Random rand;

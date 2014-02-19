@@ -189,7 +189,7 @@ public class DBMSConnection {
 	// It allows to 
 	private void fillDatabaseSchemas(){
 		
-		for( String tableName : getAllTableNamesOf(getDbName()) ){
+		for( String tableName : getAllTableNames() ){
 			schemas.put(tableName, fillTableSchema(tableName));
 		}
 		
@@ -262,10 +262,11 @@ public class DBMSConnection {
 	/**
 	 * It retrieves all the table names from the database
 	 * 
-	 * @param dbName
 	 * @return 
 	 */
-	public List<String> getAllTableNamesOf(String dbName){
+	public List<String> getAllTableNames(){
+		
+		String dbName = getDbName();
 		
 		List<String> tableNames = new LinkedList<String>();
 		
@@ -360,4 +361,36 @@ public class DBMSConnection {
 			e.printStackTrace();
 		}
 	}	
+	public void setForeignCheckOff(){
+		try {
+			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0");
+			stmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	public void setForeignCheckOn(){
+		try{
+			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1");
+			stmt.execute();
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+	}
+	public void setUniqueCheckOff(){
+		try {
+			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0");
+			stmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	public void setUniqueCheckOn(){
+		try{
+			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1");
+			stmt.execute();
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+	}
 };

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -38,7 +39,7 @@ public class Generator {
 		
 		logger.setLevel(Level.INFO);
 	}
-	
+		
 	/**
 	 * @author tir
 	 * @param tableName
@@ -56,7 +57,7 @@ public class Generator {
 	 * Domain independend columns can also be inferred, by looking at the projection and comparing it 
 	 * against the total number of tuples in the table <b>tableName</b>
 	 */
-	public void pumpTable(int nRows, Schema schema){		
+	public List<Schema> pumpTable(int nRows, Schema schema){		
 		
 		// INIT
 
@@ -81,6 +82,8 @@ public class Generator {
 		
 		// ----- END INIT ----- //
 		
+		List<Schema> tablesToChase = new LinkedList<Schema>();
+		
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
 		PreparedStatement stmt = null;
 		
@@ -91,9 +94,15 @@ public class Generator {
 			// Disable auto-commit
 			dbmsConn.setAutoCommit(false);
 
-			// TODO
-			// What are the domains in which to take random values?
-			// Let's do it later
+			if( nRows == 0 ){ // This is a pure-chase phase. And it is also THE ONLY place where I need to chase
+				// I need to generate (at least) as many rows as the maximum among the chases
+				int max = 0;
+				for( String key: mNumChases.keySet() ){
+					if( max < mNumChases.get(key) )
+						max = mNumChases.get(key);
+				}
+				nRows = max; // Set the number of rows that need to be inserted.
+			}
 			
 			// TODO The max_cycle thing
 			for( int j = 0; j < nRows; ++j ){
@@ -120,7 +129,7 @@ public class Generator {
 								logger.error("No good poll action");	
 							}
 						}
-							dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+						dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
 					}
 					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
 						
@@ -136,16 +145,26 @@ public class Generator {
 							mFreshGenerated.put(column.getName(), freshGenerated);
 							mFreshDuplicates.get(column.getName()).add(generatedRandom);
 						}
+						// New values inserted imply new column to chase
+						for( QualifiedName qN : column.referencesTo() ){
+							if( !tablesToChase.contains(dbmsConn.getSchema(qN.getTableName())) ){
+								tablesToChase.add(dbmsConn.getSchema(qN.getTableName()));
+							}
+						}
 					}
 				}
 				stmt.addBatch();
+//				stmt.executeBatch();	
+//				dbmsConn.commit();
 			} 
 			stmt.executeBatch();	
 			dbmsConn.commit();
 		} catch (SQLException e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 		dbmsConn.setAutoCommit(true);
+		return tablesToChase;
 	}
 
 	/**
@@ -164,7 +183,7 @@ public class Generator {
 		float ratio = distribution.naiveStrategy(column.getName(), tableName);
 		Statistics.addFloat(tableName+"."+column.getName()+" dups ratio", ratio);
 		
-		if( ratio == 0 ){
+		if( (ratio == 0) || (nRowsToInsert == 0) ){ // Rows to insert are zero if I need to chase values, only
 			mNumDuplicates.put(column.getName(), 0);
 			mNumDuplicatesFromFresh.put(column.getName(), 0);
 			return null; // Either no duplicates or no row at all
@@ -244,11 +263,16 @@ public class Generator {
 				
 				PreparedStatement stmt1 = dbmsConn.getPreparedStatement(queryCount);
 				ResultSet rs1 = stmt1.executeQuery();
-				if(mNumChases.containsKey(column.getName())){
-					mNumChases.put(column.getName(), mNumChases.get(column.getName()) + rs.getInt(1)); // Add to the current value
+				if(rs1.next()){
+					if(mNumChases.containsKey(column.getName())){
+						mNumChases.put(column.getName(), mNumChases.get(column.getName()) + rs.getInt(1)); // Add to the current value
+					}
+					else{
+						mNumChases.put(column.getName(), rs1.getInt(1)); // Create a new entry for the column
+					}
 				}
 				else{
-					mNumChases.put(column.getName(), rs1.getInt(1)); // Create a new entry for the column
+					logger.error("Empty resultset.");
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();

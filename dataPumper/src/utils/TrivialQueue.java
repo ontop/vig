@@ -13,6 +13,16 @@ public class TrivialQueue<T> {
 		return first.hasNext();
 	}
 	
+	public boolean contains(T element){
+		Entry<T> cursor = first;
+		while( cursor.hasNext() ){
+			cursor = cursor.getNext();
+			if( cursor.getValue().equals(element) )
+				return true;
+		}
+		return false;
+	}
+	
 	public void enqueue(T value){
 		
 		Entry<T> newEntry = new Entry<T>(value);
