@@ -172,7 +172,7 @@ public class Generator {
 					}
 				}
 				stmt.addBatch();
-				if( j % 1000000 == 0 ){ // Let's put a limit to the dimension of the stmt
+				if( j % 1000000 == 0 ){ // Let's put a limit to the dimension of the stmt 
 					stmt.executeBatch();	
 					dbmsConn.commit();
 				}
@@ -184,7 +184,7 @@ public class Generator {
 			e.printStackTrace();
 		}
 		dbmsConn.setAutoCommit(true);
-		return tablesToChase;
+		return tablesToChase; 
 	}
 
 	/**
