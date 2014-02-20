@@ -12,10 +12,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import basicDatatypes.Template;
 import utils.Statistics;
 import connection.DBMSConnection;
 import core.Generator;
@@ -49,8 +52,7 @@ public class GeneratorTest {
 	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
 	@BeforeClass
-	
-	public static void setUp(){
+	public static void setUpBeforeClass(){
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		conn = db.getConnection();
 //		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
@@ -58,13 +60,53 @@ public class GeneratorTest {
 	}
 	
 	@AfterClass
-	public static void tearDown(){
+	public static void tearDownAfterClass(){
 		try {
 			conn.close();
 //			conn1.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Before
+	public void setUp(){
+		// INIT
+		db.setForeignCheckOff();
+		for( String sName : db.getAllTableNames() ){
+			
+			Template temp = new Template("delete from ?");
+			temp.setNthPlaceholder(1, sName);
+			
+			PreparedStatement init = db.getPreparedStatement(temp);
+			
+			try {
+				init.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		db.setForeignCheckOn();
+	}
+	
+	@After
+	public void tearDown(){
+		// INIT
+		db.setForeignCheckOff();
+		for( String sName : db.getAllTableNames() ){
+			
+			Template temp = new Template("delete from ?");
+			temp.setNthPlaceholder(1, sName);
+			
+			PreparedStatement init = db.getPreparedStatement(temp);
+			
+			try {
+				init.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		db.setForeignCheckOn();	
 	}
 	
 	@Test
@@ -160,25 +202,25 @@ public class GeneratorTest {
 		}
 	}
 	
-	@Test
-	public void testForeignKeysBinary(){
-		// fKeyA.value -> fKeyB.value
-		// fKeyB.id -> fKeyA.id
-		
-		PreparedStatement init = db.getPreparedStatement("DELETE FROM fKeyA");
-		PreparedStatement init1 = db.getPreparedStatement("DELETE FROM fkeyB");
-		
-		try {
-			init.execute();
-			init1.execute();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
-		
-		Generator gen = new Generator(db);
-		
-//		gen.p TODO pumpDatabase needed.
-	}
+//	@Test
+//	public void testForeignKeysBinary(){
+//		// fKeyA.value -> fKeyB.value
+//		// fKeyB.id -> fKeyA.id
+//		
+//		PreparedStatement init = db.getPreparedStatement("DELETE FROM fKeyA");
+//		PreparedStatement init1 = db.getPreparedStatement("DELETE FROM fkeyB");
+//		
+//		try {
+//			init.execute();
+//			init1.execute();
+//		} catch (SQLException e1) {
+//			e1.printStackTrace();
+//		}
+//		
+//		Generator gen = new Generator(db);
+//		
+////		gen.p TODO pumpDatabase needed.
+//	}
 	
 //	@Test
 //	public void testPumpDatabase(){

@@ -41,6 +41,7 @@ public class TrivialQueue<T> {
 	public T dequeue(){
 		
 		first = first.getNext();
+		// Is the gc removing here? I do not think I need to manually call a System.gc()...
 		
 		return first.getValue();
 	}

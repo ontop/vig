@@ -54,7 +54,7 @@ public class Generator {
 	 * (that is retrieved by a projection on the database column
 	 *  -- therefore I assume that the db is NON-EMPTY [as in FactPages])
 	 * 
-	 * Domain independend columns can also be inferred, by looking at the projection and comparing it 
+	 * Domain independent columns can also be inferred, by looking at the projection and comparing it 
 	 * against the total number of tuples in the table <b>tableName</b>
 	 */
 	public List<Schema> pumpTable(int nRows, Schema schema){		
@@ -71,14 +71,31 @@ public class Generator {
 		
 		Map<String, Integer> mFreshGenerated = new HashMap<String, Integer>(); // It keeps fresh generated values, column by column
 		Map<String, Queue<String>> mFreshDuplicates = new HashMap<String, Queue<String>>(); // TODO Is this too much memory consuming?
-		
+
+		// Fill chased
 		for( Column column : schema.getColumns() ){
 			chasedValues.put(column.getName(), fillChase(column, schema.getTableName(), mNumChases));
-			duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows, mNumDuplicates, mNumDuplicatesFromFresh));
-			
+			column.incrementCurrentChaseCycle();
 			mFreshGenerated.put(column.getName(), 0);
 			mFreshDuplicates.put(column.getName(), new LinkedList<String>());
 		}
+		
+		if( nRows == 0 ){ // This is a pure-chase phase. And it is also THE ONLY place where I need to chase
+			// I need to generate (at least) as many rows as the maximum among the chases
+			int max = 0;
+			for( String key: mNumChases.keySet() ){
+				if( max < mNumChases.get(key) )
+					max = mNumChases.get(key);
+			}
+			nRows = max; // Set the number of rows that need to be inserted.
+		}
+		
+		// Fill duplicates
+		for( Column column : schema.getColumns() ){
+			duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows, mNumDuplicates, mNumDuplicatesFromFresh));
+		}
+		
+		Map<String, ResultSet> referencedValues = new HashMap<String, ResultSet>();
 		
 		// ----- END INIT ----- //
 		
@@ -94,21 +111,17 @@ public class Generator {
 			// Disable auto-commit
 			dbmsConn.setAutoCommit(false);
 
-			if( nRows == 0 ){ // This is a pure-chase phase. And it is also THE ONLY place where I need to chase
-				// I need to generate (at least) as many rows as the maximum among the chases
-				int max = 0;
-				for( String key: mNumChases.keySet() ){
-					if( max < mNumChases.get(key) )
-						max = mNumChases.get(key);
-				}
-				nRows = max; // Set the number of rows that need to be inserted.
-			}
 			
 			// TODO The max_cycle thing
-			for( int j = 0; j < nRows; ++j ){
+			
+			// Idea: I can say that nRows = number of things that need to be chased, when the maximum
+			// cycle is reached. To test this out
+			for( int j = 1; j <= nRows; ++j ){
 				
 				int columnIndex = 0;
 				for( Column column : schema.getColumns() ){
+										
+					boolean stopChase = (column.referencesTo().size() > 0) && column.getMaximumChaseCycles() < column.getCurrentChaseCycle();
 					
 					if( mNumChases.containsKey(column.getName()) && canAdd(nRows, j, mNumChases.get(column.getName())) )  {
 						
@@ -119,7 +132,7 @@ public class Generator {
 						
 						Statistics.addInt(schema.getTableName()+"."+column.getName()+" canAdd", 1);
 						
-						String nextDuplicate = pickNextDupFromOldValues(schema, column);
+						String nextDuplicate = pickNextDupFromOldValues(schema, column, (column.getCurrentChaseCycle() > column.getMaximumChaseCycles()));
 						if( nextDuplicate == null ){ // Necessary to start picking duplicates from freshly generated values
 							if( !mFreshDuplicates.containsKey(column.getName()) )
 								logger.error("No fresh duplicates available for column "+column.getName() );
@@ -130,6 +143,11 @@ public class Generator {
 							}
 						}
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+					}
+					else if( stopChase ){
+						// We cannot take a chase value, neither we can pick a duplicate. The only way out is 
+						// to tale the necessary number of elements (non-duplicate with this column) from the referenced column(s)
+						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickFromReferenced(schema, column, referencedValues));
 					}
 					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
 						
@@ -154,8 +172,10 @@ public class Generator {
 					}
 				}
 				stmt.addBatch();
-//				stmt.executeBatch();	
-//				dbmsConn.commit();
+				if( j % 1000000 == 0 ){ // Let's put a limit to the dimension of the stmt
+					stmt.executeBatch();	
+					dbmsConn.commit();
+				}
 			} 
 			stmt.executeBatch();	
 			dbmsConn.commit();
@@ -165,6 +185,58 @@ public class Generator {
 		}
 		dbmsConn.setAutoCommit(true);
 		return tablesToChase;
+	}
+
+	/**
+	 * This method, for the moment, assumes that it is possible
+	 * to reference AT MOST 1 TABLE.
+	 * NOT VERY EFFICIENT. If slow, then refactor as the others
+	 * @param schema
+	 * @param column
+	 * @return
+	 */
+	private String pickFromReferenced(Schema schema, Column column, Map<String, ResultSet> referencedValues) {
+		
+		String result = null;
+		
+		if( !referencedValues.containsKey(column.getName()) ){
+			
+			// SELECT referencedColumn FROM referencedTable WHERE referencedColumn NOT IN (select thisColumn from thisTable)
+			Template templ = new Template("SELECT DISTINCT ? FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
+			
+			if( !column.referencesTo().isEmpty() ){
+				QualifiedName refQN = column.referencesTo().get(0);
+				templ.setNthPlaceholder(1, refQN.getColName());
+				templ.setNthPlaceholder(2, refQN.getTableName());
+				templ.setNthPlaceholder(3, refQN.getColName());
+				templ.setNthPlaceholder(4, column.getName());
+				templ.setNthPlaceholder(5, schema.getTableName());
+			}
+			else{
+				logger.error("Cannot access a referenced field");
+			}
+			
+			PreparedStatement stmt = dbmsConn.getPreparedStatement(templ);
+			try {
+				referencedValues.put(column.getName(), stmt.executeQuery());
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		ResultSet rs = referencedValues.get(column.getName());
+		
+		try {
+			if( !rs.next() ){
+				logger.error("Not possible to add a non-duplicate value");
+				throw new SQLException();
+			}
+			result = rs.getString(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return result;
 	}
 
 	/**
@@ -179,44 +251,66 @@ public class Generator {
 		
 		ResultSet result = null;
 		
-		// First of all, I need to understand the distribution of duplicates. Window analysis!
-		float ratio = distribution.naiveStrategy(column.getName(), tableName);
-		Statistics.addFloat(tableName+"."+column.getName()+" dups ratio", ratio);
+		float ratio; // Ratio of the duplicates
+		boolean maxChaseReached = false;
+		// If generating fresh values will lead to a chase, and the maximum number of chases is reached
+		if( (column.referencesTo().size() > 0) && column.getMaximumChaseCycles() < column.getCurrentChaseCycle() ){
+			// It has NOT to produce fresh values
+			// However, if the field is a allDifferent() then I cannot close the chase with a duplicate
+			if( column.isAllDifferent() ){
+				mNumDuplicates.put(column.getName(), 0);
+				mNumDuplicatesFromFresh.put(column.getName(), 0);
+				return null; // Either no duplicates or no row at all
+			}
+			// Else, it is ok to close the cycle with a duplicate
+			ratio = 1;
+			maxChaseReached = true;
+		}
+		else{
+			
+			// First of all, I need to understand the distribution of duplicates. Window analysis!
+			ratio = distribution.naiveStrategy(column.getName(), tableName);
+			Statistics.addFloat(tableName+"."+column.getName()+" dups ratio", ratio);
+		}
 		
-		if( (ratio == 0) || (nRowsToInsert == 0) ){ // Rows to insert are zero if I need to chase values, only
+		if( (ratio == 0) && !maxChaseReached){ // Is not( maxChaseReached ) necessary here? 
 			mNumDuplicates.put(column.getName(), 0);
 			mNumDuplicatesFromFresh.put(column.getName(), 0);
 			return null; // Either no duplicates or no row at all
 		}
 		
 		int curRows = distribution.nRows(column.getName(), tableName);
+		int curDuplicates = (curRows - distribution.sizeProjection(column.getName(), tableName));
 		
-		int nDups = /*Math.round*/(int)((nRowsToInsert + curRows) * ratio); // This is the total number of duplicates that have to be in the final table
+		// This is the total number of duplicates that have to be in the final table
+		int nDups = maxChaseReached ? nRowsToInsert + curDuplicates : (int)((nRowsToInsert + curRows) * ratio); 
+		                                                                   
 		
 		Statistics.addInt(tableName+"."+column.getName()+"final total dups", nDups);
 		
-		int toAddDups = nDups - (curRows - distribution.sizeProjection(column.getName(), tableName));
+		int toAddDups = nDups - curDuplicates;
 		
 		Statistics.addInt(tableName+"."+column.getName()+"to add dups", toAddDups);
 		
 		mNumDuplicates.put(column.getName(), toAddDups);
 		
+		
 		// Now, establish how many rows I want to take from the current content
 		int nDupsFromCurCol = /*Math.round*/(int)((curRows / (curRows + nRowsToInsert)) * ratio);
+		if( maxChaseReached )
+			nDupsFromCurCol = toAddDups;
 		
 		// And how many rows I want to take from fresh randomly generated values.
 		mNumDuplicatesFromFresh.put(column.getName(), toAddDups - nDupsFromCurCol);
 		
 		// Point to the rows that I want to duplicate
-		if( curRows <= nDupsFromCurCol ) logger.error("curRows= "+curRows+", nDupsFromCol= "+nDupsFromCurCol);
-		int indexMin = random.getRandomInt(curRows - nDupsFromCurCol);
-		int indexMax = indexMin + nDupsFromCurCol;
+		if( curRows <= nDupsFromCurCol ){
+			logger.debug("curRows= "+curRows+", nDupsFromCol= "+nDupsFromCurCol);
+			nDupsFromCurCol = curRows; // Just take all of them.
+		}
+		int indexMin = curRows - nDupsFromCurCol == 0 ? 0 : random.getRandomInt(curRows - nDupsFromCurCol);
 		
-		--indexMax; // Because LIMIT 3,4 retrieves 2 columns and NOT 1.
-		
-		if( indexMax < indexMin ) return null;
-		
-		String queryString = "SELECT "+column.getName()+ " FROM "+tableName+" LIMIT "+indexMin+", "+indexMax;
+ 		String queryString = "SELECT "+column.getName()+ " FROM "+tableName+" LIMIT "+indexMin+", "+nDupsFromCurCol;
 		
 		try{
 			PreparedStatement stmt = dbmsConn.getPreparedStatement(queryString);
@@ -281,14 +375,29 @@ public class Generator {
 		return result;
 	}
 
-	private String pickNextDupFromOldValues(Schema schema, Column column) {
+	/**
+	 * 
+	 * @param schema
+	 * @param column
+	 * @param force It forces to pick an element even if the cursor already reached the end
+	 * @return
+	 */
+	private String pickNextDupFromOldValues(Schema schema, Column column, boolean force) {
 		
 		ResultSet duplicatesToInsert = duplicateValues.get(column.getName());
 		if(duplicatesToInsert == null) return null;
 		String result = null;
 		
 		try {
-			if( !duplicatesToInsert.next() ) return null;
+			boolean hasNext = duplicatesToInsert.next();
+			if( !hasNext && force ){
+				duplicatesToInsert.beforeFirst();
+				if( !duplicatesToInsert.next() )
+					logger.error("No duplicate element can be forced");
+			}
+			else if( !hasNext && !force ){
+				return null;
+			}
 			result = duplicatesToInsert.getString(1);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -325,8 +434,8 @@ public class Generator {
 	}
 
 	private boolean canAdd(int total, int current, int modulo) {
-		if(modulo == 0 || current == 0) return false;
-		if(current == total-1 && modulo != 0) return true;
+		if(modulo == 0) return false;
+//		if(current == total-1 && modulo != 0) return true;
 		float thing = (float)current % ((float)total / (float)modulo);
 		logger.debug(thing);
 		return thing < 1;

@@ -9,14 +9,19 @@ public class Column{
 	private boolean allDifferent;
 	private boolean independent;
 	private boolean autoincrement;
-	//	private Domain<T> domain;
-	private int maximumChasedElements;
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
 	private List<QualifiedName> referencedBy; // that.name subseteq this.name
 	
 	private double maxValue;
 	private double minValue;
+
+	// Pumping related properties (as they change during the execution of pumpTable)
+	private int maximumChaseCycles; // The maximum number of times fresh elements should be created for this column 
+	// --- Each fresh element triggers a chase if some other column depends on this column
+	private int currentChaseCycle;  // Number of times that this column triggered a chase during pumping
 	private double lastInserted; // In case of allDifferent
+	
+	// ---------------------- //
 	
 	public Column(String name, MySqlDatatypes type){
 		this.name = name;
@@ -29,6 +34,8 @@ public class Column{
 		this.lastInserted = 0;
 		referencesTo = new ArrayList<QualifiedName>();
 		referencedBy = new ArrayList<QualifiedName>();
+		this.maximumChaseCycles = Integer.MAX_VALUE;
+		this.currentChaseCycle = 0;
 	}
 	
 	public void setLastInserted(double lastInserted){
@@ -79,20 +86,20 @@ public class Column{
 		allDifferent = true;
 	}
 
-//	public Domain<T> getDomain() {
-//		return domain;
-//	}
-//
-//	public void setDomain(Domain<T> domain) {
-//		this.domain = domain;
-//	}
-
-	public int getNumberChasedElements() {
-		return maximumChasedElements;
+	public int getCurrentChaseCycle(){
+		return currentChaseCycle;
+	}
+	
+	public void incrementCurrentChaseCycle(){
+		++currentChaseCycle;
 	}
 
-	public void setNumberChasedElements(int maximumChasedElements) {
-		this.maximumChasedElements = maximumChasedElements;
+	public int getMaximumChaseCycles() {
+		return maximumChaseCycles;
+	}
+
+	public void setMaximumChaseCycles(int maximumChaseCycles) {
+		this.maximumChaseCycles = maximumChaseCycles;
 	}
 
 	public MySqlDatatypes getType() {
@@ -112,7 +119,7 @@ public class Column{
 	}	
 	
 	public String toString(){
-		return "TODO"; //TODO
+		return name;
 	}
 
 	public int getDuplicatesDistribution() {

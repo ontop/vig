@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -21,12 +23,22 @@ public class MainTest {
 	private static String username = "test";
 	private static String password = "ontop2014";
 	
+	private static String jdbcConnector1 = "jdbc:mysql";
+	private static String databaseUrl1 = "localhost/ciao";
+	private static String username1 = "tir";
+	private static String password1 = "";
+	
 	private static DBMSConnection db;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
+
+	}
+	
+	@Before
+	public void setUp(){
 		// INIT
 		db.setForeignCheckOff();
 		for( String sName : db.getAllTableNames() ){
@@ -47,10 +59,16 @@ public class MainTest {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+	
+		db.close();
+	}
+	
+	@After
+	public void tearDown(){
 		// INIT
 		db.setForeignCheckOff();
 		for( String sName : db.getAllTableNames() ){
-					
+			
 			Template temp = new Template("delete from ?");
 			temp.setNthPlaceholder(1, sName);
 			
@@ -62,17 +80,26 @@ public class MainTest {
 				e.printStackTrace();
 			}
 		}
-		db.setForeignCheckOn();
-		db.close();
+		db.setForeignCheckOn();	
 	}
 	
 	@Test
 	public void testPumpDatabase() {
 		Main main = new Main();
 		
+		Schema schemaA = db.getSchema("fKeyA");
+		Schema schemaB = db.getSchema("fKeyB"); 
+		Schema schemaC = db.getSchema("selfDependency");
+		
+		schemaA.getColumn("value").setMaximumChaseCycles(1);
+		schemaB.getColumn("id").setMaximumChaseCycles(1);
+		schemaC.getColumn("id").setMaximumChaseCycles(3);
+		
+		
+		
 		db.setForeignCheckOff();
 		db.setUniqueCheckOff();
-		main.pumpDatabase(db, 1000000);
+		main.pumpDatabase(db, 1);
 		db.setUniqueCheckOn();
 		db.setForeignCheckOn();
 	}
