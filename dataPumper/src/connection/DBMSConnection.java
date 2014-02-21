@@ -218,19 +218,18 @@ public class DBMSConnection {
 				// Primary keys need to be all different
 				logger.info(result.getString(4));
 				if( result.getString(4).equals("PRI") ){
-					// Now. This means that every column participating in a primary key will have the 
-					// allDifferent boolean set to TRUE. This implies that every freshly generated value will be different
-					// than what already there. However, if one of these columns contains duplicates, then duplicates
-					// will be inserted in that column as well (look at pumpTable, "canAdd" method).
-					// Meaning that there is the possibility that a duplicate ROW is generated.
-					// TODO Think about a fix.
-					// 1) FactPages has got multicolumn pks.
-					// 2) Maybe just SET check false, so that when it will re-set check TRUE then duplicate rows 
-					//    will be automatically removed.
 					
-					schema.getColumn(result.getString(1)).setAllDifferent();
+					schema.getColumn(result.getString(1)).setPrimary();
 				}
 			}
+			
+			// Retrieve columns with allDifferent()
+			int cnt = 0;
+			Column ref = null;
+			for( Column c : schema.getColumns() ){
+				if( c.isPrimary() ){ ref = c; ++cnt; }
+			}
+			if( cnt == 1 ) ref.setAllDifferent();
 			
 			// Now let's retrieve foreign keys
 			String informationSchemaQuery = 

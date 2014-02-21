@@ -8,12 +8,15 @@ import basicDatatypes.MySqlDatatypes;
 public class Schema{
 	private List<Column> columns;
 	private final String tableName;  // Final in order to avoid the well-known "mutability" problem with the <i>equals</i> method.
+	private List<Column> primaryKeys;
 	
+	// Fields related to the pumping
 	private boolean filledFlag; // It keeps the information whether this schema has been already pumped once
 
 	public Schema(String tableName){
 		this.tableName = tableName;
 		columns = new ArrayList<Column>();
+		primaryKeys = new ArrayList<Column>();
 		filledFlag = false;
 	}
 	
@@ -76,10 +79,21 @@ public class Schema{
 		
 		return this.getTableName().equals(((Schema)s).getTableName());
 	}
+	
 	@Override
 	public int hashCode(){
 		return this.getTableName().hashCode();
 		
 	}
-	
+	public List<Column> getPks(){
+		if( primaryKeys.size() == 0 ){
+			
+			// INIT
+			for( Column c : columns ){
+				if( c.isPrimary() )
+					primaryKeys.add(c);
+			}
+		}
+		return primaryKeys;
+	}
 }

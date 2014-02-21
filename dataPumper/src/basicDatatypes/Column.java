@@ -7,6 +7,7 @@ public class Column{
 	private final String name;
 	private final MySqlDatatypes type;
 	private boolean allDifferent;
+	private boolean primary;
 	private boolean independent;
 	private boolean autoincrement;
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
@@ -26,6 +27,7 @@ public class Column{
 	public Column(String name, MySqlDatatypes type){
 		this.name = name;
 		this.type = type;
+		this.primary = false;
 		this.independent = false;
 		this.allDifferent = false;
 		this.autoincrement = false;
@@ -36,6 +38,14 @@ public class Column{
 		referencedBy = new ArrayList<QualifiedName>();
 		this.maximumChaseCycles = Integer.MAX_VALUE;
 		this.currentChaseCycle = 0;
+	}
+	
+	public void setPrimary(){
+		primary = true;
+	}
+	
+	public boolean isPrimary(){
+		return primary;
 	}
 	
 	public void setLastInserted(double lastInserted){

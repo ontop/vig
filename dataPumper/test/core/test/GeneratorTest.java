@@ -202,6 +202,27 @@ public class GeneratorTest {
 		}
 	}
 	
+	@Test
+	public void testBinaryPkey(){
+		
+		Generator gen = new Generator(db);
+		
+		PreparedStatement insertions = 
+				db.getPreparedStatement("INSERT INTO testBinaryKey VALUES (1, 1, 'ciao'), (1, 2, 'ciriciao'), (2, 2, 'ciriciriciao')");
+		
+		try {
+			insertions.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(10000, db.getSchema("testBinaryKey"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+10000+" rows: " + (end - start) + " msec.");
+	}
+	
 //	@Test
 //	public void testForeignKeysBinary(){
 //		// fKeyA.value -> fKeyB.value
