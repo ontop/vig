@@ -187,7 +187,7 @@ public class DBMSConnection {
 	}
 	
 	// It allows to 
-	private void fillDatabaseSchemas(){
+	public void fillDatabaseSchemas(){
 		
 		for( String tableName : getAllTableNames() ){
 			schemas.put(tableName, fillTableSchema(tableName));
@@ -320,6 +320,7 @@ public class DBMSConnection {
 					if( result.next() ){
 						c.setMinValue(result.getInt(1));
 						c.setMaxValue(result.getInt(2));
+						c.setLastInserted(result.getInt(2));
 					}
 					break;
 				}

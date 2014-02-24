@@ -13,14 +13,16 @@ public class Column{
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
 	private List<QualifiedName> referencedBy; // that.name subseteq this.name
 	
-	private double maxValue;
-	private double minValue;
+	private int maxValue;
+	private int minValue;
 
 	// Pumping related properties (as they change during the execution of pumpTable)
+	
 	private int maximumChaseCycles; // The maximum number of times fresh elements should be created for this column 
 	// --- Each fresh element triggers a chase if some other column depends on this column
 	private int currentChaseCycle;  // Number of times that this column triggered a chase during pumping
-	private double lastInserted; // In case of allDifferent
+	private int lastInserted; // In case of allDifferent
+	private float duplicatesRatio;
 	
 	// ---------------------- //
 	
@@ -38,6 +40,15 @@ public class Column{
 		referencedBy = new ArrayList<QualifiedName>();
 		this.maximumChaseCycles = Integer.MAX_VALUE;
 		this.currentChaseCycle = 0;
+		this.duplicatesRatio = 0;
+	}
+	
+	public void setDuplicateRatio(float ratio){
+		duplicatesRatio = ratio;
+	}
+	
+	public float getDuplicateRatio(){
+		return duplicatesRatio;
 	}
 	
 	public void setPrimary(){
@@ -48,27 +59,27 @@ public class Column{
 		return primary;
 	}
 	
-	public void setLastInserted(double lastInserted){
+	public void setLastInserted(int lastInserted){
 		this.lastInserted = lastInserted;
 	}
 	
-	public double getLastInserted(){
+	public int getLastInserted(){
 		return lastInserted;
 	}
 	
-	public void setMaxValue(double max){
+	public void setMaxValue(int max){
 		maxValue = max;
 	}
 	
-	public double getMaxValue(){
+	public int getMaxValue(){
 		return maxValue;
 	}
 	
-	public void setMinValue(double min){
+	public void setMinValue(int min){
 		minValue = min;
 	}
 	
-	public double getMinValue(){
+	public int getMinValue(){
 		return minValue;
 	}
 	

@@ -22,6 +22,8 @@ import basicDatatypes.Template;
 import utils.Statistics;
 import connection.DBMSConnection;
 import core.Generator;
+import core.Generator2;
+import core.Generator3;
 
 /**
  * TODO Make of this a proper unit test
@@ -160,11 +162,11 @@ public class GeneratorTest {
 			e.printStackTrace();
 		}
 		
-		Generator gen = new Generator(db);
+		Generator gen = new Generator2(db);
 		
-		gen.pumpTable(20, db.getSchema("trivial"));
+		gen.pumpTable(1000000000, db.getSchema("trivial"));
 				
-		assertEquals(6, Statistics.getIntStat("trivial.id canAdd"));
+//		assertEquals(6, Statistics.getIntStat("trivial.id canAdd"));
 		
 		try {
 			init.execute();
@@ -183,7 +185,7 @@ public class GeneratorTest {
 			e1.printStackTrace();
 		}
 		
-		Generator gen = new Generator(db);
+		Generator gen = new Generator2(db);
 		
 		gen.pumpTable(1000, db.getSchema("pkeyTest"));
 		
@@ -205,22 +207,33 @@ public class GeneratorTest {
 	@Test
 	public void testBinaryPkey(){
 		
-		Generator gen = new Generator(db);
+		PreparedStatement init = db.getPreparedStatement("DELETE FROM testBinaryKey");
+		
+		try {
+			init.execute();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
 		
 		PreparedStatement insertions = 
 				db.getPreparedStatement("INSERT INTO testBinaryKey VALUES (1, 1, 'ciao'), (1, 2, 'ciriciao'), (2, 2, 'ciriciriciao')");
-		
 		try {
 			insertions.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
+		db.fillDatabaseSchemas(); // Refill schemas
+		
+		Generator gen = new Generator2(db);
+		
+		
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(10000, db.getSchema("testBinaryKey"));
+		gen.pumpTable(1000000, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		logger.info("Time elapsed to pump "+10000+" rows: " + (end - start) + " msec.");
+		logger.info("Time elapsed to pump "+1000000+" rows: " + (end - start) + " msec.");
 	}
 	
 //	@Test

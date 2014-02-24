@@ -21,15 +21,15 @@ import utils.Pair;
 import utils.Statistics;
 
 public class Generator {
-	private DBMSConnection dbmsConn;
-	private RandomDBValuesGenerator random;
-	private Distribution distribution;
+	protected DBMSConnection dbmsConn;
+	protected RandomDBValuesGenerator random;
+	protected Distribution distribution;
 	
-	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
+	protected static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
 	// Internal state
-	private Map<String, Queue<ResultSet>> chasedValues; // Pointers to ResultSets storing chased values for each column
-	private Map<String, ResultSet> duplicateValues;     // Pointers to ResultSets storing duplicate values for each column
+	protected Map<String, Queue<ResultSet>> chasedValues; // Pointers to ResultSets storing chased values for each column
+	protected Map<String, ResultSet> duplicateValues;     // Pointers to ResultSets storing duplicate values for each column
 		
 	public Generator(DBMSConnection dbmsConn){
 		this.dbmsConn = dbmsConn;
@@ -72,7 +72,9 @@ public class Generator {
 		                                                                               // ---among fresh values--- that need to be inserted
 		
 		Map<String, Integer> mFreshGenerated = new HashMap<String, Integer>(); // It keeps fresh generated values, column by column
-		Map<String, Queue<String>> mFreshDuplicates = new HashMap<String, Queue<String>>(); // TODO Is this too much memory consuming?
+		Map<String, Queue<String>> mFreshDuplicates = new HashMap<String, Queue<String>>(); // TODO Is this too much memory consuming? Looks like no
+		
+		Map<String, List<String>> mPksDuplicatesTracker = new HashMap<String, List<String>>(); // TODO This might be consuming a lot of memory
 
 		// Fill chased
 		for( Column column : schema.getColumns() ){
@@ -112,9 +114,6 @@ public class Generator {
 			
 			// Disable auto-commit
 			dbmsConn.setAutoCommit(false);
-
-			
-			// TODO The max_cycle thing
 			
 			// Idea: I can say that nRows = number of things that need to be chased, when the maximum
 			// cycle is reached. To test this out
@@ -137,7 +136,8 @@ public class Generator {
 						// pay attention to how you pick the last column. You might generate
 						// a duplicate row if you do not do it correctly
 						if( (primaryDuplicateValues.size() == schema.getPks().size() - 1) && column.isPrimary() ){
-							
+							// TODO This part is VERY EXPENSIVE. 
+							//      Do not 
 							// Force commit, because we need to check the content of the database
 							stmt.executeBatch();
 							dbmsConn.commit();
@@ -251,11 +251,11 @@ public class Generator {
 		return tablesToChase; 
 	}
 	
-	private String pickDuplicateForPk(Schema schema, Column column, String notInQuery) {
+	protected String pickDuplicateForPk(Schema schema, Column column, String notInQuery) {
 		
 			
 		// SELECT column.getName from schemaName where column.getName NOT IN (notInQuery)
-		Template temp = new Template("SELECT ? FROM ? WHERE ? NOT IN (?)");
+		Template temp = new Template("SELECT ? FROM ? WHERE ? NOT IN (?) LIMIT 1");
 		
 		temp.setNthPlaceholder(1, column.getName());
 		temp.setNthPlaceholder(2, schema.getTableName());
@@ -277,7 +277,7 @@ public class Generator {
 		return null;
 	}
 
-	private Pair<Boolean, String> checkIfDistinctPk(Schema s, List<String> primaryDuplicateValues) {
+	protected Pair<Boolean, String> checkIfDistinctPk(Schema s, List<String> primaryDuplicateValues) {
 		
 		Pair<Boolean, String> result;
 		
@@ -304,6 +304,7 @@ public class Generator {
 		
 		try {
 			ResultSet rs = stmt.executeQuery();
+			
 			if( rs.next() ){
 				result.first = false;
 			}
@@ -323,7 +324,7 @@ public class Generator {
 	 * @param column
 	 * @return
 	 */
-	private String pickFromReferenced(Schema schema, Column column, Map<String, ResultSet> referencedValues) {
+	protected String pickFromReferenced(Schema schema, Column column, Map<String, ResultSet> referencedValues) {
 		
 		String result = null;
 		
@@ -374,7 +375,7 @@ public class Generator {
 	 * @param nRowsToInsert
 	 * @return A result set containing the number of duplicates---taken from the original set--- that need to be inserted
 	 */
-	private ResultSet fillDuplicates(Column column, String tableName, int nRowsToInsert, 
+	protected ResultSet fillDuplicates(Column column, String tableName, int nRowsToInsert, 
 			Map<String, Integer> mNumDuplicates, Map<String, Integer> mNumDuplicatesFromFresh) {
 		
 		ResultSet result = null;
@@ -457,7 +458,7 @@ public class Generator {
 	 * @param numChased
 	 * @return
 	 */
-	private Queue<ResultSet> fillChase(Column column, String tableName, Map<String, Integer> mNumChases) {
+	protected Queue<ResultSet> fillChase(Column column, String tableName, Map<String, Integer> mNumChases) {
 		Queue<ResultSet> result = new LinkedList<ResultSet>(); 
 		
 		// SELECT referredByCol FROM referredByTable WHERE referredByCol NOT IN (SELECT column.name() FROM schema.name()); 
@@ -510,7 +511,7 @@ public class Generator {
 	 * @param force It forces to pick an element even if the cursor already reached the end
 	 * @return
 	 */
-	private String pickNextDupFromOldValues(Schema schema, Column column, boolean force) {
+	protected String pickNextDupFromOldValues(Schema schema, Column column, boolean force) {
 		
 		ResultSet duplicatesToInsert = duplicateValues.get(column.getName());
 		if(duplicatesToInsert == null) return null;
@@ -527,13 +528,15 @@ public class Generator {
 				return null;
 			}
 			result = duplicatesToInsert.getString(1);
+			if(force) // rebring the pointer to the end
+				duplicatesToInsert.afterLast();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return result;
 	}
 
-	private String pickNextChased(Schema schema, Column column) {
+	protected String pickNextChased(Schema schema, Column column) {
 		
 		Queue<ResultSet> chased = chasedValues.get(column.getName());
 		ResultSet curSet = chased.peek();
@@ -561,7 +564,7 @@ public class Generator {
 		return null;
 	}
 
-	private boolean canAdd(int total, int current, int modulo) {
+	protected boolean canAdd(int total, int current, int modulo) {
 		if(modulo == 0) return false;
 //		if(current == total-1 && modulo != 0) return true;
 		float thing = (float)current % ((float)total / (float)modulo);

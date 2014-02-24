@@ -12,12 +12,22 @@ public class Schema{
 	
 	// Fields related to the pumping
 	private boolean filledFlag; // It keeps the information whether this schema has been already pumped once
+	private int maxDupsRepetition;
 
 	public Schema(String tableName){
 		this.tableName = tableName;
 		columns = new ArrayList<Column>();
 		primaryKeys = new ArrayList<Column>();
 		filledFlag = false;
+		maxDupsRepetition = 0;
+	}
+	
+	public int getMaxDupsRepetition(){
+		return maxDupsRepetition;
+	}
+	
+	public void setMaxDupsRepetition(int maxDupsRepetition){
+		this.maxDupsRepetition = maxDupsRepetition;
 	}
 	
 	public void setFilled(){

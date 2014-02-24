@@ -66,26 +66,26 @@ public class RandomDBValuesGenerator {
 //			return ++cnt; // To be sure they are all different 
 //		}
 		
-		if( column.isAllDifferent() ){
+//		if( true || column.isAllDifferent() ){
 //			logger.debug("isAllDiff");
-			int allDiffCnt = (int)column.getLastInserted();
+			int allDiffCnt = column.getLastInserted();
 			column.setLastInserted(++allDiffCnt);
 			
 			return allDiffCnt;
-		}
+//		}
 		
-		if( column.getMaxValue() - column.getMinValue() < nRows ){ // TODO Maybe nRows is a too small value in the comparison
-			// Not enough space to generate all rows
-			// Choose a random number
-			return rand.nextInt(100000000);
-		}
+//		if( column.getMaxValue() - column.getMinValue() < nRows ){ // TODO Maybe nRows is a too small value in the comparison
+//			// Not enough space to generate all rows
+//			// Choose a random number
+//			return rand.nextInt(100000000);
+//		}
 		
 		// Normal stuff. Pick a random in the interval
-		int max = (int)column.getMaxValue();
-		int min = (int)column.getMinValue();
+//		int max = (int)column.getMaxValue();
+//		int min = (int)column.getMinValue();
 		
-		return max == min ? 
-				rand.nextInt() % 100000 : rand.nextInt( max - min ) + min;		
+//		return max == min ? 
+//				rand.nextInt() % 100000 : rand.nextInt( max - min ) + min;		
 	}
 	
 	public String getRandomString(Column column){
@@ -101,5 +101,9 @@ public class RandomDBValuesGenerator {
 	
 	public int getRandomInt(int max){
 		return rand.nextInt(max);
+	}
+	
+	public float getRandomFloat(){
+		return rand.nextFloat();
 	}
 }
