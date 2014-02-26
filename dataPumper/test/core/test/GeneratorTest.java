@@ -49,7 +49,7 @@ public class GeneratorTest {
 //	private static Connection conn1;
 	
 	// Parameters
-	private static int nRowsToInsert = 10;
+	private static int nRowsToInsert = 100000000;
 
 	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
@@ -165,7 +165,10 @@ public class GeneratorTest {
 		Generator gen = new Generator3(db);
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(10000000, db.getSchema("trivial"));
+		gen.pumpTable(100000000, db.getSchema("trivial"));
+		db.close();
+		System.gc();
+//		gen.pumpTable(3000000, db.getSchema("trivial"));
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump "+10000000+" rows: " + (end - start) + " msec.");
@@ -193,7 +196,7 @@ public class GeneratorTest {
 		Generator gen = new Generator3(db);
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(1000, db.getSchema("pkeyTest"));
+		gen.pumpTable(100000000, db.getSchema("pkeyTest"));
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump "+1000+" rows: " + (end - start) + " msec.");
@@ -240,10 +243,10 @@ public class GeneratorTest {
 		
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(1000000, db.getSchema("testBinaryKey"));
+		gen.pumpTable(10000000, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		logger.info("Time elapsed to pump "+1000000+" rows: " + (end - start) + " msec.");
+		logger.info("Time elapsed to pump "+10000000+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 	}
 	

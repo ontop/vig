@@ -16,5 +16,7 @@
 			<attribute name="maven.scope" value="provided"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/home/tir/Desktop/eclipse/object-explorer.jar"/>
+	<classpathentry kind="lib" path="/usr/share/maven-repo/com/google/guava/guava/14.0.1/guava-14.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

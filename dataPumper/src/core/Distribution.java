@@ -53,6 +53,7 @@ public class Distribution {
 			ResultSet rs = stmt.executeQuery();
 			if( rs.next() )
 				result = rs.getInt(1);
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -66,6 +67,7 @@ public class Distribution {
 			ResultSet rs = stmt.executeQuery();
 			if( rs.next() )
 				result = rs.getInt(1);
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

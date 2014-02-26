@@ -550,9 +550,10 @@ public class Generator {
 				return curSet.getString(1);
 			}
 			else{ // Pick next ResultSet
+				curSet.close(); //TODO Test
 				chased.poll();
 				curSet = chased.peek();
-				if(curSet == null ) return null;
+				if( curSet == null ) return null;
 				
 				if( curSet.next() == false ) 
 					logger.debug("Problem: No element in a non-empty ResultSet");

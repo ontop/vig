@@ -90,7 +90,7 @@ public class DBMSConnection {
 		try {
 //			PreparedStatement stmt = connection.prepareStatement(template, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 //			stmt.setFetchSize(Integer.MIN_VALUE);
-			return connection.prepareStatement(template);
+			return connection.prepareStatement(template); /*stmt;*/
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
