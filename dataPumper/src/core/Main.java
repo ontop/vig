@@ -26,7 +26,7 @@ public class Main {
 	}
 	
 	public void pumpDatabase(DBMSConnection db, int nRows){
-		Generator gen = new Generator(db);
+		Generator gen = new Generator3(db);
 		
 		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
 		

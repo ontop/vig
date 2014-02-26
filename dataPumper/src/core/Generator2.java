@@ -19,8 +19,39 @@ import connection.DBMSConnection;
 
 public class Generator2 extends Generator {
 
+	Map<String, Integer> numberChasedOf;                 // It holds the number of chased elements for each column
+	Map<String, Integer> numberDuplicatesOf;             // It holds the number of duplicates that have to be inserted
+	Map<String, Integer> mNumDuplicatesFromFresh;    // It holds the number of duplicates
+	                                                 // ---among fresh values--- that need to be inserted
+	
+	Map<String, Integer> mNumFreshGenerated;         // It keeps fresh generated values, column by column
+	Map<String, Queue<String>> mFreshDuplicates;     // TODO Is this too much memory consuming? Looks like no
+	
+	Map<String, List<String>> mPksDuplicatesTracker; // TODO This might be consuming a lot of memory
+	
+	Map<String, ResultSet> referencedValues;         // referencing_column -> referencedValues
+	
 	public Generator2(DBMSConnection dbmsConn) {
 		super(dbmsConn);
+		
+
+	}
+	
+	private void initState(){
+		numberChasedOf = new HashMap<String, Integer>();
+		numberDuplicatesOf = new HashMap<String, Integer>(); 
+		mNumDuplicatesFromFresh = new HashMap<String, Integer>(); 
+		                                                              
+		
+		mNumFreshGenerated = new HashMap<String, Integer>(); 
+		mFreshDuplicates = new HashMap<String, Queue<String>>(); 
+		
+		mPksDuplicatesTracker = new HashMap<String, List<String>>(); 
+		
+		referencedValues = new HashMap<String, ResultSet>();
+		
+		chasedValues.clear();  
+		duplicateValues.clear();
 	}
 	
 	/**
@@ -42,24 +73,297 @@ public class Generator2 extends Generator {
 	 */
 	public List<Schema> pumpTable(int nRows, Schema schema){		
 		
-		// INIT
+		initState();
+		nRows = initChaseInfo(nRows, schema);
+		initDuplicatesInfo(nRows, schema);
+			
+		List<Schema> tablesToChase = new LinkedList<Schema>();  // The result of a call to this method
+		
+		String templateInsert = dbmsConn.createInsertTemplate(schema);
+		PreparedStatement stmt = null;
+		
+		
+		stmt = dbmsConn.getPreparedStatement(templateInsert);
+		logger.debug(templateInsert);
+		
+		// Disable auto-commit
+		dbmsConn.setAutoCommit(false);
+		
+		// Idea: I can say that nRows = number of things that need to be chased, when the maximum
+		// cycle is reached. To test this out
+		for( int j = 1; j <= nRows; ++j ){
+			
+			List<String> primaryDuplicateValues = new ArrayList<String>();
+			List<String> primaryValues = new ArrayList<String>();
+			for( Column column : schema.getColumns() ){
+				
+				boolean stopChase = maxChaseCycleReached(column);
+				
+				if( valuesToChase(column) && canAdd(nRows, j, numberChasedOf.get(column.getName())) )  {
+					logger.debug("Add a chased value");
+					String chasedValue = addChasedValue(schema, column, stmt);		
+					if( column.isPrimary() )
+						primaryValues.add(chasedValue);
+				}
+				else if( canAdd(nRows, j, numberDuplicatesOf.get(column.getName()) ) ){
+					logger.debug("Generating a duplicate");
+					
+					if( fillingLastColumnOfPrimaryKey(schema, column, primaryDuplicateValues) ){
+						pickASuitableElementForPkConsistency(schema, column, primaryDuplicateValues, stmt, nRows, primaryValues, tablesToChase);						
+					
+					}else{ // put a duplicate
+						Statistics.addInt(schema.getTableName()+"."+column.getName()+" canAdd", 1);
+						
+						String nextDuplicate = pickNextDupFromOldValues(schema, column, (column.getCurrentChaseCycle() > column.getMaximumChaseCycles()));
+						
+						if( nextDuplicate == null ){ 
+							logger.debug("pick a duplicate from freshly generated values");
+							nextDuplicate = pickDuplicateFromFresh(column);
+						}
+						else{
+							logger.info("Putting a duplicate from initial database");
+						}
+						dbmsConn.setter(stmt, column.getIndex() + 1, column.getType(), nextDuplicate);
+						
+						if( column.isPrimary() ){
+							primaryDuplicateValues.add(nextDuplicate);
+							primaryValues.add(nextDuplicate);
+						}
+					}
+				}
+				else if( stopChase ){
+					logger.debug("Taking a referenced value");
+					// We cannot take a chase value, neither we can pick a duplicate. The only way out is 
+					// to tale the necessary number of elements (non-duplicate with this column) from the referenced column(s)
+					String referencedValue = pickFromReferenced(schema, column, referencedValues);
+					dbmsConn.setter(stmt, column.getIndex() + 1, column.getType(), referencedValue);
+					
+					if( column.isPrimary() )
+						primaryValues.add(referencedValue);
+				}
+				else{ 
+					logger.debug("Generating a random fresh value");
+					
+					String generatedRandom = generateRandomFresh(schema, column, stmt, nRows);
+					
+					boolean addedPrimaryValue = false;
+					if( column.isPrimary() && (primaryValues.size() < schema.getPks().size() -1 ) ){
+						primaryValues.add(generatedRandom);
+						addedPrimaryValue = true;
+					}
+					
+					addToFreshDuplicatesToInsert(schema, column, generatedRandom, primaryValues, addedPrimaryValue);
+					updateTablesToChase(column, tablesToChase);
+				}
+			}
+			try {
+				stmt.addBatch();
+				if( j % 1000000 == 0 ){ // Let's put a limit to the dimension of the stmt 
+					stmt.executeBatch();	
+					dbmsConn.commit();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			stmt.executeBatch();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}	
+		dbmsConn.commit();
+		dbmsConn.setAutoCommit(true);
+		return tablesToChase; 
+	}
+	
+	private void pickASuitableElementForPkConsistency(Schema schema, Column column, 
+			List<String> primaryDuplicateValues, PreparedStatement stmt, int nRows, 
+			List<String> primaryValues, List<Schema> tablesToChase) {
+		
+		long start = System.currentTimeMillis();
+		
+		
+		String nextDuplicate = pickNextDupFromOldValues(schema, column, maxChaseCycleReached(column));
+		
+		if( nextDuplicate != null ){ // That is, I am supposed to pick from old values
+			
+			// Force either
+			// Check if the key constructed so far is already in the database
+			Pair<Boolean, String> isDistinct_usedQuery = checkIfDistinctPk(schema, primaryDuplicateValues, nextDuplicate);
+			
+			boolean isDistinct = isDistinct_usedQuery.first;
+			if( !isDistinct ){
+				// There is the need to either
+				// 1) Pick a duplicate in that leads to a fresh pk tuple
+				// 2) Generate a fresh value
+				
+				// In both cases, I will need a freshDuplicate more
+				mNumDuplicatesFromFresh.put(column.getName(), mNumDuplicatesFromFresh.get(column.getName()) + 1);
+				
+				// Trying to pick a duplicate from old database values that leads to a fresk pk tuple
+				nextDuplicate = pickDuplicateForPk(schema, column, isDistinct_usedQuery.second);
+				
+				if( nextDuplicate != null ){ // We managed to find a suitable value
+					logger.info("Managed to find a value");
+					
+					dbmsConn.setter(stmt, column.getIndex() + 1, column.getType(), nextDuplicate);
+				}
+				else{
+					logger.info("Impossible to add a duplicate from old values. Trying by picking a fresh dup");
+					nextDuplicate = pickADupFromFreshSatisfyingPk(column, primaryValues);
+					if( nextDuplicate == null ) { // Generate a random fresh
+						logger.info("Impossible to add a duplicate. Trying to generate a fresh value");
+						generateRandomFresh(schema, column, stmt, nRows);									
+						updateTablesToChase(column, tablesToChase);
+					}
+					else{
+						logger.info("Found a suitable element among fresh dups. Putting it.");
+						putDuplicateFromFreshSatisfyingPk(column, stmt, nextDuplicate);					
+					}
+				}
+			}							
+			else{ 
+				logger.info("Found a distinct dup among values already in the db");
+				dbmsConn.setter(stmt, column.getIndex() + 1, column.getType(), nextDuplicate);
+			}
+		}
+		else{ // The duplicate has to be taken from the freshly added values
+			logger.debug("The dup has to be taken from freshly added values");
+			nextDuplicate = pickADupFromFreshSatisfyingPk(column, primaryValues);
+			
+			if( nextDuplicate == null ) { // Generate a random fresh
+				logger.debug("Generating a random fresh because a suitable value was not available from fresh duplicates");
+				generateRandomFresh(schema, column, stmt, nRows);
+				updateTablesToChase(column, tablesToChase);
+			}
+			else{
+				logger.debug("Found a suitable element among fresh dups. Putting it.");
+				putDuplicateFromFreshSatisfyingPk(column, stmt, nextDuplicate);	
+			}
+		}
+		
+		long end = System.currentTimeMillis();
+		
+		Statistics.addTime("pickASuitableElementForPkConsistency", end - start);
+		Statistics.addInt("Numner of calls to pickASuitableElementForPkConsistency", 1);
+	}
 
-		chasedValues.clear();  
-		duplicateValues.clear();
+	private void addToFreshDuplicatesToInsert(Schema schema, Column column,
+			String generatedRandom, List<String> primaryValues,
+			boolean addedPrimaryValue) {
 		
-		Map<String, Integer> mNumChases = new HashMap<String, Integer>(); // It holds the number of chased elements for each column
-		Map<String, Integer> mNumDuplicates = new HashMap<String, Integer>(); // It holds the number of duplicates that have to be inserted
-		Map<String, Integer> mNumDuplicatesFromFresh = new HashMap<String, Integer>(); // It holds the number of duplicates
-		                                                                               // ---among fresh values--- that need to be inserted
+		// Add the random value to the "toInsert" duplicates
+		int freshGenerated = mNumFreshGenerated.get(column.getName());
+		if( freshGenerated < mNumDuplicatesFromFresh.get(column.getName()) ){
+			++freshGenerated;
+			logger.debug(mNumDuplicatesFromFresh.get(column.getName()));
+			mNumFreshGenerated.put(column.getName(), freshGenerated);
+			mFreshDuplicates.get(column.getName()).add(generatedRandom);
+			
+			// Let's do this
+			if( column.isPrimary() && (primaryValues.size() == schema.getPks().size() - 1 ) && !addedPrimaryValue )
+				mPksDuplicatesTracker.put(generatedRandom, primaryValues);
+		}
 		
-		Map<String, Integer> mNumFreshGenerated = new HashMap<String, Integer>(); // It keeps fresh generated values, column by column
-		Map<String, Queue<String>> mFreshDuplicates = new HashMap<String, Queue<String>>(); // TODO Is this too much memory consuming? Looks like no
-		
-		Map<String, List<String>> mPksDuplicatesTracker = new HashMap<String, List<String>>(); // TODO This might be consuming a lot of memory
+	}
 
+	private String pickDuplicateFromFresh(Column column) {
+		
+		String nextDuplicate = null;
+		
+		if( !mFreshDuplicates.containsKey(column.getName()) )
+			logger.error("No fresh duplicates available for column "+column.getName() );
+		nextDuplicate = mFreshDuplicates.get(column.getName()).poll();
+		logger.debug("Polling");
+		if( nextDuplicate == null ) {
+			logger.error("No good poll action");	
+		}
+		
+		return nextDuplicate;
+	}
+
+	private void putDuplicateFromFreshSatisfyingPk(Column column, PreparedStatement stmt, String nextDuplicate) {
+		List<String> toList = new ArrayList<String>(mFreshDuplicates.get(column.getName()));
+		
+		if( toList.contains(nextDuplicate) ){
+			toList.remove(nextDuplicate);
+		}
+		if( toList.contains(nextDuplicate) )
+			logger.error("Why is the dup still here?");
+		
+		mPksDuplicatesTracker.remove(nextDuplicate);
+		Queue<String> newQueue = new LinkedList<String>(toList);
+		mFreshDuplicates.put(column.getName(), newQueue);
+		
+		dbmsConn.setter(stmt, column.getIndex() + 1, column.getType(), nextDuplicate);
+		
+	}
+
+	private String generateRandomFresh(Schema schema, Column column, PreparedStatement stmt, int nRows) {
+		Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
+
+		String generatedRandom = random.getRandomValue(column, nRows);
+		dbmsConn.setter(stmt, column.getIndex() + 1, column.getType(), generatedRandom);
+		
+		
+		return generatedRandom;
+	}
+
+	/**
+	 * Pick a duplicate <b>nextDuplicate</b> from fresh generated values in 
+	 * such a way that the tuple <i>primaryValues-nextDuplicate</i> is 
+	 * not a duplicate entry for primary keys.
+	 * @param column
+	 * @param primaryValues
+	 * @return nextDuplicate
+	 */
+	private String pickADupFromFreshSatisfyingPk(Column column, List<String> primaryValues) {
+		
+		String nextDuplicate = null;
+		List<String> alreadyTherePkPrefix = null;
+		if( !mFreshDuplicates.containsKey(column.getName()) )
+			logger.error("No fresh duplicates available for column "+column.getName() );
+		
+		for( String duplicate : mFreshDuplicates.get(column.getName()) ){
+			alreadyTherePkPrefix = mPksDuplicatesTracker.get(duplicate);
+			if( !alreadyTherePkPrefix.equals(primaryValues) ){
+				nextDuplicate = duplicate;
+				break;
+			}
+		}
+		return nextDuplicate;
+	}
+
+	private boolean fillingLastColumnOfPrimaryKey(Schema schema, Column column, List<String> primaryDuplicateValues) {
+		return (primaryDuplicateValues.size() == schema.getPks().size() - 1) && column.isPrimary();
+	}
+
+	private String addChasedValue(Schema schema, Column column, PreparedStatement stmt) {
+		
+		String nextChased = pickNextChased(schema, column);
+		dbmsConn.setter(stmt, column.getIndex() + 1, column.getType(), nextChased); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+		return nextChased;
+	}
+
+	private boolean valuesToChase(Column column) {
+		return numberChasedOf.containsKey(column.getName());
+	}
+
+	private void initDuplicatesInfo(int nRows, Schema schema) {
+			// Fill duplicates
+		for( Column column : schema.getColumns() ){
+			duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows, numberDuplicatesOf, mNumDuplicatesFromFresh));
+		}
+	}
+	
+	private boolean maxChaseCycleReached(Column column){
+		return (column.referencesTo().size() > 0) && column.getMaximumChaseCycles() < column.getCurrentChaseCycle();
+	}
+	
+	private int initChaseInfo(int nRows, Schema schema) {
 		// Fill chased
 		for( Column column : schema.getColumns() ){
-			chasedValues.put(column.getName(), fillChase(column, schema.getTableName(), mNumChases));
+			chasedValues.put(column.getName(), fillChase(column, schema.getTableName(), numberChasedOf));
 			column.incrementCurrentChaseCycle();
 			mNumFreshGenerated.put(column.getName(), 0);
 			mFreshDuplicates.put(column.getName(), new LinkedList<String>());
@@ -68,269 +372,13 @@ public class Generator2 extends Generator {
 		if( nRows == 0 ){ // This is a pure-chase phase. And it is also THE ONLY place where I need to chase
 			// I need to generate (at least) as many rows as the maximum among the chases
 			int max = 0;
-			for( String key: mNumChases.keySet() ){
-				if( max < mNumChases.get(key) )
-					max = mNumChases.get(key);
+			for( String key: numberChasedOf.keySet() ){
+				if( max < numberChasedOf.get(key) )
+					max = numberChasedOf.get(key);
 			}
 			nRows = max; // Set the number of rows that need to be inserted.
 		}
-		
-		// Fill duplicates
-		for( Column column : schema.getColumns() ){
-			duplicateValues.put(column.getName(), fillDuplicates(column, schema.getTableName(), nRows, mNumDuplicates, mNumDuplicatesFromFresh));
-		}
-		
-		Map<String, ResultSet> referencedValues = new HashMap<String, ResultSet>();
-				
-		// ----- END INIT ----- //
-		
-		List<Schema> tablesToChase = new LinkedList<Schema>();
-		
-		String templateInsert = dbmsConn.createInsertTemplate(schema);
-		PreparedStatement stmt = null;
-		
-		try {
-			stmt = dbmsConn.getPreparedStatement(templateInsert);
-			logger.debug(templateInsert);
-			
-			// Disable auto-commit
-			dbmsConn.setAutoCommit(false);
-			
-			// Idea: I can say that nRows = number of things that need to be chased, when the maximum
-			// cycle is reached. To test this out
-			for( int j = 1; j <= nRows; ++j ){
-				
-				int columnIndex = 0;
-				List<String> primaryDuplicateValues = new ArrayList<String>();
-				List<String> primaryValues = new ArrayList<String>();
-				for( Column column : schema.getColumns() ){
-										
-					boolean stopChase = (column.referencesTo().size() > 0) && column.getMaximumChaseCycles() < column.getCurrentChaseCycle();
-					
-					if( mNumChases.containsKey(column.getName()) && canAdd(nRows, j, mNumChases.get(column.getName())) )  {
-						
-						String nextChased = pickNextChased(schema, column);
-						
-						dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextChased); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
-
-						if( column.isPrimary() )
-							primaryValues.add(nextChased);
-						
-					}
-					else if( canAdd(nRows, j, mNumDuplicates.get(column.getName()) ) ){
-						
-						// If, in all columns but one of the primary key I've put duplicates, 
-						// pay attention to how you pick the last column. You might generate
-						// a duplicate row if you do not do it correctly
-						if( (primaryDuplicateValues.size() == schema.getPks().size() - 1) && column.isPrimary() ){
-							
-							String nextDuplicate = pickNextDupFromOldValues(schema, column, (column.getCurrentChaseCycle() > column.getMaximumChaseCycles()));
-							
-							if( nextDuplicate != null ){ // That is, I am supposed to pick from old values
-								
-								// Force either
-								// Check if the key constructed so far is already in the database
-								Pair<Boolean, String> isDistinct_usedQuery = checkIfDistinctPk(schema, primaryDuplicateValues, nextDuplicate);
-								
-								boolean isDistinct = isDistinct_usedQuery.first;
-								if( !isDistinct ){
-									// There is the need to either
-									// 1) Pick a duplicate in that leads to a fresh pk tuple
-									// 2) Generate a fresh value
-
-									// In both cases, I will need a freshDuplicate more
-									mNumDuplicatesFromFresh.put(column.getName(), mNumDuplicatesFromFresh.get(column.getName()) + 1);
-									
-									// Trying to pick a duplicate in this value that leads to a fresk pk tuple
-									nextDuplicate = pickDuplicateForPk(schema, column, isDistinct_usedQuery.second);
-									
-									if( nextDuplicate != null ){ // We managed to find a suitable value
-										logger.info("Managed to find a value");
-										
-										dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate);
-									}
-									else{
-										// Generate a fresh new value
-										logger.info("Impossible to add a duplicate from old values. Trying by picking a fresh dup");
-										List<String> alreadyTherePkPrefix = null;
-										if( !mFreshDuplicates.containsKey(column.getName()) )
-											logger.error("No fresh duplicates available for column "+column.getName() );
-										
-										List<String> toList = new ArrayList<String>(mFreshDuplicates.get(column.getName()));
-										nextDuplicate = null;
-										for( String duplicate : toList ){
-											alreadyTherePkPrefix = mPksDuplicatesTracker.get(duplicate);
-											if( !alreadyTherePkPrefix.equals(primaryValues) ){
-												nextDuplicate = duplicate;
-												break;
-											}
-										}
-										if( nextDuplicate == null ) { // Generate a random fresh
-											logger.info("Impossible to add a duplicate. Trying to generate a fresh value");
-											String generatedRandom = random.getRandomValue(column, nRows);
-											dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
-											
-											Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
-											
-											// New values inserted imply new column to chase
-											for( QualifiedName qN : column.referencesTo() ){
-												if( !tablesToChase.contains(dbmsConn.getSchema(qN.getTableName())) ){
-													tablesToChase.add(dbmsConn.getSchema(qN.getTableName()));
-												}
-											}									
-											// Do a query and try to get another one
-											// logger.error("No good poll action");	
-										}
-										else{
-											logger.info("Found a suitable element among fresh dups. Putting it.");
-											if( toList.contains(nextDuplicate) ){
-												toList.remove(nextDuplicate);
-											}
-											if( toList.contains(nextDuplicate) )
-												logger.error("Why is the dup still here?");
-											mPksDuplicatesTracker.remove(nextDuplicate);
-											Queue<String> newQueue = new LinkedList<String>(toList);
-											mFreshDuplicates.put(column.getName(), newQueue);
-											
-											dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate);
-										}
-									}
-								}							
-								else{ 
-									logger.info("Found a distinct dup among values already in the db");
-									dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate);
-								}
-							}
-							else{ // The duplicate has to be taken from the freshly added values
-								logger.debug("The dup has to be taken from freshly added values");
-								List<String> alreadyTherePkPrefix = null;
-								if( !mFreshDuplicates.containsKey(column.getName()) )
-									logger.error("No fresh duplicates available for column "+column.getName() );
-								
-								List<String> toList = new ArrayList<String>(mFreshDuplicates.get(column.getName()));
-								nextDuplicate = null;
-								for( String duplicate : toList ){
-									alreadyTherePkPrefix = mPksDuplicatesTracker.get(duplicate);
-									if( !alreadyTherePkPrefix.equals(primaryValues) ){
-										nextDuplicate = duplicate;
-										break;
-									}
-								}
-								if( nextDuplicate == null ) { // Generate a random fresh
-									
-									logger.info("Generating a random fresh because a suitable value was not available from fresh duplicates");
-									String generatedRandom = random.getRandomValue(column, nRows);
-									dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
-									
-									Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
-									
-									// Add the random value to the "toInsert" duplicates
-									int freshGenerated = mNumFreshGenerated.get(column.getName());
-//									if( freshGenerated++ < mNumDuplicatesFromFresh.get(column.getName()) ){
-									logger.info("Increasing freshGenerated");
-									mNumFreshGenerated.put(column.getName(), ++freshGenerated);
-									mFreshDuplicates.get(column.getName()).add(generatedRandom);
-									
-									mPksDuplicatesTracker.put(generatedRandom, primaryValues); //TODO This shall be inside previous IF
-//									}
-									// New values inserted imply new column to chase
-									for( QualifiedName qN : column.referencesTo() ){
-										if( !tablesToChase.contains(dbmsConn.getSchema(qN.getTableName())) ){
-											tablesToChase.add(dbmsConn.getSchema(qN.getTableName()));
-										}
-									}									
-								}
-								else{
-									if( toList.contains(nextDuplicate) )
-										toList.remove(nextDuplicate);
-									if(toList.contains(nextDuplicate))
-										logger.error("AH! SOMETHING FISHY HERE");
-									
-									mPksDuplicatesTracker.remove(nextDuplicate);
-									Queue<String> newQueue = new LinkedList<String>(toList);
-									mFreshDuplicates.put(column.getName(), newQueue);
-									
-									dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate);
-								}
-							}
-						}else{ // put a duplicate
-							Statistics.addInt(schema.getTableName()+"."+column.getName()+" canAdd", 1);
-							
-							String nextDuplicate = pickNextDupFromOldValues(schema, column, (column.getCurrentChaseCycle() > column.getMaximumChaseCycles()));
-							if( nextDuplicate == null ){ // Necessary to start picking duplicates from freshly generated values
-								if( !mFreshDuplicates.containsKey(column.getName()) )
-									logger.error("No fresh duplicates available for column "+column.getName() );
-								nextDuplicate = mFreshDuplicates.get(column.getName()).poll();
-								logger.debug("Polling");
-								if( nextDuplicate == null ) {
-									logger.error("No good poll action");	
-								}
-							}
-							else{
-								logger.info("Putting a duplicate from initial database");
-							}
-							
-							dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate);
-							if( column.isPrimary() ){
-								primaryDuplicateValues.add(nextDuplicate);
-								primaryValues.add(nextDuplicate);
-							}
-						}
-					}
-					else if( stopChase ){
-						// We cannot take a chase value, neither we can pick a duplicate. The only way out is 
-						// to tale the necessary number of elements (non-duplicate with this column) from the referenced column(s)
-						String referencedValue = pickFromReferenced(schema, column, referencedValues);
-						dbmsConn.setter(stmt, ++columnIndex, column.getType(), referencedValue);
-						if( column.isPrimary() )
-							primaryValues.add(referencedValue);
-					}
-					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
-						
-						String generatedRandom = random.getRandomValue(column, nRows);
-						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
-						
-						boolean addedPrimaryValue = false;
-						if( column.isPrimary() && (primaryValues.size() < schema.getPks().size() -1 ) ){
-							primaryValues.add(generatedRandom);
-							addedPrimaryValue = true;
-						}
-						
-						Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
-						
-						// Add the random value to the "toInsert" duplicates
-						int freshGenerated = mNumFreshGenerated.get(column.getName());
-						if( freshGenerated++ < mNumDuplicatesFromFresh.get(column.getName()) ){
-							logger.debug(mNumDuplicatesFromFresh.get(column.getName()));
-							mNumFreshGenerated.put(column.getName(), freshGenerated);
-							mFreshDuplicates.get(column.getName()).add(generatedRandom);
-							
-							// Let's do this
-							if( column.isPrimary() && (primaryValues.size() == schema.getPks().size() - 1 ) && !addedPrimaryValue )
-								mPksDuplicatesTracker.put(generatedRandom, primaryValues);
-						}
-						// New values inserted imply new column to chase
-						for( QualifiedName qN : column.referencesTo() ){
-							if( !tablesToChase.contains(dbmsConn.getSchema(qN.getTableName())) ){
-								tablesToChase.add(dbmsConn.getSchema(qN.getTableName()));
-							}
-						}
-					}
-				}
-				stmt.addBatch();
-				if( j % 1000000 == 0 ){ // Let's put a limit to the dimension of the stmt 
-					stmt.executeBatch();	
-					dbmsConn.commit();
-				}
-			} 
-			stmt.executeBatch();	
-			dbmsConn.commit();
-		} catch (SQLException e) {
-			logger.error(e.getMessage());
-			e.printStackTrace();
-		}
-		dbmsConn.setAutoCommit(true);
-		return tablesToChase; 
+		return nRows;
 	}
 	
 	protected Pair<Boolean, String> checkIfDistinctPk(Schema s, List<String> primaryDuplicateValues, String toCheck) {
@@ -377,4 +425,12 @@ public class Generator2 extends Generator {
 		return result;
 	}
 	
-}
+	private void updateTablesToChase(Column column, List<Schema> tablesToChase){
+		// New values inserted imply new column to chase
+		for( QualifiedName qN : column.referencesTo() ){
+			if( !tablesToChase.contains(dbmsConn.getSchema(qN.getTableName())) ){
+				tablesToChase.add(dbmsConn.getSchema(qN.getTableName()));
+			}
+		}
+	}
+};

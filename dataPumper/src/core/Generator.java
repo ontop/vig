@@ -415,11 +415,11 @@ public class Generator {
 		int nDups = maxChaseReached ? nRowsToInsert + curDuplicates : (int)((nRowsToInsert + curRows) * ratio); 
 		                                                                   
 		
-		Statistics.addInt(tableName+"."+column.getName()+"final total dups", nDups);
+		Statistics.addInt(tableName+"."+column.getName()+" final total dups", nDups);
 		
 		int toAddDups = nDups - curDuplicates;
 		
-		Statistics.addInt(tableName+"."+column.getName()+"to add dups", toAddDups);
+		Statistics.addInt(tableName+"."+column.getName()+" to add dups", toAddDups);
 		
 		mNumDuplicates.put(column.getName(), toAddDups);
 		

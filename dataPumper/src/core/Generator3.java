@@ -45,6 +45,8 @@ public class Generator3 extends Generator {
 		referencedValues.clear();
 		initNumDupsRepetitionCounters();
 		
+		Map<String, List<String>> fromDuplicatesPks = new HashMap<String, List<String>>();
+		
 		try {
 			stmt = dbmsConn.getPreparedStatement(templateInsert);
 			logger.debug(templateInsert);
@@ -67,6 +69,7 @@ public class Generator3 extends Generator {
 						
 					}
 					else if( column.getDuplicateRatio() > random.getRandomFloat() ){
+						logger.debug("Put a duplicate");
 						
 						// If, in all columns but one of the primary key I've put duplicates, 
 						// pay attention to how you pick the last column. You might generate
@@ -75,8 +78,12 @@ public class Generator3 extends Generator {
 							// TODO This part is VERY EXPENSIVE. 
 							//      Do not 
 							// Force commit, because we need to check the content of the database
-							stmt.executeBatch();
-							dbmsConn.commit();
+							
+							Statistics.addInt("Number_Of_Duplicate_Expensive_Avoidance_For_Primary_Keys", 1);
+							long start = System.currentTimeMillis();
+							
+//							stmt.executeBatch();
+//							dbmsConn.commit();
 							
 							// Force either
 							// Check if the key constructed so far is already in the database
@@ -89,34 +96,81 @@ public class Generator3 extends Generator {
 								// 2) Generate a fresh value
 								
 								// Trying to pick a duplicate in this value that leads to a fresk pk tuple
-								String nextDuplicate = pickDuplicateForPk(schema, column, isDistinct_usedQuery.second);
+								String nextDuplicate = null;
+								List<String> nonValidValues = null;
+								if( fromDuplicatesPks.containsKey(primaryDuplicateValues.toString()) ) 
+									nonValidValues = fromDuplicatesPks.get(primaryDuplicateValues.toString());
+								else nonValidValues = new ArrayList<String>();
 								
-								if( nextDuplicate != null ){ // We managed to find a suitable value
+								nextDuplicate = pickDuplicateForPk(schema, column, isDistinct_usedQuery.second);
+									
+								if( nextDuplicate != null && !nonValidValues.contains(nextDuplicate) ){
 									dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate);
+									if( !fromDuplicatesPks.containsKey(primaryDuplicateValues.toString()) ){
+										fromDuplicatesPks.put(primaryDuplicateValues.toString(), nonValidValues);
+									}
+									fromDuplicatesPks.get(primaryDuplicateValues.toString()).add(nextDuplicate);
 								}
-								else{ // Generate a fresh value
+								else{
+									// Generate random fresh
+									
 									Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
-
+									
 									String generatedRandom = random.getRandomValue(column, nRows);
 									dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 									updateTablesToChase(column, tablesToChase);
-									
 								}
 							}
-							else{ // Add a duplicate in the normal way
-								Statistics.addInt(schema.getTableName()+"."+column.getName()+" canAdd", 1);
+							else{ 
+								// Check if it is in some tuple not yet commited
 								
-								String nextDuplicate = pickNextDupFromOldValues(schema, column, true);
-								dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+								logger.debug("Adding a duplicate from initial database values");
+								Statistics.addInt(schema.getTableName()+"."+column.getName()+" Adding a duplicate from initial database", 1);
+								
+								String nextDuplicate = null;
+								List<String> nonValidValues = null;
+								if( fromDuplicatesPks.containsKey(primaryDuplicateValues.toString()) ) 
+									nonValidValues = fromDuplicatesPks.get(primaryDuplicateValues.toString());
+								else nonValidValues = new ArrayList<String>();
+								int dupRepetition = mNumDupsRepetition.containsKey(column) ? mNumDupsRepetition.get(column) : 0;
+								do{
+									nextDuplicate = pickNextDupFromOldValues(schema, column, true);
+								}
+								while( (mNumDupsRepetition.get(column) == dupRepetition) && nonValidValues.contains(nextDuplicate) );
+								
+								if( mNumDupsRepetition.get(column) != dupRepetition ){
+									// Generate random fresh
+									
+									Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
+									
+									String generatedRandom = random.getRandomValue(column, nRows);
+									dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
+									updateTablesToChase(column, tablesToChase);
+								}
+								else{
+									
+									dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+									
+									if( !fromDuplicatesPks.containsKey(primaryDuplicateValues.toString()) ){
+										fromDuplicatesPks.put(primaryDuplicateValues.toString(), nonValidValues);
+									}
+									fromDuplicatesPks.get(primaryDuplicateValues.toString()).add(nextDuplicate);
+								}
 							}
+							
+							long end = System.currentTimeMillis();
+							
+							Statistics.addTime("Time_spent_picking_a_problematic_duplicate_for_a_primary_key", end - start);
 						}else{
-							Statistics.addInt(schema.getTableName()+"."+column.getName()+" canAdd", 1);
+							logger.debug("Adding a duplicate from initial database values");
+							Statistics.addInt(schema.getTableName()+"."+column.getName()+" Adding a duplicate from initial database values", 1);
 							
 							String nextDuplicate = pickNextDupFromOldValues(schema, column, true);
+							dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
+							
 							if( column.isPrimary() ){
 								primaryDuplicateValues.add(nextDuplicate);
 							}
-							dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
 						}
 					}
 					else if( stopChase ){
@@ -133,16 +187,22 @@ public class Generator3 extends Generator {
 					}
 				}
 				stmt.addBatch();
-				if( (j % 500000 == 0) || maxNumDupsRepetition > 4 ){ // Let's put a limit to the dimension of the stmt 
-					logger.info("HERE I AM");
+				if( (j % 1000000 == 0) ){ // Let's put a limit to the dimension of the stmt 
+					stmt.executeBatch();	
+					dbmsConn.commit();
+				}
+				if( maxNumDupsRepetition > 3 ){
+					logger.info("Enlarging the set of candidate duplicates");
 					stmt.executeBatch();	
 					dbmsConn.commit();
 					initDuplicateValuesAndRatios(schema);
 					initNumDupsRepetitionCounters();
+					fromDuplicatesPks.clear();
 				}
 			} 
 			stmt.executeBatch();	
 			dbmsConn.commit();
+			stmt.close();
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();
@@ -162,16 +222,39 @@ public class Generator3 extends Generator {
 	}
 
 	private void initDuplicateValuesAndRatios(Schema schema) {
+		for( String key : duplicateValues.keySet() ){
+			try {
+				duplicateValues.get(key).close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 		duplicateValues.clear();
 		
 		for( Column c : schema.getColumns() ){
 			ResultSet rs = fillDuplicates(c, schema.getTableName());
+			try {
+				if( duplicateValues.containsKey(c.getName()) )
+					duplicateValues.get(c.getName()).close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 			duplicateValues.put(c.getName(), rs);
 			c.setDuplicateRatio(findDuplicateRatio(schema, c));
 		}
+		System.gc();
 	}
 
 	private int initChaseValues(int nRows, Schema schema){
+		for( String key : chasedValues.keySet() ){
+			for( ResultSet rs : chasedValues.get(key) ){
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		chasedValues.clear();
 		mNumChases.clear();
 		
@@ -231,7 +314,7 @@ public class Generator3 extends Generator {
 		else{
 			// First of all, I need to understand the distribution of duplicates. Window analysis!
 			ratio = distribution.naiveStrategy(column.getName(), s.getTableName());
-			Statistics.addFloat(s.getTableName()+"."+column.getName()+" dups ratio", ratio);
+			Statistics.setFloat(s.getTableName()+"."+column.getName()+" dups ratio", ratio);
 		}
 		return ratio;
 	}	

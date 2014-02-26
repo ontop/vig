@@ -15,6 +15,8 @@ public class Column{
 	
 	private int maxValue;
 	private int minValue;
+	
+	private final int index;
 
 	// Pumping related properties (as they change during the execution of pumpTable)
 	
@@ -26,7 +28,7 @@ public class Column{
 	
 	// ---------------------- //
 	
-	public Column(String name, MySqlDatatypes type){
+	public Column(String name, MySqlDatatypes type, int index){
 		this.name = name;
 		this.type = type;
 		this.primary = false;
@@ -41,6 +43,11 @@ public class Column{
 		this.maximumChaseCycles = Integer.MAX_VALUE;
 		this.currentChaseCycle = 0;
 		this.duplicatesRatio = 0;
+		this.index = index;
+	}
+	
+	public int getIndex(){
+		return index;
 	}
 	
 	public void setDuplicateRatio(float ratio){

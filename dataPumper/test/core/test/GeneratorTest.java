@@ -122,7 +122,7 @@ public class GeneratorTest {
 			e1.printStackTrace();
 		}
 		
-		Generator gen = new Generator(db);
+		Generator gen = new Generator3(db);
 		long startTime = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("trivial"));
 		long endTime = System.currentTimeMillis();
@@ -162,9 +162,14 @@ public class GeneratorTest {
 			e.printStackTrace();
 		}
 		
-		Generator gen = new Generator2(db);
+		Generator gen = new Generator3(db);
 		
-		gen.pumpTable(1000000000, db.getSchema("trivial"));
+		long start = System.currentTimeMillis();
+		gen.pumpTable(10000000, db.getSchema("trivial"));
+		long end = System.currentTimeMillis();
+
+		logger.info("Time elapsed to pump "+10000000+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
 				
 //		assertEquals(6, Statistics.getIntStat("trivial.id canAdd"));
 		
@@ -185,9 +190,14 @@ public class GeneratorTest {
 			e1.printStackTrace();
 		}
 		
-		Generator gen = new Generator2(db);
+		Generator gen = new Generator3(db);
 		
+		long start = System.currentTimeMillis();
 		gen.pumpTable(1000, db.getSchema("pkeyTest"));
+		long end = System.currentTimeMillis();
+
+		logger.info("Time elapsed to pump "+1000+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
 		
 		// Get the count of the final number of rows
 		PreparedStatement check = db.getPreparedStatement("SELECT count(distinct id) FROM pkeyTest");
@@ -216,7 +226,7 @@ public class GeneratorTest {
 		}
 		
 		PreparedStatement insertions = 
-				db.getPreparedStatement("INSERT INTO testBinaryKey VALUES (1, 1, 'ciao'), (1, 2, 'ciriciao'), (2, 2, 'ciriciriciao')");
+				db.getPreparedStatement("INSERT INTO testBinaryKey VALUES (1, 1, 'ciao'), (2, 1, 'ciriciao'), (3, 1, 'ciriciriciao'), (3, 2, 'ciriciri'), (4, 2, 'ciriciri')");
 		try {
 			insertions.execute();
 		} catch (SQLException e) {
@@ -225,7 +235,7 @@ public class GeneratorTest {
 
 		db.fillDatabaseSchemas(); // Refill schemas
 		
-		Generator gen = new Generator2(db);
+		Generator gen = new Generator3(db);
 		
 		
 		
@@ -234,6 +244,7 @@ public class GeneratorTest {
 		long end = System.currentTimeMillis();
 		
 		logger.info("Time elapsed to pump "+1000000+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
 	}
 	
 //	@Test

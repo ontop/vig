@@ -40,17 +40,17 @@ public class Schema{
 	
 	public void addColumn(String colName, String typeString){
 		
-		if( typeString.startsWith("int") ) columns.add(new Column(colName, MySqlDatatypes.INT));
-		else if( typeString.startsWith("char") ) columns.add(new Column(colName, MySqlDatatypes.CHAR));
-		else if( typeString.startsWith("varchar") ) columns.add(new Column(colName, MySqlDatatypes.VARCHAR));
-		else if( typeString.startsWith("text") ) columns.add(new Column(colName, MySqlDatatypes.TEXT));
-		else if( typeString.startsWith("longtext") ) columns.add(new Column(colName, MySqlDatatypes.LONGTEXT));
-		else if( typeString.startsWith("datetime") ) columns.add(new Column(colName, MySqlDatatypes.DATETIME));
-		else if( typeString.startsWith("point") ) columns.add(new Column(colName, MySqlDatatypes.POINT));
-		else if( typeString.startsWith("linestring") ) columns.add(new Column(colName, MySqlDatatypes.LINESTRING));
-		else if( typeString.startsWith("multilinestring") ) columns.add(new Column(colName, MySqlDatatypes.MULTILINESTRING));
-		else if( typeString.startsWith("polygon") ) columns.add(new Column(colName, MySqlDatatypes.POLYGON));
-		else if( typeString.startsWith("multipolygon") ) columns.add(new Column(colName, MySqlDatatypes.MULTIPOLYGON));
+		if( typeString.startsWith("int") ) columns.add(new Column(colName, MySqlDatatypes.INT, columns.size()));
+		else if( typeString.startsWith("char") ) columns.add(new Column(colName, MySqlDatatypes.CHAR, columns.size()));
+		else if( typeString.startsWith("varchar") ) columns.add(new Column(colName, MySqlDatatypes.VARCHAR, columns.size()));
+		else if( typeString.startsWith("text") ) columns.add(new Column(colName, MySqlDatatypes.TEXT, columns.size()));
+		else if( typeString.startsWith("longtext") ) columns.add(new Column(colName, MySqlDatatypes.LONGTEXT, columns.size()));
+		else if( typeString.startsWith("datetime") ) columns.add(new Column(colName, MySqlDatatypes.DATETIME, columns.size()));
+		else if( typeString.startsWith("point") ) columns.add(new Column(colName, MySqlDatatypes.POINT, columns.size()));
+		else if( typeString.startsWith("linestring") ) columns.add(new Column(colName, MySqlDatatypes.LINESTRING, columns.size()));
+		else if( typeString.startsWith("multilinestring") ) columns.add(new Column(colName, MySqlDatatypes.MULTILINESTRING, columns.size()));
+		else if( typeString.startsWith("polygon") ) columns.add(new Column(colName, MySqlDatatypes.POLYGON, columns.size()));
+		else if( typeString.startsWith("multipolygon") ) columns.add(new Column(colName, MySqlDatatypes.MULTIPOLYGON, columns.size()));
 	}
 	
 	public Column getColumn(String colName){

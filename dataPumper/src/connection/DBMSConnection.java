@@ -81,7 +81,15 @@ public class DBMSConnection {
 	}
 	
 	public PreparedStatement getPreparedStatement(String template){
+		//pstmt = conn.prepareStatement(
+        //sql,
+        //ResultSet.TYPE_FORWARD_ONLY,
+        //ResultSet.CONCUR_READ_ONLY);
+		//pstmt.setFetchSize(Integer.MIN_VALUE);
+		
 		try {
+//			PreparedStatement stmt = connection.prepareStatement(template, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+//			stmt.setFetchSize(Integer.MIN_VALUE);
 			return connection.prepareStatement(template);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -222,6 +230,7 @@ public class DBMSConnection {
 					schema.getColumn(result.getString(1)).setPrimary();
 				}
 			}
+			stmt.close();
 			
 			// Retrieve columns with allDifferent()
 			int cnt = 0;
@@ -230,6 +239,7 @@ public class DBMSConnection {
 				if( c.isPrimary() ){ ref = c; ++cnt; }
 			}
 			if( cnt == 1 ) ref.setAllDifferent();
+			
 			
 			// Now let's retrieve foreign keys
 			String informationSchemaQuery = 
@@ -248,6 +258,8 @@ public class DBMSConnection {
 				schema.getColumn(result.getString(2))
 				.referencesTo().add(new QualifiedName(result.getString(4), result.getString(5)));
 			}
+			
+			stmt.close();
 		
 			// Now, let's fill the Min & Max information
 			fillDomainBoundaries(schema);
@@ -277,6 +289,7 @@ public class DBMSConnection {
 			while( rs.next() ){
 				tableNames.add(rs.getString(3));
 			}			
+			rs.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -322,6 +335,7 @@ public class DBMSConnection {
 						c.setMaxValue(result.getInt(2));
 						c.setLastInserted(result.getInt(2));
 					}
+					stmt.close();
 					break;
 				}
 				case CHAR : {
@@ -365,6 +379,7 @@ public class DBMSConnection {
 		try {
 			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0");
 			stmt.execute();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -373,6 +388,7 @@ public class DBMSConnection {
 		try{
 			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1");
 			stmt.execute();
+			stmt.close();
 		} catch (SQLException e){
 			e.printStackTrace();
 		}
@@ -381,6 +397,7 @@ public class DBMSConnection {
 		try {
 			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0");
 			stmt.execute();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -389,6 +406,7 @@ public class DBMSConnection {
 		try{
 			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1");
 			stmt.execute();
+			stmt.close();
 		} catch (SQLException e){
 			e.printStackTrace();
 		}
