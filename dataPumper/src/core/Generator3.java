@@ -52,6 +52,8 @@ public class Generator3 extends Generator {
 		Map<String, List<String>> mFreshDuplicatesToDuplicatePks = new HashMap<String, List<String>>();
 		Queue<String> freshDuplicates = new LinkedList<String>();
 		
+		dbmsConn.initColumns(schema);
+		
 		try {
 			stmt = dbmsConn.getPreparedStatement(templateInsert);
 			logger.debug(templateInsert);
@@ -181,12 +183,26 @@ public class Generator3 extends Generator {
 			e.printStackTrace();
 		}
 		dbmsConn.setAutoCommit(true);
-		resetDuplicateValues();
-		System.out.println("Resetted");
+		
+		resetState(schema); // Frees memory
+		
+		logger.info("Table '"+ schema.getTableName() + "' pumped with " + nRows +" rows.");
+				
 		return tablesToChase; 
 	}
-	
 		
+	private void resetState(Schema schema) {
+		resetDuplicateValues();
+		resetColumns(schema);
+		System.gc();
+	}
+
+	private void resetColumns(Schema schema) {
+		for( Column c : schema.getColumns() )
+			c.reset();
+	}
+
+
 	private void updateTablesToChase(Column column, List<Schema> tablesToChase) {
 		// New values inserted imply new column to chase
 		for( QualifiedName qN : column.referencesTo() ){

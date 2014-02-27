@@ -4,7 +4,9 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
+import basicDatatypes.CharColumn;
 import basicDatatypes.Column;
+import basicDatatypes.DateTimeColumn;
 import basicDatatypes.IntColumn;
 
 public class RandomDBValuesGenerator {
@@ -28,13 +30,18 @@ public class RandomDBValuesGenerator {
 			result = resultInt.toString();
 			break;
 		}
-		case CHAR:
+		case CHAR: {
+			char resultChar = ((CharColumn)column).getChar();
+			result = ""+resultChar;
 			break;
+		}
 		case DATETIME:
+			result = getRandomDatetime((DateTimeColumn)column);
 			break;
 		case LINESTRING:
 			break;
 		case LONGTEXT:
+			result = getRandomString(column);
 			break;
 		case MULTILINESTRING:
 			break;
@@ -45,6 +52,7 @@ public class RandomDBValuesGenerator {
 		case POLYGON:
 			break;
 		case TEXT:
+			result = getRandomString(column);
 			break;
 		case VARCHAR : {
 			result = getRandomString(column);
@@ -58,23 +66,23 @@ public class RandomDBValuesGenerator {
 		return result;
 	}
 	
+	private String getRandomDatetime(DateTimeColumn column) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public int getRandomInt(IntColumn column, int nRows){
 		
 		int allDiffCnt = column.getLastInserted();
 		
-		while( ++allDiffCnt < column.getCurrentMax() ) column.nextMax();
+		while( ++allDiffCnt >= column.getCurrentMax() && column.hasNextMax() ) column.nextMax();
+		
+		column.setLastInserted(allDiffCnt);
 		
 		return allDiffCnt;
 	}
 	
 	public String getRandomString(Column column){
-//		Domain<String> dom = (Domain<String>) schema.getDomain(colName);
-//		if( dom != null){
-//			if( dom.isDbIndependent() ){
-//				return dom.getValues().get(rand.nextInt(dom.getValues().size()));
-//			}
-//		}
-		//TODO This will return all different things, that maybe is unwanted
 		return "randomString"+(++cnt);
 	}
 	

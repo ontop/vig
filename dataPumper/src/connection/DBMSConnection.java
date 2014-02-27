@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import basicDatatypes.Column;
+import basicDatatypes.IntColumn;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
@@ -228,7 +230,7 @@ public class DBMSConnection {
 				if( result.getString(4).equals("PRI") ){
 					
 					schema.getColumn(result.getString(1)).setPrimary();
-				}
+				}				
 			}
 			stmt.close();
 			
@@ -270,6 +272,71 @@ public class DBMSConnection {
 		}
 		return schema;
 	}
+
+	/**
+	 * Initializes the columns with needed values
+	 * 
+	 * @param schema
+	 */
+	public void initColumns(Schema schema){
+		for( Column column : schema.getColumns() )
+			initColumn(schema, column);
+	}
+	
+	public void initColumn(Schema schema, Column column) {
+		
+		switch(column.getType()){
+		case INT:{
+			fillIntColumn(schema, (IntColumn)column);
+		}
+		case CHAR:
+			break;
+		case DATETIME:
+			break;
+		case LINESTRING:
+			break;
+		case LONGTEXT:
+			break;
+		case MULTILINESTRING:
+			break;
+		case MULTIPOLYGON:
+			break;
+		case POINT:
+			break;
+		case POLYGON:
+			break;
+		case TEXT:
+			break;
+		case VARCHAR:
+			break;
+		default:
+			break;
+		
+		}
+		
+	}
+	
+	/** It fills the column with the domain values **/
+	private void fillIntColumn(Schema schema, IntColumn column) {
+		PreparedStatement stmt = this.getPreparedStatement("SELECT DISTINCT "+column.getName()+ " FROM "+schema.getTableName()+" LIMIT 100000");
+		
+		List<Integer> values = null;
+		
+		try {
+			ResultSet result = stmt.executeQuery();
+			
+			values = new ArrayList<Integer>();
+		
+			while( result.next() ){
+				values.add(Integer.parseInt(result.getString(1)));
+			}
+			stmt.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		column.setDomain(values);
+	}
+
 	/**
 	 * It retrieves all the table names from the database
 	 * 
@@ -331,9 +398,9 @@ public class DBMSConnection {
 					ResultSet result = stmt.executeQuery();
 										
 					if( result.next() ){
-						c.setMinValue(result.getInt(1));
-						c.setMaxValue(result.getInt(2));
-						c.setLastInserted(result.getInt(2));
+						((IntColumn)c).setMinValue(result.getInt(1));
+						((IntColumn)c).setMaxValue(result.getInt(2));
+						c.setLastInserted(result.getInt(1));
 					}
 					stmt.close();
 					break;

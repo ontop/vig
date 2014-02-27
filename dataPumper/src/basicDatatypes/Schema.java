@@ -40,7 +40,7 @@ public class Schema{
 	
 	public void addColumn(String colName, String typeString){
 		
-		if( typeString.startsWith("int") ) columns.add(new Column(colName, MySqlDatatypes.INT, columns.size()));
+		if( typeString.startsWith("int") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, columns.size()));
 		else if( typeString.startsWith("char") ) columns.add(new Column(colName, MySqlDatatypes.CHAR, columns.size()));
 		else if( typeString.startsWith("varchar") ) columns.add(new Column(colName, MySqlDatatypes.VARCHAR, columns.size()));
 		else if( typeString.startsWith("text") ) columns.add(new Column(colName, MySqlDatatypes.TEXT, columns.size()));

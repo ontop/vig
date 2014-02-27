@@ -49,7 +49,7 @@ public class GeneratorTest {
 //	private static Connection conn1;
 	
 	// Parameters
-	private static int nRowsToInsert = 100000000;
+	private static int nRowsToInsert = 1000000;
 
 	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
@@ -165,13 +165,10 @@ public class GeneratorTest {
 		Generator gen = new Generator3(db);
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(100000000, db.getSchema("trivial"));
-		db.close();
-		System.gc();
-//		gen.pumpTable(3000000, db.getSchema("trivial"));
+		gen.pumpTable(nRowsToInsert, db.getSchema("trivial"));
 		long end = System.currentTimeMillis();
 
-		logger.info("Time elapsed to pump "+10000000+" rows: " + (end - start) + " msec.");
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 				
 //		assertEquals(6, Statistics.getIntStat("trivial.id canAdd"));
@@ -196,10 +193,10 @@ public class GeneratorTest {
 		Generator gen = new Generator3(db);
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(100000000, db.getSchema("pkeyTest"));
+		gen.pumpTable(nRowsToInsert, db.getSchema("pkeyTest"));
 		long end = System.currentTimeMillis();
 
-		logger.info("Time elapsed to pump "+1000+" rows: " + (end - start) + " msec.");
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 		
 		// Get the count of the final number of rows
@@ -209,7 +206,7 @@ public class GeneratorTest {
 			ResultSet result = check.executeQuery();
 			result.next();
 			logger.info(result.getInt(1));
-			assertEquals(1000, result.getInt(1));
+			assertEquals(nRowsToInsert, result.getInt(1));
 			
 			init.execute();
 		} catch (SQLException e) {
@@ -241,80 +238,10 @@ public class GeneratorTest {
 		Generator gen = new Generator3(db);
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(3000000, db.getSchema("testBinaryKey"));
+		gen.pumpTable(nRowsToInsert, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		logger.info("Time elapsed to pump "+3000000+" rows: " + (end - start) + " msec.");
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 	}
-	
-//	@Test
-//	public void testForeignKeysBinary(){
-//		// fKeyA.value -> fKeyB.value
-//		// fKeyB.id -> fKeyA.id
-//		
-//		PreparedStatement init = db.getPreparedStatement("DELETE FROM fKeyA");
-//		PreparedStatement init1 = db.getPreparedStatement("DELETE FROM fkeyB");
-//		
-//		try {
-//			init.execute();
-//			init1.execute();
-//		} catch (SQLException e1) {
-//			e1.printStackTrace();
-//		}
-//		
-//		Generator gen = new Generator(db);
-//		
-////		gen.p TODO pumpDatabase needed.
-//	}
-	
-//	@Test
-//	public void testPumpDatabase(){
-//		Generator gen = new Generator(conn);
-//		Schema schema = gen.getTableSchema("example");
-//		gen.fillDomainBoundaries(schema);
-//		gen.createInsertTemplate(schema);
-//		gen.pumpTable("example", 10000, schema, true, 0);
-//	}
-//	
-//	@Test
-//	public void testFillDomainBoundaries(){
-//		
-//		Generator gen = new Generator(conn);
-//		Schema schema = gen.getTableSchema("example");
-//		gen.fillDomainBoundaries(schema);
-//		
-//		logger.debug(schema.getDomain("id").max);
-//		logger.debug(schema.getDomain("id").min);
-//		
-//		try {
-//			conn.close();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//	}
-//	
-//	@Test
-//	public void testGetTableSchema() {
-//		
-//		Generator gen = new Generator(conn);
-//		Schema schema = gen.getTableSchema("example");
-//		
-//		logger.debug(schema);
-//		
-//		gen = new Generator(conn1);
-//		schema = gen.getTableSchema("baaArea");
-//		
-//		logger.debug(schema);
-//		
-//	}
-//	
-//	@Test
-//	public void testCreateInsertTemplate(){		
-//		
-//		Generator gen = new Generator(conn);
-//		Schema schema = gen.getTableSchema("example");
-//		
-//		System.out.println(gen.createInsertTemplate(schema));
-//	}
 }

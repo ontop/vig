@@ -13,9 +13,6 @@ public class Column{
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
 	private List<QualifiedName> referencedBy; // that.name subseteq this.name
 	
-	private int maxValue;
-	private int minValue;
-	
 	private final int index;
 
 	// Pumping related properties (as they change during the execution of pumpTable)
@@ -35,8 +32,6 @@ public class Column{
 		this.independent = false;
 		this.allDifferent = false;
 		this.autoincrement = false;
-		this.maxValue = 0;
-		this.minValue = 0;
 		this.lastInserted = 0;
 		referencesTo = new ArrayList<QualifiedName>();
 		referencedBy = new ArrayList<QualifiedName>();
@@ -72,22 +67,6 @@ public class Column{
 	
 	public int getLastInserted(){
 		return lastInserted;
-	}
-	
-	public void setMaxValue(int max){
-		maxValue = max;
-	}
-	
-	public int getMaxValue(){
-		return maxValue;
-	}
-	
-	public void setMinValue(int min){
-		minValue = min;
-	}
-	
-	public int getMinValue(){
-		return minValue;
 	}
 	
 	public void setAutoIncrement(){
@@ -153,5 +132,8 @@ public class Column{
 	public int getDuplicatesDistribution() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	public void reset(){		
 	}
 };
