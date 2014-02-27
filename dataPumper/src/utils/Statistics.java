@@ -58,7 +58,7 @@ public class Statistics {
 		
 		StringBuilder result = new StringBuilder();
 		
-		result.append("\n\n============ EXECUTION STATISTICS ==============\n\n");
+		result.append("\n\n=========== EXECUTION STATISTICS ============\n\n");
 		
 		for( String key : mIntegerStats.keySet() ){
 			result.append("[");

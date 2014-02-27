@@ -14,24 +14,23 @@ import utils.Statistics;
 import connection.DBMSConnection;
 import basicDatatypes.*;
 
-import objectexplorer.ObjectGraphMeasurer;
+//import objectexplorer.ObjectGraphMeasurer;
 
 public class Generator3 extends Generator {
 	
 	private Map<String, Integer> mNumChases;
-//	private Map<String, ResultSet> mDuplicates; // map storing the resultsets from where duplicates have to be taken
 	private Map<String, ResultSet> referencedValues; 
 	private Map<String, Integer> mNumDupsRepetition;
 	private int maxNumDupsRepetition;
 
 	public static int duplicatesWindowSize = 80000;
 	public static int maxRepeatDuplicateWindowReads = 5;
+	public static int freshDuplicatesSize = 20;
 	
 	public Generator3(DBMSConnection dbmsConn) {
 		super(dbmsConn);
 		
 		 mNumChases = new HashMap<String, Integer>(); // It holds the number of chased elements for each column
-//		 mDuplicates = new HashMap<String, ResultSet>();
 		 referencedValues = new HashMap<String, ResultSet>();
 		 mNumDupsRepetition = new HashMap<String, Integer>();
 		 maxNumDupsRepetition = 0;
@@ -85,7 +84,7 @@ public class Generator3 extends Generator {
 							long start = System.currentTimeMillis();
 							// Search among uncommitted fresh values
 							String toAdd = null;
-							while(!freshDuplicates.isEmpty()){
+							while( toAdd == null && !freshDuplicates.isEmpty() ){
 								String suitableDup = freshDuplicates.poll();
 								if( !mFreshDuplicatesToDuplicatePks.containsKey(suitableDup) )
 									toAdd = suitableDup;
@@ -100,41 +99,17 @@ public class Generator3 extends Generator {
 								dbmsConn.setter(stmt, ++columnIndex, column.getType(), toAdd);
 							}
 							else{ // Cannot find an element among fresh, try with random
-								
 								Statistics.addInt(schema.getTableName()+"."+column.getName()+"_forced_fresh_values", 1);
+								Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
 								
-//								stmt.executeBatch();
-//								dbmsConn.commit();
-//								
-//								// Force either
-//								// Check if the key constructed so far is already in the database
-//								Pair<Boolean, String> isDistinct_usedQuery = checkIfDistinctPk(schema, primaryDuplicateValues);
-//								
-//								boolean isDistinct = isDistinct_usedQuery.first;
-//								if( !isDistinct ){
-//									// Trying to pick a duplicate in this value that leads to a fresk pk tuple
-//									String nextDuplicate = null;
-//									
-//									nextDuplicate = pickDuplicateForPk(schema, column, isDistinct_usedQuery.second);
-//									
-//									if( nextDuplicate != null ){
-//										dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate);
-//									}
-//									else{
-										// Generate random fresh
-										
-										Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
-										
-										String generatedRandom = random.getRandomValue(column, nRows);
-										dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
-										if( freshDuplicates.size() < 10 ){
-											mFreshDuplicatesToDuplicatePks.put(generatedRandom, primaryDuplicateValues);
-											freshDuplicates.add(generatedRandom);
-										}
-										
-										updateTablesToChase(column, tablesToChase);
-//									}
-//								}
+								String generatedRandom = random.getRandomValue(column, nRows);
+								dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
+								if( freshDuplicates.size() < Generator3.freshDuplicatesSize ){
+									mFreshDuplicatesToDuplicatePks.put(generatedRandom, primaryDuplicateValues);
+									freshDuplicates.add(generatedRandom);
+								}
+								
+								updateTablesToChase(column, tablesToChase);
 							}							
 							long end = System.currentTimeMillis();
 							
@@ -164,14 +139,19 @@ public class Generator3 extends Generator {
 						
 						// Let's do this
 						if( column.isPrimary() && (primaryDuplicateValues.size() == schema.getPks().size() - 1 ) ){
-							if( freshDuplicates.size() < 10 ){
+							if( freshDuplicates.size() < Generator3.freshDuplicatesSize ){
 								mFreshDuplicatesToDuplicatePks.put(generatedRandom, primaryDuplicateValues);
+								
+								Statistics.addInt(schema.getTableName()+"."+column.getName()+"___adds_to_mFreshDuplicatesToDuplicatePks", 1);
 							}
 						}
 						
 						if( schema.getPks().size() > 0 && column.getIndex() == schema.getPks().get(schema.getPks().size()-1).getIndex() ){
-							if( freshDuplicates.size() < 10 )
+							if( freshDuplicates.size() < Generator3.freshDuplicatesSize ){
 								freshDuplicates.add(generatedRandom);
+								
+								Statistics.addInt(schema.getTableName()+"."+column.getName()+"___adds_to_freshDuplicates", 1);
+							}
 						}
 						updateTablesToChase(column, tablesToChase);
 					}

@@ -240,13 +240,11 @@ public class GeneratorTest {
 		
 		Generator gen = new Generator3(db);
 		
-		
-		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(10000000, db.getSchema("testBinaryKey"));
+		gen.pumpTable(3000000, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		logger.info("Time elapsed to pump "+10000000+" rows: " + (end - start) + " msec.");
+		logger.info("Time elapsed to pump "+3000000+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 	}
 	
