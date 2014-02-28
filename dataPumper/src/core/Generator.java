@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 
 import connection.DBMSConnection;
 import core.test.GeneratorTest;
@@ -22,8 +23,8 @@ import utils.Statistics;
 
 public class Generator {
 	protected DBMSConnection dbmsConn;
-	protected RandomDBValuesGenerator random;
 	protected Distribution distribution;
+	protected Random random;
 	
 	protected static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
@@ -33,8 +34,8 @@ public class Generator {
 		
 	public Generator(DBMSConnection dbmsConn){
 		this.dbmsConn = dbmsConn;
-		random = new RandomDBValuesGenerator();
 		this.distribution = new Distribution(dbmsConn);
+		this.random = new Random();
 		
 		chasedValues = new HashMap<String, Queue<ResultSet>>();
 		duplicateValues = new HashMap<String, ResultSet>();
@@ -74,8 +75,6 @@ public class Generator {
 		Map<String, Integer> mFreshGenerated = new HashMap<String, Integer>(); // It keeps fresh generated values, column by column
 		Map<String, Queue<String>> mFreshDuplicates = new HashMap<String, Queue<String>>(); // TODO Is this too much memory consuming? Looks like no
 		
-		Map<String, List<String>> mPksDuplicatesTracker = new HashMap<String, List<String>>(); // TODO This might be consuming a lot of memory
-
 		// Fill chased
 		for( Column column : schema.getColumns() ){
 			chasedValues.put(column.getName(), fillChase(column, schema.getTableName(), mNumChases));
@@ -160,7 +159,7 @@ public class Generator {
 									dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate);
 								}
 								else{ // Generate a fresh value
-									String generatedRandom = random.getRandomValue(column, nRows);
+									String generatedRandom = column.getNextFreshValue();
 									dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 									
 									Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
@@ -215,7 +214,7 @@ public class Generator {
 					}
 					else{ // Add a random value; if I want to duplicate afterwards, keep it in freshDuplicates list
 						
-						String generatedRandom = random.getRandomValue(column, nRows);
+						String generatedRandom = column.getNextFreshValue();
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 						
 						Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
@@ -437,7 +436,7 @@ public class Generator {
 			logger.debug("curRows= "+curRows+", nDupsFromCol= "+nDupsFromCurCol);
 			nDupsFromCurCol = curRows; // Just take all of them.
 		}
-		int indexMin = curRows - nDupsFromCurCol == 0 ? 0 : random.getRandomInt(curRows - nDupsFromCurCol);
+		int indexMin = curRows - nDupsFromCurCol == 0 ? 0 : random.nextInt(curRows - nDupsFromCurCol);
 		
  		String queryString = "SELECT "+column.getName()+ " FROM "+tableName+" LIMIT "+indexMin+", "+nDupsFromCurCol;
 		

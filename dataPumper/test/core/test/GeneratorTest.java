@@ -22,7 +22,6 @@ import basicDatatypes.Template;
 import utils.Statistics;
 import connection.DBMSConnection;
 import core.Generator;
-import core.Generator2;
 import core.Generator3;
 
 /**
@@ -49,7 +48,7 @@ public class GeneratorTest {
 //	private static Connection conn1;
 	
 	// Parameters
-	private static int nRowsToInsert = 1000000;
+	private static int nRowsToInsert = 1000;
 
 	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
@@ -239,6 +238,44 @@ public class GeneratorTest {
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testBinaryKey"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
+	public void testGenerateDatetime(){
+		
+		// Init
+		PreparedStatement init = db.getPreparedStatement("insert into datetimeTest values (1, '2005-11-23 12:56:00')");
+		
+		try{
+			init.execute();
+		}
+		catch(SQLException e){
+			e.printStackTrace();
+		}
+		
+		db.fillDatabaseSchemas();
+		
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("datetimeTest"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
+	public void testGeneratePoint(){
+		
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("pointTest"));
 		long end = System.currentTimeMillis();
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");

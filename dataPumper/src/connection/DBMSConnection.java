@@ -1,11 +1,12 @@
 package connection;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import basicDatatypes.Column;
-import basicDatatypes.IntColumn;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
@@ -124,30 +124,8 @@ public class DBMSConnection {
 				stmt.setInt(columnIndex, Integer.parseInt(value));
 				break;
 			}
-			case CHAR:
-				break;
-			case DATETIME:
-				break;
-			case LINESTRING:
-				break;
-			case LONGTEXT:
-				break;
-			case MULTILINESTRING:
-				break;
-			case MULTIPOLYGON:
-				break;
-			case POINT:
-				break;
-			case POLYGON:
-				break;
-			case TEXT:
-				break;
-			case VARCHAR : {
-				stmt.setString(columnIndex, value);
-				break;
-			}
-			
 			default:
+				stmt.setString(columnIndex, value);
 				break;
 			}
 		}catch(SQLException e){
@@ -182,12 +160,30 @@ public class DBMSConnection {
 		}
 		insertQuery.append(") VALUES (");
 		
-		for( i = 0; i < s.getNumColumns(); ++i ){
-			insertQuery.append("?");
-			if( i < s.getNumColumns() - 1 )
+		i = 0;
+		for( Column c : s.getColumns() ){
+			if( c.getType() == MySqlDatatypes.POINT ||
+					c.getType() == MySqlDatatypes.POLYGON ||
+					c.getType() == MySqlDatatypes.MULTIPOLYGON ||
+					c.getType() == MySqlDatatypes.LINESTRING ||
+					c.getType() == MySqlDatatypes.MULTILINESTRING ){
+				
+				insertQuery.append("GeomFromText(?)");
+			}
+			else{
+				insertQuery.append("?");
+			}
+			if( i++ < s.getNumColumns() -1 )
 				insertQuery.append(", ");
 		}
 		insertQuery.append(")");
+		
+//		for( i = 0; i < s.getNumColumns(); ++i ){
+//			insertQuery.append("?");
+//			if( i < s.getNumColumns() - 1 )
+//				insertQuery.append(", ");
+//		}
+//		insertQuery.append(")");
 		
 		return insertQuery.toString();
 	}
@@ -280,61 +276,7 @@ public class DBMSConnection {
 	 */
 	public void initColumns(Schema schema){
 		for( Column column : schema.getColumns() )
-			initColumn(schema, column);
-	}
-	
-	public void initColumn(Schema schema, Column column) {
-		
-		switch(column.getType()){
-		case INT:{
-			fillIntColumn(schema, (IntColumn)column);
-		}
-		case CHAR:
-			break;
-		case DATETIME:
-			break;
-		case LINESTRING:
-			break;
-		case LONGTEXT:
-			break;
-		case MULTILINESTRING:
-			break;
-		case MULTIPOLYGON:
-			break;
-		case POINT:
-			break;
-		case POLYGON:
-			break;
-		case TEXT:
-			break;
-		case VARCHAR:
-			break;
-		default:
-			break;
-		
-		}
-		
-	}
-	
-	/** It fills the column with the domain values **/
-	private void fillIntColumn(Schema schema, IntColumn column) {
-		PreparedStatement stmt = this.getPreparedStatement("SELECT DISTINCT "+column.getName()+ " FROM "+schema.getTableName()+" LIMIT 100000");
-		
-		List<Integer> values = null;
-		
-		try {
-			ResultSet result = stmt.executeQuery();
-			
-			values = new ArrayList<Integer>();
-		
-			while( result.next() ){
-				values.add(Integer.parseInt(result.getString(1)));
-			}
-			stmt.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		column.setDomain(values);
+			column.fillDomain(schema, this);
 	}
 
 	/**
@@ -371,76 +313,15 @@ public class DBMSConnection {
 		}
 	}
 	
-	/**
-	 * TODO Complete the switch
-	 * TODO Since I have dates and polygons, maybe it is better to use String fields rather than doubles
-	 * @param s
-	 * @return
-	 * 
+	/** 
 	 * Types in FactPages db
 	 * int, datetime, varchar, decimal, char, text, longtext, point, linestring, polygon, multipolygon, multilinestring
 	 */
 	private void fillDomainBoundaries(Schema s){
 		
-		try {
-			Template t = new Template("select ? from "+s.getTableName()+";");
-			PreparedStatement stmt;
-						
-			for( Column c : s.getColumns() ){
-				String colName = c.getName();
-				
-				switch(c.getType()){
-				case INT : {
-										
-					t.setNthPlaceholder(1, "min("+colName+"), max("+colName+")");
-					
-					stmt = connection.prepareStatement(t.getFilled());
-					ResultSet result = stmt.executeQuery();
-										
-					if( result.next() ){
-						((IntColumn)c).setMinValue(result.getInt(1));
-						((IntColumn)c).setMaxValue(result.getInt(2));
-						c.setLastInserted(result.getInt(1));
-					}
-					stmt.close();
-					break;
-				}
-				case CHAR : {
-					break;
-				}
-				case VARCHAR : {
-					break;
-				}
-				case TEXT : {
-					break;
-				}
-				case LONGTEXT : {
-					break;
-				}
-				case DATETIME : {
-					// Not sure whether etc.
-					break;
-				}
-				case POINT : {
-					break;
-				}
-				case LINESTRING : {
-					break;
-				}
-				case MULTILINESTRING : {
-					break;
-				}
-				case POLYGON : {
-					break;
-				}
-				case MULTIPOLYGON : {
-					break;
-				}
-				}
-			}
-		}catch(SQLException e){
-			e.printStackTrace();
-		}
+		for( Column c : s.getColumns() )
+			c.fillDomainBoundaries(s, this);
+		
 	}	
 	public void setForeignCheckOff(){
 		try {

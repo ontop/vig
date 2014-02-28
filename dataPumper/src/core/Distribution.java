@@ -6,9 +6,7 @@ import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
-import utils.Pair;
 import connection.DBMSConnection;
-import core.test.GeneratorTest;
 
 public class Distribution {
 	private DBMSConnection dbmsConn;
@@ -42,6 +40,8 @@ public class Distribution {
 		int sizeProjection = sizeProjection(columnName, tableName);
 		
 		float ratio = (float)(nRows - sizeProjection) / (float)nRows;
+		
+		logger.debug("Duplicates Ratio according to Naive Strategy: " + ratio);
 		
 		return ratio; 
 	}

@@ -3,7 +3,9 @@ package basicDatatypes;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Column{
+import basicIncrementableTypes.Incrementable;
+
+public abstract class Column implements FreshValuesGenerator {
 	private final String name;
 	private final MySqlDatatypes type;
 	private boolean allDifferent;
@@ -13,14 +15,13 @@ public class Column{
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
 	private List<QualifiedName> referencedBy; // that.name subseteq this.name
 	
-	private final int index;
-
+	private final int index;	
+	
 	// Pumping related properties (as they change during the execution of pumpTable)
 	
 	private int maximumChaseCycles; // The maximum number of times fresh elements should be created for this column 
 	// --- Each fresh element triggers a chase if some other column depends on this column
 	private int currentChaseCycle;  // Number of times that this column triggered a chase during pumping
-	private int lastInserted; // In case of allDifferent
 	private float duplicatesRatio;
 	
 	// ---------------------- //
@@ -32,7 +33,6 @@ public class Column{
 		this.independent = false;
 		this.allDifferent = false;
 		this.autoincrement = false;
-		this.lastInserted = 0;
 		referencesTo = new ArrayList<QualifiedName>();
 		referencedBy = new ArrayList<QualifiedName>();
 		this.maximumChaseCycles = Integer.MAX_VALUE;
@@ -59,14 +59,6 @@ public class Column{
 	
 	public boolean isPrimary(){
 		return primary;
-	}
-	
-	public void setLastInserted(int lastInserted){
-		this.lastInserted = lastInserted;
-	}
-	
-	public int getLastInserted(){
-		return lastInserted;
 	}
 	
 	public void setAutoIncrement(){
@@ -130,10 +122,37 @@ public class Column{
 	}
 
 	public int getDuplicatesDistribution() {
-		// TODO Auto-generated method stub
+		// TODO
 		return 0;
 	}
 	
-	public void reset(){		
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends Comparable<T>> String getNextFreshValue(){
+		
+		T value = getLastInserted();
+		value = increment(value);
+		while( value.compareTo( ((T) getCurrentMax()) ) > -1 && hasNextMax() ){ 
+			value = increment(value);
+			nextMax();
+		}
+		
+		setLastInserted(value);
+		
+		return value.toString();
 	}
+	
+	
+	
+	public abstract boolean hasNextMax();
+	
+	public abstract <T> T getCurrentMax();
+	
+	public abstract <T> T increment(T value);
+	
+	public abstract void nextMax();
+	
+	protected abstract <T> void setLastInserted(T value);
+
+	protected abstract <T> T getLastInserted();
 };

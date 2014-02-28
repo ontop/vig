@@ -302,7 +302,7 @@ public class Generator2 extends Generator {
 	private String generateRandomFresh(Schema schema, Column column, PreparedStatement stmt, int nRows) {
 		Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
 
-		String generatedRandom = random.getRandomValue(column, nRows);
+		String generatedRandom = column.getNextFreshValue();
 		dbmsConn.setter(stmt, column.getIndex() + 1, column.getType(), generatedRandom);
 		
 		

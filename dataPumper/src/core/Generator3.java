@@ -75,7 +75,7 @@ public class Generator3 extends Generator {
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), pickNextChased(schema, column)); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
 						
 					}
-					else if( column.getDuplicateRatio() > random.getRandomFloat() ){
+					else if( column.getDuplicateRatio() > random.nextFloat() ){
 						logger.debug("Put a duplicate");
 						
 						// If, in all columns but one of the primary key I've put duplicates, 
@@ -104,7 +104,7 @@ public class Generator3 extends Generator {
 								Statistics.addInt(schema.getTableName()+"."+column.getName()+"_forced_fresh_values", 1);
 								Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
 								
-								String generatedRandom = random.getRandomValue(column, nRows);
+								String generatedRandom = column.getNextFreshValue();
 								dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 								if( freshDuplicates.size() < Generator3.freshDuplicatesSize ){
 									mFreshDuplicatesToDuplicatePks.put(generatedRandom, primaryDuplicateValues);
@@ -136,7 +136,7 @@ public class Generator3 extends Generator {
 					else{ // Add a random value
 						Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
 						
-						String generatedRandom = random.getRandomValue(column, nRows);
+						String generatedRandom = column.getNextFreshValue();
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 						
 						// Let's do this
