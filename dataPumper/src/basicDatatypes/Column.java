@@ -3,8 +3,6 @@ package basicDatatypes;
 import java.util.ArrayList;
 import java.util.List;
 
-import basicIncrementableTypes.Incrementable;
-
 public abstract class Column implements FreshValuesGenerator {
 	private final String name;
 	private final MySqlDatatypes type;
@@ -122,37 +120,7 @@ public abstract class Column implements FreshValuesGenerator {
 	}
 
 	public int getDuplicatesDistribution() {
-		// TODO
+		 // TODO
 		return 0;
 	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends Comparable<T>> String getNextFreshValue(){
-		
-		T value = getLastInserted();
-		value = increment(value);
-		while( value.compareTo( ((T) getCurrentMax()) ) > -1 && hasNextMax() ){ 
-			value = increment(value);
-			nextMax();
-		}
-		
-		setLastInserted(value);
-		
-		return value.toString();
-	}
-	
-	
-	
-	public abstract boolean hasNextMax();
-	
-	public abstract <T> T getCurrentMax();
-	
-	public abstract <T> T increment(T value);
-	
-	public abstract void nextMax();
-	
-	protected abstract <T> void setLastInserted(T value);
-
-	protected abstract <T> T getLastInserted();
 };

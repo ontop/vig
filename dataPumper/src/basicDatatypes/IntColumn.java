@@ -4,100 +4,31 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import connection.DBMSConnection;
 
-public class IntColumn extends Column {
-	
-	private List<Integer> domain;
-	private int domainIndex;
-	
-	private int maxValue;
-	private int minValue;
-	
-	private int lastInserted; 
+public class IntColumn extends IncrementableColumn<Integer> {
 	
 	public IntColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		domain = null;
-		this.maxValue = 0;
-		this.minValue = 0;
+		this.max = 0;
+		this.min = 0;
 		this.lastInserted = 0;
 		
 		index = 0;
 	}
 	
-	public void setLastInserted(int lastInserted){
-		this.lastInserted = lastInserted;
-	}
-	
-	public Integer getLastInserted(){
-		return new Integer(lastInserted);
-	}
-	
-	public void setDomain(List<Integer> domain){
-		if( this.domain == null ){
-			this.domain = domain;
-			Collections.sort(domain);
-		}
-		
-		// For memory reasons, there is an hard-limit about what the
-		// rows fetched from the database and that constitute the 
-		// 'domain' vector. Hence, the maximum value of the domain
-		// might NOT BE the maximum in the column.
-		if(domain.size() == 0) return;
-		if( domain.get(domain.size() -1) < maxValue )
-			domain.set(domain.size() -1, maxValue);
-	}
-	
-	public int getCurrentMax(){
-		if( domain.size() == 0 )
-			return Integer.MAX_VALUE;
-		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
-	}
-	
-	public void nextMax(){
-		++domainIndex;
-	}
-	
-	public boolean hasNextMax(){
-		return domainIndex < domain.size();
-	}
-	
-	public void setMaxValue(int max){
-		maxValue = max;
-	}
-	
-	public int getMaxValue(){
-		return maxValue;
-	}
-	
-	public void setMinValue(int min){
-		minValue = min;
-	}
-	
-	public int getMinValue(){
-		return minValue;
-	}
-	
 	@Override
 	public String getNextFreshValue(){
-		int allDiffCnt = this.getLastInserted();
+		int toInsert = this.getLastInserted();
 		
-		while( ++allDiffCnt >= this.getCurrentMax() && this.hasNextMax() ) this.nextMax();
+		while( ++toInsert >= this.getCurrentMax() && this.hasNextMax() ) this.nextMax();
 		
-		this.setLastInserted(allDiffCnt);
+		this.setLastInserted(toInsert);
 		
-		return Integer.toString(allDiffCnt);
-	}
-	
-	@Override
-	/** This method has to be called whenever information held for the column can be released **/
-	public void reset(){
-		if( domain != null ) domain.clear();
-		domainIndex = 0;
+		return Integer.toString(toInsert);
 	}
 
 	@Override
@@ -141,32 +72,19 @@ public class IntColumn extends Column {
 			}
 			stmt.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public <T> T getCurrentMax() {
-		// TODO Auto-generated method stub
-		return null;
+	public Integer increment(Integer toIncrement) {
+		return ++toIncrement;
 	}
 
 	@Override
-	public <T> T increment(T value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected <T> void setLastInserted(T value) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected <T> T getLastInserted() {
-		// TODO Auto-generated method stub
-		return null;
+	public Integer getCurrentMax() {
+		if( domain.size() == 0 )
+			return Integer.MAX_VALUE;
+		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
 	}
 }

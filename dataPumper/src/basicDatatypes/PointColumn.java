@@ -1,5 +1,7 @@
 package basicDatatypes;
 
+import geometry.Point;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -7,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import connection.DBMSConnection;
-import utils.wktparsers.PointParserWKT;
 
 
 /**
@@ -15,121 +16,21 @@ import utils.wktparsers.PointParserWKT;
  * @author tir
  *
  */
-public class PointColumn extends Column {
+public class PointColumn extends IncrementableColumn<Point> {
+	
+	private long globalMinX;
+	private long globalMaxX;
+	
+	private long globalMinY;
+	private long globalMaxY;
 
-	private long minX;
-	private long maxX;
-	
-	private long minY;
-	private long maxY;
-	
-	private List<Long> xDomain;
-	private List<Long> yDomain;
-	
-	private int yIndex;
-	private int xIndex;
-	
-	private String lastInserted;
-	
-	private PointParserWKT parser;
-	
+				
 	public PointColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
-		xDomain = null;
-		yDomain = null;
 		index = 0;
 		lastInserted = null;
-		minX = 0;
-		maxX = 0;
-		minY = 0;
-		maxY = 0;
-		parser = new PointParserWKT();
-		yIndex = 0;
-		xIndex = 0;
-	}
-	
-	public void setMaxX(long x){
-		maxX = x;
-	}
-	
-	public void setMaxY(long y){
-		maxY = y;
-	}
-	
-	public void setMinX(long x){
-		minX = x;
-	}
-	
-	public void setMinY(long y){
-		minY = y;
-	}
-	/**
-	 * 
-	 * @param pointWKT A well-known-text representation of a GIS point
-	 */
-	public void setLastInserted(String pointWKT){
-		this.lastInserted = pointWKT;
-	}
-	
-	public void setDomain(List<String> Points){
-		xDomain = new ArrayList<Long>();
-		yDomain = new ArrayList<Long>();
-		
-		for( String pointWKT : Points ){ // WKT stands for "well-known-text"
-			parser.parse(pointWKT);
-			xDomain.add(parser.getX());
-			yDomain.add(parser.getY());
-		}
-	}
-
-	// TODO Make it more powerful
-	@Override
-	public String getNextFreshValue() {
-		
-		if( lastInserted == null ){
-			lastInserted = "Point(0 0)";
-			return parser.toWKT(0, 0);
-		}
-
-		long newX = 0;
-		long newY = 0;
-
-		parser.parse(lastInserted);
-		long lastX = parser.getX();
-		long lastY = parser.getY();
-		
-		if( xDomain.size() == 0){
-			
-			if( lastX < maxX ){
-				newX = ++lastX;
-			}
-			else{
-				newY = ++lastY;
-			}
-		}
-		else{
-			
-			while( yIndex < yDomain.size() && ++lastY == yDomain.get(yIndex) ) ++yIndex;
-			if( yIndex < yDomain.size() ){
-				newX = lastX;
-				newY = lastY;
-			}
-			else{
-				
-			}
-			
-		}
-		
-		lastInserted = parser.toWKT(newX, newY);
-		return parser.toWKT(newX, newY);
-	}
-
-	@Override
-	public void reset() {
-		xDomain.clear();
-		yDomain.clear();
-		
-		index = 0;
+		domain = null;
+		domainIndex = 0;
 	}
 
 	@Override
@@ -139,18 +40,24 @@ public class PointColumn extends Column {
 		
 		PreparedStatement stmt = db.getPreparedStatement(queryString);
 	
-		List<String> retrievedPoints = new ArrayList<String>();
+		List<Point> retrievedPoints = new ArrayList<Point>();
+		
+		retrievedPoints.add(new Point(globalMinX, globalMinY));
 		
 		try {
 			ResultSet rs = stmt.executeQuery();
 		
 			while( rs.next() ){
-				retrievedPoints.add(rs.getString(1));
+				retrievedPoints.add(new Point(rs.getString(1)));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
+		if( retrievedPoints.size() == 0 ) retrievedPoints.clear(); 
+		else{
+			retrievedPoints.add(new Point(globalMaxX, globalMaxY));
+		}
 		setDomain(retrievedPoints);
 	}
 
@@ -171,8 +78,8 @@ public class PointColumn extends Column {
 			ResultSet rs = stmt.executeQuery();
 
 			if( rs.next() ){
-				minX = rs.getInt(1);
-				maxX = rs.getLong(1);
+				globalMinX = rs.getLong(1);
+				globalMaxX = rs.getLong(1);
 			}
 			
 			stmt.close();
@@ -185,8 +92,8 @@ public class PointColumn extends Column {
 			rs = stmt.executeQuery();
 
 			if( rs.next() ){
-				minX = rs.getInt(1);
-				maxX = rs.getLong(1);
+				globalMinX = rs.getInt(1);
+				globalMaxX = rs.getLong(1);
 			}
 			
 			stmt.close();
@@ -194,5 +101,29 @@ public class PointColumn extends Column {
 		catch(SQLException e){
 			e.printStackTrace();
 		}
+		
+		max = new Point(globalMaxX, globalMaxY);
+		min = new Point(globalMinX, globalMinY);
+		
+		setLastInserted(min);
+	}
+
+	@Override
+	public Point increment(Point toIncrement) {
+		// Lexicographical increment
+		
+		if( toIncrement.getY() < globalMaxY ){ toIncrement.incrementY();}
+		else{
+			toIncrement.incrementX(); 
+			toIncrement.setY(globalMinY);
+		}
+		return toIncrement;
+	}
+
+	@Override
+	public Point getCurrentMax() {
+		if( domain.size() == 0 )
+			return new Point(Long.MAX_VALUE, Long.MAX_VALUE);
+		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
 	}
 }

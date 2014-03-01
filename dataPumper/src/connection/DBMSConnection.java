@@ -1,7 +1,5 @@
 package connection;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -261,7 +259,7 @@ public class DBMSConnection {
 		
 			// Now, let's fill the Min & Max information
 			fillDomainBoundaries(schema);
-		
+			
 		}
 		catch(SQLException e){
 			e.printStackTrace();
