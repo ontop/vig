@@ -281,4 +281,56 @@ public class GeneratorTest {
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 	}
+	
+	@Test
+	public void testGenerateLinestring(){
+		
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("testLinestring"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}	
+	
+	@Test
+	public void testGeneratePolygon(){
+		
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("testPolygon"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}	
+	
+	@Test
+	public void testGenerateMultiLinestring(){
+
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("testMultilinestring"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
+	public void testGenerateMultiPolygon(){
+
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("testMultipolygon"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
 }

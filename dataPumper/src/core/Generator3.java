@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import columnTypes.Column;
 import utils.Statistics;
 import connection.DBMSConnection;
 import basicDatatypes.*;

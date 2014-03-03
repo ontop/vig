@@ -1,5 +1,6 @@
-package basicDatatypes;
+package columnTypes;
 
+import basicDatatypes.Schema;
 import connection.DBMSConnection;
 
 public interface FreshValuesGenerator {

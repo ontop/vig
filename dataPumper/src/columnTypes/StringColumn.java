@@ -1,7 +1,9 @@
-package basicDatatypes;
+package columnTypes;
 
 import java.util.List;
 
+import basicDatatypes.MySqlDatatypes;
+import basicDatatypes.Schema;
 import connection.DBMSConnection;
 
 public class StringColumn extends Column {

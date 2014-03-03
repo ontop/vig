@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import columnTypes.Column;
 import utils.Pair;
 import utils.Statistics;
-import basicDatatypes.Column;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
 import connection.DBMSConnection;

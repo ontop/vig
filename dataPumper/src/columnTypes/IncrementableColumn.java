@@ -1,8 +1,9 @@
-package basicDatatypes;
+package columnTypes;
 
 import java.util.Collections;
 import java.util.List;
 
+import basicDatatypes.MySqlDatatypes;
 
 public abstract class IncrementableColumn<T extends Comparable<? super T>> extends Column {
 
@@ -35,13 +36,14 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 		
 		T toInsert = this.getLastInserted();
 		
+		if( toInsert == null ) logger.error("toInsert is NULL");
+		logger.debug(toInsert);
 		while( increment(toInsert).compareTo(this.getCurrentMax()) > -1 && this.hasNextMax() ) this.nextMax();
 		
 		this.setLastInserted(toInsert);
 		
 		return toInsert.toString();
 	}
-	
 
 	public void setLastInserted(T toInsert){
 		lastInserted = toInsert;

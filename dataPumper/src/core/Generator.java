@@ -18,6 +18,7 @@ import basicDatatypes.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import columnTypes.Column;
 import utils.Pair;
 import utils.Statistics;
 

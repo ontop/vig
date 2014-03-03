@@ -5,9 +5,9 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import basicDatatypes.Column;
-import basicDatatypes.DateTimeColumn;
-import basicDatatypes.IntColumn;
+import columnTypes.Column;
+import columnTypes.DateTimeColumn;
+import columnTypes.IntColumn;
 @Deprecated
 public class RandomDBValuesGenerator {
 //	private Random rand;

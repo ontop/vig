@@ -1,4 +1,4 @@
-package basicDatatypes;
+package columnTypes;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,6 +7,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import basicDatatypes.MySqlDatatypes;
+import basicDatatypes.Schema;
+import basicDatatypes.Template;
 import connection.DBMSConnection;
 
 public class DateTimeColumn extends IncrementableColumn<Timestamp>{

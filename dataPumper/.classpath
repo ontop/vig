@@ -7,7 +7,7 @@
 	<classpathentry kind="lib" path="/home/tir/lib/mysql-connector-java-5.1.28/mysql-connector-java-5.1.28-bin.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="/home/tir/jts/lib/jts-1.8.jar"/>
-	<classpathentry kind="lib" path="/home/tir/.m2/repository/log4j/log4j/1.2.16/log4j-1.2.16.jar">
+	<classpathentry kind="lib" path="/home/tir/.m2/repository/log4j/log4j/1.2.16/log4j-1.2.16.jar" sourcepath="/home/tir/.m2/repository/log4j/log4j/1.2.16/log4j-1.2.16-sources.jar">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 			<attribute name="maven.groupId" value="log4j"/>

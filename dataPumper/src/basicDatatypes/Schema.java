@@ -3,6 +3,15 @@ package basicDatatypes;
 import java.util.ArrayList;
 import java.util.List;
 
+import columnTypes.Column;
+import columnTypes.DateTimeColumn;
+import columnTypes.IntColumn;
+import columnTypes.LinestringColumn;
+import columnTypes.MultiLinestringColumn;
+import columnTypes.MultiPolygonColumn;
+import columnTypes.PointColumn;
+import columnTypes.PolygonColumn;
+import columnTypes.StringColumn;
 import basicDatatypes.MySqlDatatypes;
 
 public class Schema{
@@ -47,10 +56,10 @@ public class Schema{
 		else if( typeString.startsWith("longtext") ) columns.add(new StringColumn(colName, MySqlDatatypes.LONGTEXT, columns.size()));
 		else if( typeString.startsWith("datetime") ) columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, columns.size()));
 		else if( typeString.startsWith("point") ) columns.add(new PointColumn(colName, MySqlDatatypes.POINT, columns.size()));
-//		else if( typeString.startsWith("linestring") ) columns.add(new Column(colName, MySqlDatatypes.LINESTRING, columns.size()));
-//		else if( typeString.startsWith("multilinestring") ) columns.add(new Column(colName, MySqlDatatypes.MULTILINESTRING, columns.size()));
-//		else if( typeString.startsWith("polygon") ) columns.add(new Column(colName, MySqlDatatypes.POLYGON, columns.size()));
-//		else if( typeString.startsWith("multipolygon") ) columns.add(new Column(colName, MySqlDatatypes.MULTIPOLYGON, columns.size()));
+		else if( typeString.startsWith("linestring") ) columns.add(new LinestringColumn(colName, MySqlDatatypes.LINESTRING, columns.size()));
+		else if( typeString.startsWith("multilinestring") ) columns.add(new MultiLinestringColumn(colName, MySqlDatatypes.MULTILINESTRING, columns.size()));
+		else if( typeString.startsWith("polygon") ) columns.add(new PolygonColumn(colName, MySqlDatatypes.POLYGON, columns.size()));
+		else if( typeString.startsWith("multipolygon") ) columns.add(new MultiPolygonColumn(colName, MySqlDatatypes.MULTIPOLYGON, columns.size()));
 	}
 	
 	public Column getColumn(String colName){

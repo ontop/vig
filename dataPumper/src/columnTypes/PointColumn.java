@@ -1,4 +1,4 @@
-package basicDatatypes;
+package columnTypes;
 
 import geometry.Point;
 
@@ -8,6 +8,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import basicDatatypes.MySqlDatatypes;
+import basicDatatypes.Schema;
+import basicDatatypes.Template;
 import connection.DBMSConnection;
 
 
@@ -27,7 +30,6 @@ public class PointColumn extends IncrementableColumn<Point> {
 				
 	public PointColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
-		index = 0;
 		lastInserted = null;
 		domain = null;
 		domainIndex = 0;

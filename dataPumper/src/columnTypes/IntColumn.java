@@ -1,4 +1,4 @@
-package basicDatatypes;
+package columnTypes;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -6,6 +6,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import basicDatatypes.MySqlDatatypes;
+import basicDatatypes.Schema;
+import basicDatatypes.Template;
 import connection.DBMSConnection;
 
 public class IntColumn extends IncrementableColumn<Integer> {

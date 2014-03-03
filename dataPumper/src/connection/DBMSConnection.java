@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import basicDatatypes.Column;
+import columnTypes.Column;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;

@@ -1,7 +1,12 @@
-package basicDatatypes;
+package columnTypes;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import basicDatatypes.MySqlDatatypes;
+import basicDatatypes.QualifiedName;
 
 public abstract class Column implements FreshValuesGenerator {
 	private final String name;
@@ -21,6 +26,8 @@ public abstract class Column implements FreshValuesGenerator {
 	// --- Each fresh element triggers a chase if some other column depends on this column
 	private int currentChaseCycle;  // Number of times that this column triggered a chase during pumping
 	private float duplicatesRatio;
+	
+	protected static Logger logger = Logger.getLogger(Column.class.getCanonicalName());
 	
 	// ---------------------- //
 	
