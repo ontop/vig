@@ -21,7 +21,7 @@ public class Polygon extends MultiLinestring{
 	 * @param maxX
 	 * @param maxY
 	 */
-	public static Polygon getInstanceFromRectangle(long minX, long minY, long maxX, long maxY){
+	public static Polygon getInstanceFromRectangle(double minX, double minY, double maxX, double maxY){
 		StringBuilder rectangleWKT = new StringBuilder();
 		
 		rectangleWKT.append("Polygon((" + minX + " " + minY);

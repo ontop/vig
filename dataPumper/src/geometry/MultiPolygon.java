@@ -20,7 +20,7 @@ public class MultiPolygon implements Comparable<MultiPolygon>{
 	 * @param maxY
 	 */
 	
-	public static MultiPolygon getInstanceFromRectangle(long minX, long minY, long maxX, long maxY){
+	public static MultiPolygon getInstanceFromRectangle(double minX, double minY, double maxX, double maxY){
 		StringBuilder rectangleWKT = new StringBuilder();
 		
 		rectangleWKT.append("Multipolygon(((" + minX + " " + minY);

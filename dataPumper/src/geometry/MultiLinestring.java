@@ -20,7 +20,7 @@ public class MultiLinestring implements Comparable<MultiLinestring>{
 	 * @param maxY
 	 */
 	
-	public static MultiLinestring getInstanceFromRectangle(long minX, long minY, long maxX, long maxY){
+	public static MultiLinestring getInstanceFromRectangle(double minX, double minY, double maxX, double maxY){
 		StringBuilder rectangleWKT = new StringBuilder();
 		
 		rectangleWKT.append("Multilinestring((" + minX + " " + minY);

@@ -2,28 +2,28 @@ package geometry;
 
 public class Point implements Comparable<Point>{
 
-	private long x;
-	private long y;
+	private double x;
+	private double y;
 	
 	public Point(String pointWKT){
 		int indexX = pointWKT.indexOf("(") +1;
 		int indexBlank = pointWKT.indexOf(" ");
 		int indexY = indexBlank +1;
 		
-		x = Long.parseLong(pointWKT.substring(indexX, indexBlank));
-		y = Long.parseLong(pointWKT.substring(indexY, pointWKT.indexOf(")")));
+		x = Double.parseDouble(pointWKT.substring(indexX, indexBlank));
+		y = Double.parseDouble(pointWKT.substring(indexY, pointWKT.indexOf(")")));
 	};
 	
-	public Point(long x, long y){
+	public Point(double x, double y){
 		this.x = x;
 		this.y = y;
 	}
 	
-	public String toWKT(long x, long y){
+	public String toWKT(double x, double y){
 		return "Point(" + x + " " + y + ")";
 	}
 	
-	public long getX(){
+	public double getX(){
 		return x;
 	}
 	
@@ -35,15 +35,15 @@ public class Point implements Comparable<Point>{
 		++y;
 	}
 	
-	public void setX(long newX){
+	public void setX(double newX){
 		x = newX;
 	}
 	
-	public void setY(long newY){
+	public void setY(double newY){
 		y = newY;
 	}
 	
-	public long getY(){
+	public double getY(){
 		return y;
 	}
 	

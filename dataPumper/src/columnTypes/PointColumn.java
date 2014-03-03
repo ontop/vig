@@ -21,11 +21,11 @@ import connection.DBMSConnection;
  */
 public class PointColumn extends IncrementableColumn<Point> {
 	
-	private long globalMinX;
-	private long globalMaxX;
+	private double globalMinX;
+	private double globalMaxX;
 	
-	private long globalMinY;
-	private long globalMaxY;
+	private double globalMinY;
+	private double globalMaxY;
 
 				
 	public PointColumn(String name, MySqlDatatypes type, int index) {
@@ -80,8 +80,8 @@ public class PointColumn extends IncrementableColumn<Point> {
 			ResultSet rs = stmt.executeQuery();
 
 			if( rs.next() ){
-				globalMinX = rs.getLong(1);
-				globalMaxX = rs.getLong(1);
+				globalMinX = rs.getDouble(1);
+				globalMaxX = rs.getDouble(1);
 			}
 			
 			stmt.close();
@@ -94,8 +94,8 @@ public class PointColumn extends IncrementableColumn<Point> {
 			rs = stmt.executeQuery();
 
 			if( rs.next() ){
-				globalMinX = rs.getInt(1);
-				globalMaxX = rs.getLong(1);
+				globalMinX = rs.getDouble(1);
+				globalMaxX = rs.getDouble(1);
 			}
 			
 			stmt.close();
@@ -125,7 +125,7 @@ public class PointColumn extends IncrementableColumn<Point> {
 	@Override
 	public Point getCurrentMax() {
 		if( domain.size() == 0 )
-			return new Point(Long.MAX_VALUE, Long.MAX_VALUE);
+			return new Point(Double.MAX_VALUE, Double.MAX_VALUE);
 		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
 	}
 }

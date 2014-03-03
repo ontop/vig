@@ -15,11 +15,11 @@ import geometry.Point;
 
 public class LinestringColumn extends IncrementableColumn<Linestring>{
 	
-	private long globalMinX;
-	private long globalMaxX;
+	private double globalMinX;
+	private double globalMaxX;
 	
-	private long globalMinY;
-	private long globalMaxY;
+	private double globalMinY;
+	private double globalMaxY;
 	
 	
 	
@@ -62,7 +62,7 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 		}
 		else{
 			min = new Linestring("Linestring(0 0,0 0)");
-			max = new Linestring("Linestring("+Long.MAX_VALUE+" "+Long.MAX_VALUE+","+Long.MAX_VALUE+" "+Long.MAX_VALUE+")");
+			max = new Linestring("Linestring("+Double.MAX_VALUE+" "+Double.MAX_VALUE+","+Double.MAX_VALUE+" "+Double.MAX_VALUE+")");
 			
 			lastInserted = min;
 			
@@ -75,19 +75,19 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 		
 		fillDomain(schema, db);
 		
-		long maxX = Long.MIN_VALUE;
-		long maxY = Long.MIN_VALUE;
+		double maxX = Double.MIN_VALUE;
+		double maxY = Double.MIN_VALUE;
 
-		long minX = Long.MAX_VALUE;
-		long minY = Long.MAX_VALUE;
+		double minX = Double.MAX_VALUE;
+		double minY = Double.MAX_VALUE;
 		
 		if( domain == null ) logger.error("Null domain");
 		
 		if( domain.size() == 0 ){
-			globalMaxX = Long.MAX_VALUE;
-			globalMinX = Long.MIN_VALUE;
-			globalMaxY = Long.MAX_VALUE;
-			globalMinY = Long.MIN_VALUE;
+			globalMaxX = Double.MAX_VALUE;
+			globalMinX = Double.MIN_VALUE;
+			globalMaxY = Double.MAX_VALUE;
+			globalMinY = Double.MIN_VALUE;
 			
 			return;
 		}
@@ -136,9 +136,9 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 		if( domain.size() == 0 ){		
 			return 
 					new Linestring
-					("Linestring("+Long.MAX_VALUE +" " + Long.MAX_VALUE +
+					("Linestring("+Double.MAX_VALUE +" " + Double.MAX_VALUE +
 							","
-							+Long.MAX_VALUE + " " + Long.MAX_VALUE + ")");
+							+Double.MAX_VALUE + " " + Double.MAX_VALUE + ")");
 		}
 		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
 	}

@@ -16,11 +16,11 @@ import geometry.Polygon;
 
 public class MultiLinestringColumn extends IncrementableColumn<MultiLinestring>{
 
-	private long globalMinX;
-	private long globalMaxX;
+	private double globalMinX;
+	private double globalMaxX;
 	
-	private long globalMinY;
-	private long globalMaxY;
+	private double globalMinY;
+	private double globalMaxY;
 	
 	public MultiLinestringColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
@@ -29,9 +29,9 @@ public class MultiLinestringColumn extends IncrementableColumn<MultiLinestring>{
 		domainIndex = 0;
 
 		globalMinX = 0;
-		globalMaxX = Long.MAX_VALUE;
+		globalMaxX = Double.MAX_VALUE;
 		globalMinY = 0;
-		globalMaxY = Long.MAX_VALUE;
+		globalMaxY = Double.MAX_VALUE;
 	}
 
 	/**
@@ -63,8 +63,8 @@ public class MultiLinestringColumn extends IncrementableColumn<MultiLinestring>{
 		
 		if( retrievedPolygons.size() != 0 ){
 			
-			globalMinY = globalMinX = Long.MAX_VALUE;
-			globalMaxY = globalMaxX = Long.MIN_VALUE;
+			globalMinY = globalMinX = Double.MAX_VALUE;
+			globalMaxY = globalMaxX = Double.MIN_VALUE;
 			
 			// TODO Fill globals
 			for( Polygon polygon : retrievedPolygons ){
@@ -83,12 +83,12 @@ public class MultiLinestringColumn extends IncrementableColumn<MultiLinestring>{
 		}
 		else{
 			min = new MultiLinestring("Multilinestring((0 0,1 0,1 1,0 1,0 0))");
-			max = new MultiLinestring("Multilinestring((0 0,"+Long.MAX_VALUE+" 0,"+Long.MAX_VALUE+" "+Long.MAX_VALUE+",0 "+Long.MAX_VALUE+",0 0))");
+			max = new MultiLinestring("Multilinestring((0 0,"+Double.MAX_VALUE+" 0,"+Double.MAX_VALUE+" "+Double.MAX_VALUE+",0 "+Double.MAX_VALUE+",0 0))");
 			
 			lastInserted = min;
 			
-			globalMaxX = globalMaxY = Long.MAX_VALUE;
-			globalMinX = globalMinY = Long.MIN_VALUE;
+			globalMaxX = globalMaxY = Double.MAX_VALUE;
+			globalMinX = globalMinY = Double.MIN_VALUE;
 		}
 		
 	}
