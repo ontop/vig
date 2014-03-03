@@ -41,7 +41,14 @@ public class Generator3 extends Generator {
 	public List<Schema> pumpTable(int nRows, Schema schema){
 		
 		nRows = initChaseValues(nRows, schema);
-		initDuplicateValuesAndRatios(schema, 0);
+		initDuplicateValues(schema, 0);
+		
+		initDuplicateRatios(schema);
+		// Now, the current dup ratios are calculated
+		// according to nRows. However, due to the implementation
+		// the real number favorable cases is nRows - numChases (look at the first if condition)
+		// Thus, an update on the ratios is needed.
+		updateDupRatios(nRows, schema);
 		
 		PreparedStatement stmt = null;
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
@@ -169,7 +176,7 @@ public class Generator3 extends Generator {
 					logger.info("Advancing the set of candidate duplicates");
 					stmt.executeBatch();	
 					dbmsConn.commit();
-					initDuplicateValuesAndRatios(schema, j);
+					initDuplicateValues(schema, j);
 					initNumDupsRepetitionCounters();
 					mFreshDuplicatesToDuplicatePks.clear();
 					freshDuplicates.clear();
@@ -192,6 +199,29 @@ public class Generator3 extends Generator {
 		return tablesToChase; 
 	}
 		
+	/**
+	 * 
+	 * nR * oldRatio = (nR - numChases) * newRatio
+	 * => implies
+	 * newRatio = (nR * oldRatio) / (nR - numChases)
+	 * 
+	 * @param nRows
+	 * @param schema
+	 */
+	private void updateDupRatios(int nRows, Schema schema) {
+		
+		for( Column c : schema.getColumns() ){
+			int numChases = mNumChases.containsKey(c.getName()) ? mNumChases.get(c.getName()) : 0;
+			float oldRatio = c.getDuplicateRatio();
+			
+			float newRatio = (nRows * oldRatio) / (nRows - numChases );
+			
+			logger.info(schema.getTableName() +"."+ c.getName() +" updated dup ratio: " + newRatio);
+			c.setDuplicateRatio(newRatio);
+		}
+	}
+
+
 	private void resetState(Schema schema) {
 		resetDuplicateValues();
 		resetColumns(schema);
@@ -213,7 +243,7 @@ public class Generator3 extends Generator {
 		}
 	}
 
-	private void initDuplicateValuesAndRatios(Schema schema, int insertedRows) {
+	private void initDuplicateValues(Schema schema, int insertedRows) {
 		resetDuplicateValues();
 		
 		for( Column c : schema.getColumns() ){
@@ -225,9 +255,15 @@ public class Generator3 extends Generator {
 				e.printStackTrace();
 			}
 			duplicateValues.put(c.getName(), rs);
-			c.setDuplicateRatio(findDuplicateRatio(schema, c));
+//			c.setDuplicateRatio(findDuplicateRatio(schema, c));
 		}
 		System.gc();
+	}
+	
+	private void initDuplicateRatios(Schema schema){
+		for( Column c : schema.getColumns() ){
+			c.setDuplicateRatio(findDuplicateRatio(schema, c));
+		}
 	}
 
 	private int initChaseValues(int nRows, Schema schema){
