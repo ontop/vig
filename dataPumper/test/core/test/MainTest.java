@@ -24,17 +24,18 @@ public class MainTest {
 	private static String password = "ontop2014";
 	
 	private static String jdbcConnector1 = "jdbc:mysql";
-	private static String databaseUrl1 = "localhost/ciao";
+	private static String databaseUrl1 = "localhost/provaNpd";
 	private static String username1 = "tir";
 	private static String password1 = "";
 	
 	private static DBMSConnection db;
+	private static DBMSConnection db1;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
-
+		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
 	}
 	
 	@Before
@@ -95,12 +96,23 @@ public class MainTest {
 		schemaB.getColumn("id").setMaximumChaseCycles(1);
 		schemaC.getColumn("id").setMaximumChaseCycles(3);
 		
-		
-		
 		db.setForeignCheckOff();
 		db.setUniqueCheckOff();
 		main.pumpDatabase(db, 1);
 		db.setUniqueCheckOn();
 		db.setForeignCheckOn();
 	}
+
+	@Test
+	public void testPumpNPD() {
+		Main main = new Main();		
+		
+		db.setForeignCheckOff();
+		db.setUniqueCheckOff();
+		main.pumpDatabase(db, 1000);
+		db.setUniqueCheckOn();
+		db.setForeignCheckOn();
+	}
 }
+
+

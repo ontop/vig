@@ -37,7 +37,7 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 		T toInsert = this.getLastInserted();
 		
 		if( toInsert == null ) logger.error("toInsert is NULL");
-		logger.debug(toInsert);
+		
 		while( increment(toInsert).compareTo(this.getCurrentMax()) > -1 && this.hasNextMax() ) this.nextMax();
 		
 		this.setLastInserted(toInsert);

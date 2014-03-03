@@ -218,6 +218,10 @@ public class DBMSConnection {
 			// Field - Type - Null - Default - Extra
 			while(result.next()){
 				schema.addColumn(result.getString(1), result.getString(2));
+//				if( schema.getTableName().equals("apaAreaGross")){
+//					logger.info("here");
+//				}
+				logger.info("Adding column" + result.getString(1) + " from table " + tableName);
 				
 				// Primary keys need to be all different
 				logger.info(result.getString(4));

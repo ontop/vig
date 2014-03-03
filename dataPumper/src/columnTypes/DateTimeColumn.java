@@ -63,10 +63,15 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 		try{
 			ResultSet result = stmt.executeQuery();
 			
-			if( result.next() ){
+			if( result.next() && (result.getTimestamp(1) != null) ){
 				setMinValue(result.getTimestamp(1));
 				setMaxValue(result.getTimestamp(2));
 				setLastInserted(result.getTimestamp(1));
+			}
+			else{
+				setMinValue(new Timestamp(0));
+				setMaxValue(new Timestamp(Long.MAX_VALUE));
+				setLastInserted(new Timestamp(0));
 			}
 			stmt.close();
 		}

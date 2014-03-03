@@ -270,6 +270,19 @@ public class GeneratorTest {
 	}
 	
 	@Test
+	public void testGenerateDatetime_1(){
+				
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("datetimeTest"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
 	public void testGeneratePoint(){
 		
 		Generator gen = new Generator3(db);
@@ -328,6 +341,44 @@ public class GeneratorTest {
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testMultipolygon"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
+	public void testAutoincrement(){
+
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("testAutoincrement"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
+	public void testAutoincrement_1(){
+		
+		// Init
+		PreparedStatement init = db.getPreparedStatement("insert into testAutoincrement values (1, 100)");
+		
+		try{
+			init.execute();
+		}
+		catch(SQLException e){
+			e.printStackTrace();
+		}
+		
+		db.fillDatabaseSchemas();
+		
+		Generator gen = new Generator3(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("testAutoincrement"));
 		long end = System.currentTimeMillis();
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
