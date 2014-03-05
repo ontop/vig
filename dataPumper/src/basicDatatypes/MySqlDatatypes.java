@@ -2,6 +2,7 @@ package basicDatatypes;
 
 public enum MySqlDatatypes {
 	INT, 
+	DOUBLE,
 	CHAR,
 	VARCHAR,
 	TEXT,

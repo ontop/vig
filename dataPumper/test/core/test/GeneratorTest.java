@@ -37,13 +37,13 @@ public class GeneratorTest {
 	private static String username = "test";
 	private static String password = "ontop2014";
 	
-//	private static String jdbcConnector1 = "jdbc:mysql";
-//	private static String databaseUrl1 = "10.7.20.39:3306/npd";
-//	private static String username1 = "fish";
-//	private static String password1 = "fish";
+	private static String jdbcConnector1 = "jdbc:mysql";
+	private static String databaseUrl1 = "localhost/provaNpd";
+	private static String username1 = "tir";
+	private static String password1 = "";
 	
 	private static DBMSConnection db;
-//	private static DBMSConnection db1;
+	private static DBMSConnection db1;
 	private static Connection conn;
 //	private static Connection conn1;
 	
@@ -56,7 +56,7 @@ public class GeneratorTest {
 	public static void setUpBeforeClass(){
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		conn = db.getConnection();
-//		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
+		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
 //		conn1 = db1.getConnection();
 	}
 	
@@ -379,6 +379,43 @@ public class GeneratorTest {
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testAutoincrement"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
+	public void testPumpWithNullInGeometry(){
+				
+		Generator gen = new Generator3(db1);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db1.getSchema("apaAreaNet"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
+	public void checkPrimaryKeyIntegerSkips(){
+		Generator gen = new Generator3(db1);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(1000000, db1.getSchema("bsns_arr_area"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
+	@Test
+	public void provetta(){
+		Generator gen = new Generator3(db1);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(10, db1.getSchema("field"));
 		long end = System.currentTimeMillis();
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");

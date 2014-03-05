@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import columnTypes.Column;
@@ -32,6 +33,9 @@ public class DBMSConnection {
 	private static Logger logger = Logger.getLogger(DBMSConnection.class.getCanonicalName());
 	
 	public DBMSConnection(String jdbcConnector, String database, String username, String password){
+		
+//		logger.setLevel(Level.INFO);
+		
 		this.jdbcConnector = jdbcConnector;
 		this.databaseUrl = database;
 		this.username = username;
@@ -118,10 +122,10 @@ public class DBMSConnection {
 		try{
 			
 			switch(type){
-			case INT: {
-				stmt.setInt(columnIndex, Integer.parseInt(value));
-				break;
-			}
+//			case INT: {
+//				stmt.setLong(columnIndex, Long.parseLong(value));
+//				break;
+//			}
 			default:
 				stmt.setString(columnIndex, value);
 				break;
@@ -217,18 +221,17 @@ public class DBMSConnection {
 			
 			// Field - Type - Null - Default - Extra
 			while(result.next()){
+//				logger.debug("Adding column " + result.getString(1) + " from table " + tableName);
+
 				schema.addColumn(result.getString(1), result.getString(2));
-//				if( schema.getTableName().equals("apaAreaGross")){
-//					logger.info("here");
-//				}
-				logger.info("Adding column " + result.getString(1) + " from table " + tableName);
+				
 				
 				// Primary keys need to be all different
-				logger.info(result.getString(4));
-				if( result.getString(4).equals("PRI") ){
+				logger.debug(result.getString(4));
+				if( result.getString(4).equals("PRI") /*|| result.getString(4).equals("UNI")*/ ){ //TODO BUGFIX!!
 					
 					schema.getColumn(result.getString(1)).setPrimary();
-				}				
+				}		
 			}
 			stmt.close();
 			

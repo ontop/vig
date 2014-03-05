@@ -462,22 +462,36 @@ public class Generator {
 		Queue<ResultSet> result = new LinkedList<ResultSet>(); 
 		
 		// SELECT referredByCol FROM referredByTable WHERE referredByCol NOT IN (SELECT column.name() FROM schema.name()); 
-		Template query = new Template("SELECT DISTINCT ? FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
-		Template queryCount = new Template("SELECT COUNT(DISTINCT ?) FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
+		// TODO Distinguish between geometric and non-geometric		
 		
+		Template query = null;
+		Template queryCount = null;
+		
+		if( column.isGeometric() ){
+			query = new Template("SELECT DISTINCT AsText(?) FROM ? WHERE AsText(?) IS NOT NULL AND "
+					+ "AsText(?) NOT IN (SELECT AsText(?) FROM ?)");
+			queryCount = new Template("SELECT COUNT(DISTINCT AsText(?)) FROM ? WHERE AsText(?) IS NOT NULL"
+					+ " AND AsText(?) NOT IN (SELECT AsText(?) FROM ?)");
+		}
+		else{
+			query = new Template("SELECT DISTINCT ? FROM ? WHERE ? IS NOT NULL AND ? NOT IN (SELECT ? FROM ?)");
+			queryCount = new Template("SELECT COUNT(DISTINCT ?) FROM ? WHERE ? IS NOT NULL AND ? NOT IN (SELECT ? FROM ?)");
+		}
 		for( QualifiedName referencedBy : column.referencedBy() ){
 			// Fill the query
 			query.setNthPlaceholder(1,referencedBy.getColName());
 			query.setNthPlaceholder(2, referencedBy.getTableName());
 			query.setNthPlaceholder(3, referencedBy.getColName());
-			query.setNthPlaceholder(4, column.getName());
-			query.setNthPlaceholder(5, tableName);
+			query.setNthPlaceholder(4, referencedBy.getColName());
+			query.setNthPlaceholder(5, column.getName());
+			query.setNthPlaceholder(6, tableName);
 			
 			queryCount.setNthPlaceholder(1,referencedBy.getColName());
 			queryCount.setNthPlaceholder(2, referencedBy.getTableName());
 			queryCount.setNthPlaceholder(3, referencedBy.getColName());
-			queryCount.setNthPlaceholder(4, column.getName());
-			queryCount.setNthPlaceholder(5, tableName);
+			queryCount.setNthPlaceholder(4, referencedBy.getColName());
+			queryCount.setNthPlaceholder(5, column.getName());
+			queryCount.setNthPlaceholder(6, tableName);
 			
 			try {
 				PreparedStatement stmt = dbmsConn.getPreparedStatement(query);
@@ -486,16 +500,18 @@ public class Generator {
 				
 				PreparedStatement stmt1 = dbmsConn.getPreparedStatement(queryCount);
 				ResultSet rs1 = stmt1.executeQuery();
-				if(rs1.next()){
+				
+				boolean cntBool = rs1.next();
+				if(cntBool){ 
 					if(mNumChases.containsKey(column.getName())){
-						mNumChases.put(column.getName(), mNumChases.get(column.getName()) + rs.getInt(1)); // Add to the current value
+						mNumChases.put(column.getName(), mNumChases.get(column.getName()) + rs1.getInt(1)); // Add to the current value
 					}
 					else{
 						mNumChases.put(column.getName(), rs1.getInt(1)); // Create a new entry for the column
 					}
 				}
 				else{
-					logger.error("Empty resultset.");
+					logger.error("Empty resultset. cntBool = "+cntBool);
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -542,26 +558,40 @@ public class Generator {
 		ResultSet curSet = chased.peek();
 
 		if(curSet == null){ // This shall not happen
-			logger.debug("Problem: Picked a null in chased vector"); 
+			logger.error("Problem: Picked a null in chased vector"); 
 			return null;
 		}
 		try {
-			if(curSet.next()){
-				return curSet.getString(1);
-			}
-			else{ // Pick next ResultSet
+			
+			while( curSet != null && !curSet.next() ){
 				curSet.close(); //TODO Test
 				chased.poll();
 				curSet = chased.peek();
-				if( curSet == null ) return null;
-				
-				if( curSet.next() == false ) 
-					logger.debug("Problem: No element in a non-empty ResultSet");
-				curSet.getString(1);
 			}
+			if( curSet != null )
+				return curSet.getString(1);
+			else{
+				logger.error("DEBUG");
+			}
+//			if(curSet.next()){
+//				return curSet.getString(1);
+//			}
+//			else{ // Pick next ResultSet
+//				curSet.close(); //TODO Test
+//				chased.poll();
+//				curSet = chased.peek();
+//				if( curSet == null ){
+//					logger.error("Problem: RETURNING EMPTY CHASED");
+//					return null;
+//				}
+//				
+//				if( curSet.next() == false ) 
+//					logger.debug("Problem: No element in a non-empty ResultSet");
+//			return curSet.getString(1);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}		
+		}	
+		logger.error("Problem: Returning EMPTY CHASED");
 		return null;
 	}
 

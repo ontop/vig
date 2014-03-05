@@ -1,50 +1,68 @@
 package geometry;
 
+import java.math.BigDecimal;
+
 public class Point implements Comparable<Point>{
 
-	private double x;
-	private double y;
+	private BigDecimal x;
+	private BigDecimal y;
 	
 	public Point(String pointWKT){
 		int indexX = pointWKT.indexOf("(") +1;
 		int indexBlank = pointWKT.indexOf(" ");
 		int indexY = indexBlank +1;
 		
-		x = Double.parseDouble(pointWKT.substring(indexX, indexBlank));
-		y = Double.parseDouble(pointWKT.substring(indexY, pointWKT.indexOf(")")));
+		x = BigDecimal.valueOf(Double.parseDouble(pointWKT.substring(indexX, indexBlank)));
+		y = BigDecimal.valueOf(Double.parseDouble(pointWKT.substring(indexY, pointWKT.indexOf(")"))));
 	};
 	
-	public Point(double x, double y){
+	public Point(BigDecimal x, BigDecimal y){
 		this.x = x;
 		this.y = y;
 	}
 	
-	public String toWKT(double x, double y){
+	public String toWKT(BigDecimal x, BigDecimal y){
 		return "Point(" + x + " " + y + ")";
 	}
 	
-	public double getX(){
+	public String toWKTLowerCase(BigDecimal x, BigDecimal y){
+		return "Point(" + getXLowerCase() + " " + getYLowerCase() + ")";
+	}
+	
+	public BigDecimal getX(){
 		return x;
 	}
 	
 	public void incrementX(){
-		++x;
+		x = this.x.add(BigDecimal.ONE);
 	}
 	
 	public void incrementY(){
-		++y;
+		y = y.add(BigDecimal.ONE);
 	}
 	
-	public void setX(double newX){
+	public void setX(BigDecimal newX){
 		x = newX;
 	}
 	
-	public void setY(double newY){
+	public void setY(BigDecimal newY){
 		y = newY;
 	}
 	
-	public double getY(){
+	public BigDecimal getY(){
 		return y;
+	}
+	
+	public String getXLowerCase(){
+		String toPrint = x.toString();
+		toPrint = toPrint.replace("E","e");
+		return toPrint;
+	}
+	
+	public String getYLowerCase(){
+		String toPrint = y.toString();
+		toPrint = toPrint.replace("E", "e");
+		return toPrint;
 	}
 	
 	/**
@@ -56,9 +74,9 @@ public class Point implements Comparable<Point>{
 	public int compareTo(Point o) {
 		// -1 0 1
 		
-		if( x < o.x ) return -1;
-		if( x == o.x && y < o.y ) return -1;
-		if( x == o.x && y == o.y ) return 0;
+		if( x.compareTo(o.x) == -1 ) return -1;
+		if( x.compareTo(o.x) == 0 && y.compareTo(o.y) == -1 ) return -1;
+		if( x.compareTo(o.x) == 0 && y.compareTo(o.y) == 0 ) return 0;
 		return 1;
 		
 	}
@@ -66,7 +84,7 @@ public class Point implements Comparable<Point>{
 		boolean result = false;
 		if (other instanceof Point) {
 			Point that = (Point) other;
-			result = (this.getX() == that.getX() && this.getY() == that.getY());
+			result = (this.getX().compareTo(that.getX()) == 0 && this.getY().compareTo(that.getY()) == 0);
 		}
 		return result;
 	}
@@ -75,6 +93,6 @@ public class Point implements Comparable<Point>{
     }
 	@Override
 	public String toString(){
-		return toWKT(this.x, this.y);
+		return toWKTLowerCase(this.x, this.y);
 	}
 };

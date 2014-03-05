@@ -36,9 +36,17 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 		
 		T toInsert = this.getLastInserted();
 		
-		if( toInsert == null ) logger.error("toInsert is NULL");
+		if( toInsert == null ) logger.error(this.toString() +" toInsert is NULL");
 		
-		while( increment(toInsert).compareTo(this.getCurrentMax()) > -1 && this.hasNextMax() ) this.nextMax();
+		do{
+			toInsert = increment(toInsert);
+			
+			while( toInsert.compareTo(this.getCurrentMax()) == 1 && this.hasNextMax() )
+				this.nextMax();
+		}
+		while(toInsert.compareTo(this.getCurrentMax()) == 0);
+		
+//		while( increment(toInsert).compareTo(this.getCurrentMax()) > -1 && this.hasNextMax() ) this.nextMax();
 		
 		this.setLastInserted(toInsert);
 		
@@ -81,7 +89,8 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 	public void setDomain(List<T> newDomain){
 		if( domain == null ){
 			domain = newDomain;
-			Collections.sort(domain);
+			if( domain.size() != 0 )
+				Collections.sort(domain);
 		}
 		
 		// For memory reasons, there is an hard-limit about what the

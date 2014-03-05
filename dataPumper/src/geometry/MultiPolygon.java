@@ -1,5 +1,6 @@
 package geometry;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class MultiPolygon implements Comparable<MultiPolygon>{
 	 * @param maxY
 	 */
 	
-	public static MultiPolygon getInstanceFromRectangle(double minX, double minY, double maxX, double maxY){
+	public static MultiPolygon getInstanceFromRectangle(BigDecimal minX, BigDecimal minY, BigDecimal maxX, BigDecimal maxY){
 		StringBuilder rectangleWKT = new StringBuilder();
 		
 		rectangleWKT.append("Multipolygon(((" + minX + " " + minY);
@@ -28,6 +29,8 @@ public class MultiPolygon implements Comparable<MultiPolygon>{
 		rectangleWKT.append(maxX + " " + minY);
 		rectangleWKT.append(",");
 		rectangleWKT.append(maxX + " " + maxY);
+		rectangleWKT.append(",");
+		rectangleWKT.append(minX + " " + maxY);
 		rectangleWKT.append(",");
 		rectangleWKT.append(minX + " " + minY);
 		rectangleWKT.append(")))");
@@ -69,10 +72,10 @@ public class MultiPolygon implements Comparable<MultiPolygon>{
 		if( polygons.size() == toCompare.polygons.size() ){
 			
 			for( int i = 0; i < polygons.size(); ++i ){
-				if( polygons.get(i).compareTo(polygons.get(i) ) == -1 ){
+				if( polygons.get(i).compareTo(toCompare.polygons.get(i)) == -1 ){
 					return -1;
 				}
-				else if( polygons.get(i).compareTo(polygons.get(i) ) == 1 ){
+				else if( polygons.get(i).compareTo(toCompare.polygons.get(i)) == 1 ){
 					return 1;
 				}
 			}

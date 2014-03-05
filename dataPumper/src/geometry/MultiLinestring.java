@@ -1,11 +1,18 @@
 package geometry;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import core.test.GeneratorTest;
 
 public class MultiLinestring implements Comparable<MultiLinestring>{
 	
 	protected List<Linestring> linestrings;
+	
+	protected static Logger logger = Logger.getLogger(MultiLinestring.class.getCanonicalName());
 	
 	public MultiLinestring(String multiLinestringWKT){
 		linestrings = new ArrayList<Linestring>();
@@ -20,7 +27,7 @@ public class MultiLinestring implements Comparable<MultiLinestring>{
 	 * @param maxY
 	 */
 	
-	public static MultiLinestring getInstanceFromRectangle(double minX, double minY, double maxX, double maxY){
+	public static MultiLinestring getInstanceFromRectangle(BigDecimal minX, BigDecimal minY, BigDecimal maxX, BigDecimal maxY){
 		StringBuilder rectangleWKT = new StringBuilder();
 		
 		rectangleWKT.append("Multilinestring((" + minX + " " + minY);
@@ -28,6 +35,8 @@ public class MultiLinestring implements Comparable<MultiLinestring>{
 		rectangleWKT.append(maxX + " " + minY);
 		rectangleWKT.append(",");
 		rectangleWKT.append(maxX + " " + maxY);
+		rectangleWKT.append(",");
+		rectangleWKT.append(minX + " " + maxY);
 		rectangleWKT.append(",");
 		rectangleWKT.append(minX + " " + minY);
 		rectangleWKT.append("))");
@@ -69,10 +78,10 @@ public class MultiLinestring implements Comparable<MultiLinestring>{
 		if( linestrings.size() == toCompare.linestrings.size() ){
 			
 			for( int i = 0; i < linestrings.size(); ++i ){
-				if( linestrings.get(i).compareTo(linestrings.get(i) ) == -1 ){
+				if( linestrings.get(i).compareTo(toCompare.linestrings.get(i)) == -1 ){
 					return -1;
 				}
-				else if( linestrings.get(i).compareTo(linestrings.get(i) ) == 1 ){
+				else if( linestrings.get(i).compareTo(toCompare.linestrings.get(i)) == 1 ){
 					return 1;
 				}
 			}

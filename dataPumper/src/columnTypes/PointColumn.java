@@ -2,6 +2,7 @@ package columnTypes;
 
 import geometry.Point;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,11 +22,11 @@ import connection.DBMSConnection;
  */
 public class PointColumn extends IncrementableColumn<Point> {
 	
-	private double globalMinX;
-	private double globalMaxX;
+	private BigDecimal globalMinX;
+	private BigDecimal globalMaxX;
 	
-	private double globalMinY;
-	private double globalMaxY;
+	private BigDecimal globalMinY;
+	private BigDecimal globalMaxY;
 
 				
 	public PointColumn(String name, MySqlDatatypes type, int index) {
@@ -33,12 +34,14 @@ public class PointColumn extends IncrementableColumn<Point> {
 		lastInserted = null;
 		domain = null;
 		domainIndex = 0;
+		geometric = true;
 	}
 
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
 		
-		String queryString = "SELECT DISTINCT AsWKT("+getName()+") FROM "+schema.getTableName();
+		String queryString = "SELECT DISTINCT AsWKT("+getName()+") FROM "+schema.getTableName() +" "
+				+ " WHERE AsWKT("+ getName() +") IS NOT NULL LIMIT 100000";
 		
 		PreparedStatement stmt = db.getPreparedStatement(queryString);
 	
@@ -80,8 +83,8 @@ public class PointColumn extends IncrementableColumn<Point> {
 			ResultSet rs = stmt.executeQuery();
 
 			if( rs.next() ){
-				globalMinX = rs.getDouble(1);
-				globalMaxX = rs.getDouble(1);
+				globalMinX = BigDecimal.valueOf(rs.getDouble(1));
+				globalMaxX = BigDecimal.valueOf(rs.getDouble(2));
 			}
 			
 			stmt.close();
@@ -94,8 +97,8 @@ public class PointColumn extends IncrementableColumn<Point> {
 			rs = stmt.executeQuery();
 
 			if( rs.next() ){
-				globalMinX = rs.getDouble(1);
-				globalMaxX = rs.getDouble(1);
+				globalMinY = BigDecimal.valueOf(rs.getDouble(1));
+				globalMaxY = BigDecimal.valueOf(rs.getDouble(2));
 			}
 			
 			stmt.close();
@@ -114,7 +117,7 @@ public class PointColumn extends IncrementableColumn<Point> {
 	public Point increment(Point toIncrement) {
 		// Lexicographical increment
 		
-		if( toIncrement.getY() < globalMaxY ){ toIncrement.incrementY();}
+		if( toIncrement.getY().compareTo(globalMaxY) == -1 ){ toIncrement.incrementY();}
 		else{
 			toIncrement.incrementX(); 
 			toIncrement.setY(globalMinY);
@@ -125,7 +128,7 @@ public class PointColumn extends IncrementableColumn<Point> {
 	@Override
 	public Point getCurrentMax() {
 		if( domain.size() == 0 )
-			return new Point(Double.MAX_VALUE, Double.MAX_VALUE);
+			return new Point(BigDecimal.valueOf(Double.MAX_VALUE), BigDecimal.valueOf(Double.MAX_VALUE));
 		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
 	}
 }

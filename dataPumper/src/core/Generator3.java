@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.apache.log4j.Level;
+
 import columnTypes.Column;
 import utils.Statistics;
 import connection.DBMSConnection;
@@ -39,6 +41,8 @@ public class Generator3 extends Generator {
 		
 	
 	public List<Schema> pumpTable(int nRows, Schema schema){
+		
+		logger.setLevel(Level.INFO);
 		
 		nRows = initChaseValues(nRows, schema);
 		initDuplicateValues(schema, 0);
@@ -84,7 +88,7 @@ public class Generator3 extends Generator {
 						
 					}
 					else if( column.getDuplicateRatio() > random.nextFloat() ){
-						logger.debug("Put a duplicate");
+						logger.debug("Put a duplicate into "+schema.getTableName() + "." + column.getName());
 						
 						// If, in all columns but one of the primary key I've put duplicates, 
 						// pay attention to how you pick the last column. You might generate
@@ -113,6 +117,7 @@ public class Generator3 extends Generator {
 								Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
 								
 								String generatedRandom = column.getNextFreshValue();
+								if( generatedRandom == null ) logger.error("NULL!");
 								dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 								if( freshDuplicates.size() < Generator3.freshDuplicatesSize ){
 									mFreshDuplicatesToDuplicatePks.put(generatedRandom, primaryDuplicateValues);
@@ -125,10 +130,14 @@ public class Generator3 extends Generator {
 							
 							Statistics.addTime("Time_spent_picking_a_problematic_duplicate_for_a_primary_key", end - start);
 						}else{
-							logger.debug("Adding a duplicate from initial database values");
+							logger.debug("Adding a duplicate for "+ (new QualifiedName(schema.getTableName(), column.getName())).toString());
 							Statistics.addInt(schema.getTableName()+"."+column.getName()+" Adding a duplicate from initial database values", 1);
 							
 							String nextDuplicate = pickNextDupFromOldValues(schema, column, true);
+							
+							if( nextDuplicate == null ) logger.error("NULL duplicate"); 
+							
+							
 							dbmsConn.setter(stmt, ++columnIndex, column.getType(), nextDuplicate); // Ensures to put all chased elements, in a uniform way w.r.t. other columns
 							
 							if( column.isPrimary() ){
@@ -145,6 +154,9 @@ public class Generator3 extends Generator {
 						Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
 						
 						String generatedRandom = column.getNextFreshValue();
+						
+						if( generatedRandom == null ) logger.error("NULL fresh"); 
+						logger.debug("Adding Fresh");
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 						
 						// Let's do this
@@ -166,6 +178,7 @@ public class Generator3 extends Generator {
 						updateTablesToChase(column, tablesToChase);
 					}
 				}
+//				System.err.println(stmt.toString().substring("com.mysql.jdbc.JDBC4PreparedStatement@c4dc1e4: ".length()));
 				stmt.addBatch();
 				if( (j % 1000000 == 0) ){ // Let's put a limit to the dimension of the stmt 
 					stmt.executeBatch();	
@@ -255,7 +268,6 @@ public class Generator3 extends Generator {
 				e.printStackTrace();
 			}
 			duplicateValues.put(c.getName(), rs);
-//			c.setDuplicateRatio(findDuplicateRatio(schema, c));
 		}
 		System.gc();
 	}
@@ -263,6 +275,7 @@ public class Generator3 extends Generator {
 	private void initDuplicateRatios(Schema schema){
 		for( Column c : schema.getColumns() ){
 			c.setDuplicateRatio(findDuplicateRatio(schema, c));
+//			if(c.getDuplicateRatio() > 0.95) then c.setIndependent(); TODO Mindaugas
 		}
 	}
 
@@ -319,9 +332,16 @@ public class Generator3 extends Generator {
 		
 		ResultSet result = null;
 		int startIndex = insertedRows - Generator3.duplicatesWindowSize > 0 ? insertedRows - Generator3.duplicatesWindowSize : 0;
-				
- 		String queryString = "SELECT "+column.getName()+ " FROM "+tableName+" LIMIT "+ startIndex +", "+Generator3.duplicatesWindowSize;
 		
+		String queryString = null;
+		
+		if( column.isGeometric() ){
+			queryString = "SELECT AsWKT(" + column.getName() + ") FROM " + tableName + " "
+					+ " WHERE AsWKT(" + column.getName() + ") IS NOT NULL LIMIT " + startIndex + ", " + Generator3.duplicatesWindowSize;
+		}
+		else{
+			queryString = "SELECT "+column.getName()+ " FROM "+tableName+" WHERE "+column.getName()+" IS NOT NULL LIMIT "+ startIndex +", "+Generator3.duplicatesWindowSize;
+		}
 		try{
 			PreparedStatement stmt = dbmsConn.getPreparedStatement(queryString);
 			result = stmt.executeQuery();
@@ -362,7 +382,9 @@ public class Generator3 extends Generator {
 		String result = null;
 		
 		try {
+			
 			boolean hasNext = duplicatesToInsert.next();
+			
 			if( !hasNext && force ){
 				if( mNumDupsRepetition.containsKey(column.getName()) ){
 					if( maxNumDupsRepetition < (mNumDupsRepetition.get(column.getName()) + 1) ){
@@ -375,12 +397,15 @@ public class Generator3 extends Generator {
 					if( maxNumDupsRepetition < 1 ) ++maxNumDupsRepetition;
 				}
 				duplicatesToInsert.beforeFirst();
-				if( !duplicatesToInsert.next() )
-					logger.error("No duplicate element can be forced");
+				if( !duplicatesToInsert.next() ){
+					logger.error(column.toString() + ": No duplicate element can be forced");
+				}
 			}
 			else if( !hasNext && !force ){
 				return null;
 			}
+			String retrieved = duplicatesToInsert.getString(1);
+			if( retrieved == null ) logger.error(schema.getTableName() + "." + column.getName() +": Retrieved is null");
 			result = duplicatesToInsert.getString(1);
 		} catch (SQLException e) {
 			e.printStackTrace();

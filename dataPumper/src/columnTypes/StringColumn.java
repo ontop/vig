@@ -1,5 +1,6 @@
 package columnTypes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import basicDatatypes.MySqlDatatypes;
@@ -10,17 +11,56 @@ public class StringColumn extends Column {
 	
 	private List<String> domain;
 	
-	private long cnt;
+	// For random generation of fixed size
+	private List<Integer> rndIndexes;
+	private String characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+	private int nChar;
 	
 	public StringColumn(String name, MySqlDatatypes type, int index){
 		super(name, type, index);
 		
-		cnt = 0;
+		rndIndexes = new ArrayList<Integer>(datatypeLength);
+		
+		for( int i = 0; i < datatypeLength; ++i )
+			rndIndexes.add(0);
+
+		nChar = characters.length();
+	}
+	
+	public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength){
+		super(name, type, index);
+		
+		this.datatypeLength = datatypeLength;
+		rndIndexes = new ArrayList<Integer>(datatypeLength);
+		
+		for( int i = 0; i < datatypeLength; ++i )
+			rndIndexes.add(0);
+
+		nChar = characters.length();
 	}
 
 	@Override
 	public String getNextFreshValue() {
-		return "randomString"+(++cnt);
+		
+		if( rndIndexes.get(rndIndexes.size()-1) == characters.indexOf("A") ){
+			logger.error("DEBUG");
+		}
+		
+		for( int i = datatypeLength -1; i >= 0; --i ){
+			if( rndIndexes.get(i) < nChar -1 ){
+				rndIndexes.set(i, rndIndexes.get(i) + 1);
+				break;
+			}
+			rndIndexes.set(i, 0);
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		
+		for( Integer i : rndIndexes ){
+			builder.append(characters.charAt(i));
+		}
+		
+		return builder.toString();
 	}
 
 	@Override

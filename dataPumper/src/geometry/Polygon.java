@@ -1,5 +1,7 @@
 package geometry;
 
+import java.math.BigDecimal;
+
 /**
  * Polygon constraints:
  * - Start point == End point
@@ -21,7 +23,12 @@ public class Polygon extends MultiLinestring{
 	 * @param maxX
 	 * @param maxY
 	 */
-	public static Polygon getInstanceFromRectangle(double minX, double minY, double maxX, double maxY){
+	public static Polygon getInstanceFromRectangle(BigDecimal minX, BigDecimal minY, BigDecimal maxX, BigDecimal maxY){
+		
+		if( minX.compareTo(maxX) == 0 && minY.compareTo(maxY) == 0 ){
+			logger.error("Impossible to obtain a polygon from input coordinares");
+		}
+		
 		StringBuilder rectangleWKT = new StringBuilder();
 		
 		rectangleWKT.append("Polygon((" + minX + " " + minY);
@@ -29,6 +36,8 @@ public class Polygon extends MultiLinestring{
 		rectangleWKT.append(maxX + " " + minY);
 		rectangleWKT.append(",");
 		rectangleWKT.append(maxX + " " + maxY);
+		rectangleWKT.append(",");
+		rectangleWKT.append(minX + " " + maxY);
 		rectangleWKT.append(",");
 		rectangleWKT.append(minX + " " + minY);
 		rectangleWKT.append("))");

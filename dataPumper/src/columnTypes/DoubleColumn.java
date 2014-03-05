@@ -11,50 +11,42 @@ import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import connection.DBMSConnection;
 
-public class IntColumn extends IncrementableColumn<Long> {
+public class DoubleColumn extends IncrementableColumn<Double>{
 	
-	public IntColumn(String name, MySqlDatatypes type, int index) {
+	public DoubleColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		domain = null;
-		this.max = Long.valueOf(0);
-		this.min = Long.valueOf(0);
-		this.lastInserted = Long.valueOf(0);
+		this.max = 0.0;
+		this.min = 0.0;
+		this.lastInserted = 0.0;
 		
 		index = 0;
 	}
 	
 	@Override
 	public String getNextFreshValue(){
-		Long toInsert = this.getLastInserted();
+		double toInsert = this.getLastInserted();
 		
-		do{
-			toInsert = increment(toInsert);
-			
-			while( toInsert.compareTo(this.getCurrentMax()) == 1 && this.hasNextMax() )
-				this.nextMax();
-		}
-		while(toInsert.compareTo(this.getCurrentMax()) == 0);
-		
-//		while( ++toInsert >= this.getCurrentMax() && this.hasNextMax() ) this.nextMax();
+		while( ++toInsert >= this.getCurrentMax() && this.hasNextMax() ) this.nextMax();
 		
 		this.setLastInserted(toInsert);
 		
-		return Long.toString(toInsert);
+		return Double.toString(toInsert);
 	}
 
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
 		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+" LIMIT 100000");
 		
-		List<Long> values = null;
+		List<Double> values = null;
 		
 		try {
 			ResultSet result = stmt.executeQuery();
 			
-			values = new ArrayList<Long>();
+			values = new ArrayList<Double>();
 		
 			while( result.next() ){
-				values.add(result.getLong(1));
+				values.add(result.getDouble(1));
 			}
 			stmt.close();
 		} catch (SQLException e) {
@@ -77,9 +69,9 @@ public class IntColumn extends IncrementableColumn<Long> {
 		try {
 			result = stmt.executeQuery();
 			if( result.next() ){
-				setMinValue(result.getLong(1));
-				setMaxValue(result.getLong(2));
-				setLastInserted(result.getLong(1));
+				setMinValue(result.getDouble(1));
+				setMaxValue(result.getDouble(2));
+				setLastInserted(result.getDouble(1));
 			}
 			stmt.close();
 		} catch (SQLException e) {
@@ -88,14 +80,14 @@ public class IntColumn extends IncrementableColumn<Long> {
 	}
 
 	@Override
-	public Long increment(Long toIncrement) {
+	public Double increment(Double toIncrement) {
 		return ++toIncrement;
 	}
 
 	@Override
-	public Long getCurrentMax() {
+	public Double getCurrentMax() {
 		if( domain.size() == 0 )
-			return Long.MAX_VALUE;
+			return Double.MAX_VALUE;
 		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
 	}
 }

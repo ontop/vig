@@ -13,10 +13,14 @@ public abstract class Column implements FreshValuesGenerator {
 	private final MySqlDatatypes type;
 	private boolean allDifferent;
 	private boolean primary;
+	protected boolean geometric;
 	private boolean independent;
 	private boolean autoincrement;
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
 	private List<QualifiedName> referencedBy; // that.name subseteq this.name
+	
+	// Length of the datatype
+	protected int datatypeLength;
 	
 	private final int index;	
 	
@@ -44,6 +48,12 @@ public abstract class Column implements FreshValuesGenerator {
 		this.currentChaseCycle = 0;
 		this.duplicatesRatio = 0;
 		this.index = index;
+		this.geometric = false;
+		this.datatypeLength = 15;
+	}
+	
+	public boolean isGeometric(){
+		return geometric;
 	}
 	
 	public int getIndex(){

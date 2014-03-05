@@ -3,8 +3,12 @@ package basicDatatypes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
+import columnTypes.BigDecimalColumn;
 import columnTypes.Column;
 import columnTypes.DateTimeColumn;
+import columnTypes.DoubleColumn;
 import columnTypes.IntColumn;
 import columnTypes.LinestringColumn;
 import columnTypes.MultiLinestringColumn;
@@ -22,7 +26,9 @@ public class Schema{
 	// Fields related to the pumping
 	private boolean filledFlag; // It keeps the information whether this schema has been already pumped once
 	private int maxDupsRepetition;
-
+	
+	private static Logger logger = Logger.getLogger(Schema.class.getCanonicalName());
+	
 	public Schema(String tableName){
 		this.tableName = tableName;
 		columns = new ArrayList<Column>();
@@ -49,18 +55,23 @@ public class Schema{
 	
 	public void addColumn(String colName, String typeString){
 		
-		if( typeString.startsWith("int") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, columns.size()));
-		else if( typeString.startsWith("bigint") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, columns.size()));
-		else if( typeString.startsWith("char") ) columns.add(new StringColumn(colName, MySqlDatatypes.CHAR, columns.size()));
-		else if( typeString.startsWith("varchar") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, columns.size()));
-		else if( typeString.startsWith("text") ) columns.add(new StringColumn(colName, MySqlDatatypes.TEXT, columns.size()));
-		else if( typeString.startsWith("longtext") ) columns.add(new StringColumn(colName, MySqlDatatypes.LONGTEXT, columns.size()));
+		if( typeString.startsWith("int") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, columns.size()));
+		else if( typeString.startsWith("decimal") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, columns.size()));
+		else if( typeString.startsWith("bigint") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, columns.size()));
+		else if( typeString.startsWith("char") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, columns.size(), TypeStringParser.getUnaryDatatypeSize(typeString)));
+		else if( typeString.startsWith("varchar") )	columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, columns.size(), TypeStringParser.getUnaryDatatypeSize(typeString)));
+		else if( typeString.startsWith("text") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, columns.size()));
+		else if( typeString.startsWith("longtext") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, columns.size()));
 		else if( typeString.startsWith("datetime") ) columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, columns.size()));
+		else if( typeString.startsWith("date") ) columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, columns.size()));
 		else if( typeString.startsWith("point") ) columns.add(new PointColumn(colName, MySqlDatatypes.POINT, columns.size()));
 		else if( typeString.startsWith("linestring") ) columns.add(new LinestringColumn(colName, MySqlDatatypes.LINESTRING, columns.size()));
 		else if( typeString.startsWith("multilinestring") ) columns.add(new MultiLinestringColumn(colName, MySqlDatatypes.MULTILINESTRING, columns.size()));
 		else if( typeString.startsWith("polygon") ) columns.add(new PolygonColumn(colName, MySqlDatatypes.POLYGON, columns.size()));
 		else if( typeString.startsWith("multipolygon") ) columns.add(new MultiPolygonColumn(colName, MySqlDatatypes.MULTIPOLYGON, columns.size()));
+		else{
+			logger.error("SUPPORT FOR TYPE: "+ typeString +" IS MISSING.");
+		}
 	}
 	
 	public Column getColumn(String colName){
@@ -115,5 +126,14 @@ public class Schema{
 			}
 		}
 		return primaryKeys;
+	}
+}
+class TypeStringParser{
+
+	static int getUnaryDatatypeSize(String toParse){
+		int indexStart = toParse.indexOf("(") + 1;
+		int indexEnd = toParse.indexOf(")");
+				
+		return Integer.parseInt(toParse.substring(indexStart, indexEnd));
 	}
 }

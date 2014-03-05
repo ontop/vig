@@ -1,5 +1,6 @@
 package columnTypes;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,16 +16,18 @@ import geometry.Point;
 
 public class LinestringColumn extends IncrementableColumn<Linestring>{
 	
-	private double globalMinX;
-	private double globalMaxX;
+	private BigDecimal globalMinX;
+	private BigDecimal globalMaxX;
 	
-	private double globalMinY;
-	private double globalMaxY;
+	private BigDecimal globalMinY;
+	private BigDecimal globalMaxY;
 	
 	
 	
 	public LinestringColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
+		
+		geometric = true;
 		lastInserted = null;
 		domain = null;
 		domainIndex = 0;
@@ -45,7 +48,10 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 			ResultSet rs = stmt.executeQuery();
 			
 			while( rs.next() ){
-				retrievedPoints.add(new Linestring(rs.getString(1)));
+				String retrieved = rs.getString(1);
+				if( retrieved != null && retrieved.startsWith("LINESTRING")){
+					retrievedPoints.add(new Linestring(rs.getString(1)));
+				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -64,10 +70,10 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 			min = new Linestring("Linestring(0 0,0 0)");
 			max = new Linestring("Linestring("+Double.MAX_VALUE+" "+Double.MAX_VALUE+","+Double.MAX_VALUE+" "+Double.MAX_VALUE+")");
 			
-			lastInserted = min;
-			
 			domain = retrievedPoints;
 		}
+		
+		lastInserted = min;
 	}
 		
 	@Override
@@ -75,29 +81,29 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 		
 		fillDomain(schema, db);
 		
-		double maxX = Double.MIN_VALUE;
-		double maxY = Double.MIN_VALUE;
+		BigDecimal maxX = BigDecimal.valueOf(Double.MIN_VALUE);
+		BigDecimal maxY = BigDecimal.valueOf(Double.MIN_VALUE);
 
-		double minX = Double.MAX_VALUE;
-		double minY = Double.MAX_VALUE;
+		BigDecimal minX = BigDecimal.valueOf(Double.MAX_VALUE);
+		BigDecimal minY = BigDecimal.valueOf(Double.MAX_VALUE);
 		
 		if( domain == null ) logger.error("Null domain");
 		
 		if( domain.size() == 0 ){
-			globalMaxX = Double.MAX_VALUE;
-			globalMinX = Double.MIN_VALUE;
-			globalMaxY = Double.MAX_VALUE;
-			globalMinY = Double.MIN_VALUE;
+			globalMaxX = BigDecimal.valueOf(Double.MAX_VALUE);
+			globalMinX = BigDecimal.valueOf(Double.MIN_VALUE);
+			globalMaxY = BigDecimal.valueOf(Double.MAX_VALUE);
+			globalMinY = BigDecimal.valueOf(Double.MIN_VALUE);
 			
 			return;
 		}
 		
 		for( Linestring ls : domain ){
 			for( Point p : ls.toPointsList() ){
-				if( p.getX() > maxX ) maxX = p.getX();
-				if( p.getX() < minX ) minX = p.getX();
-				if( p.getY() > maxY ) maxY = p.getY();
-				if( p.getY() < minY ) minY = p.getY();
+				if( p.getX().compareTo(maxX) == 1) maxX = p.getX();
+				if( p.getX().compareTo(minX) == -1 ) minX = p.getX();
+				if( p.getY().compareTo(maxY) == 1 ) maxY = p.getY();
+				if( p.getY().compareTo(minY) == -1 ) minY = p.getY();
 			}
 		}
 		globalMaxX = maxX;
@@ -116,10 +122,10 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 		for( int i = points.size() - 1; i >= 0; --i ){
 			Point p = points.get(i);
 			
-			if( p.getY() == globalMaxX && p.getY() == globalMaxY ){
+			if( p.getY().compareTo(globalMaxX) == 0 && p.getY().compareTo(globalMaxY) == 0 ){
 				p.setX(globalMinX); p.setY(globalMinY);
 			}
-			else if( p.getY() == globalMaxY ){
+			else if( p.getY().compareTo(globalMaxY) == 0 ){
 				p.incrementX();
 				break;
 			}

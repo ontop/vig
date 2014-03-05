@@ -1,5 +1,6 @@
 package columnTypes;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,11 +16,11 @@ import geometry.Point;
 import geometry.Polygon;
 
 public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
-	private double globalMinX;
-	private double globalMaxX;
+	private BigDecimal globalMinX;
+	private BigDecimal globalMaxX;
 	
-	private double globalMinY;
-	private double globalMaxY;
+	private BigDecimal globalMinY;
+	private BigDecimal globalMaxY;
 	
 	public MultiPolygonColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
@@ -27,10 +28,11 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 		domain = null;
 		domainIndex = 0;
 
-		globalMinX = 0;
-		globalMaxX = Double.MAX_VALUE;
-		globalMinY = 0;
-		globalMaxY = Double.MAX_VALUE;
+		geometric = true;
+		globalMinX = BigDecimal.ZERO;
+		globalMaxX = BigDecimal.valueOf(Double.MAX_VALUE);
+		globalMinY = BigDecimal.ZERO;
+		globalMaxY = BigDecimal.valueOf(Double.MAX_VALUE);
 	}
 
 	/**
@@ -46,7 +48,8 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 		// I need to find out gobalMaxXs etc. Then
 		// I will produce rectangular areas accordingly
 		
-		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT AsWKT("+getName()+") FROM "+schema.getTableName() +" LIMIT 100000");
+		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT AsWKT("+getName()+") FROM "+schema.getTableName() +" "
+				+ "WHERE AsWKT("+getName()+") IS NOT NULL LIMIT 100000");
 		
 		List<MultiPolygon> retrievedMultiPolygons = new ArrayList<MultiPolygon>();
 		
@@ -54,7 +57,10 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 			ResultSet rs = stmt.executeQuery();
 		
 			while( rs.next() ){
-				retrievedMultiPolygons.add(new MultiPolygon(rs.getString(1)));
+				String retrieved = rs.getString(1);
+				if( retrieved != null ){ // Looks like I need this
+					retrievedMultiPolygons.add(new MultiPolygon(rs.getString(1)));
+				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -62,36 +68,40 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 		
 		if( retrievedMultiPolygons.size() != 0 ){
 			
-			globalMinY = globalMinX = Double.MAX_VALUE;
-			globalMaxY = globalMaxX = Double.MIN_VALUE;
+			globalMinY = BigDecimal.valueOf(Double.MAX_VALUE);
+			globalMinX = BigDecimal.valueOf(Double.MAX_VALUE);
+			globalMaxY = BigDecimal.valueOf(Double.MIN_VALUE);
+			globalMaxX = BigDecimal.valueOf(Double.MIN_VALUE);
 			
 			// TODO Fill globals
 			for( MultiPolygon multipolygon : retrievedMultiPolygons ){
 				for( Polygon polygon : multipolygon.toPolygonsList() ){
 					for( Linestring l : polygon.toLinestringList() ){
 						for( Point p : l.toPointsList() ){							
-							if( globalMaxX < p.getX() ) globalMaxX = p.getX();
-							if( globalMaxY < p.getY() ) globalMaxY = p.getY();
-							if( globalMinX > p.getX() ) globalMinX = p.getX();
-							if( globalMinY > p.getY() ) globalMinY = p.getY();
+							if( globalMaxX.compareTo(p.getX()) == -1 ) globalMaxX = p.getX();
+							if( globalMaxY.compareTo(p.getY()) == -1 ) globalMaxY = p.getY();
+							if( globalMinX.compareTo(p.getX()) == 1 ) globalMinX = p.getX();
+							if( globalMinY.compareTo(p.getY()) == 1 ) globalMinY = p.getY();
 						}
 					}
 				}
 			}
 			
-			min = MultiPolygon.getInstanceFromRectangle(globalMinX, globalMinY, globalMinX + 1, globalMinY + 1);
+			min = MultiPolygon.getInstanceFromRectangle(globalMinX, globalMinY, globalMinX.add(BigDecimal.ONE), globalMinY.add(BigDecimal.ONE));
 			max = MultiPolygon.getInstanceFromRectangle(globalMinX, globalMinY, globalMaxX, globalMaxY);
 		}
 		else{
 			min = new MultiPolygon("Multipolygon(((0 0,1 0,1 1,0 1,0 0)))");
 			max = new MultiPolygon("Multipolygon(((0 0,"+Double.MAX_VALUE+" 0,"+Double.MAX_VALUE+" "+Double.MAX_VALUE+",0 "+Double.MAX_VALUE+",0 0)))");
 			
-			lastInserted = min;
 			
-			globalMaxX = globalMaxY = Double.MAX_VALUE;
-			globalMinX = globalMinY = Double.MIN_VALUE;
+			globalMaxX = BigDecimal.valueOf(Double.MAX_VALUE);
+			globalMaxY = BigDecimal.valueOf(Double.MAX_VALUE);
+			globalMinX = BigDecimal.valueOf(Double.MIN_VALUE);
+			globalMinY = BigDecimal.valueOf(Double.MIN_VALUE);
 		}
 		
+		setLastInserted(min);
 	}
 
 	/**
@@ -124,11 +134,11 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 				Point p3 = points.get(2);
 				Point p4 = points.get(3);
 				
-				if( p2.getX() < globalMaxX ){
+				if( p2.getX().compareTo(globalMaxX) == -1 ){
 					p2.incrementX(); p3.incrementX(); 
 					break;
 				}
-				if( p3.getY() < globalMaxY ){
+				if( p3.getY().compareTo(globalMaxY) == -1 ){
 					p3.incrementY(); p4.incrementY();
 					break;
 				}

@@ -44,10 +44,10 @@ public class Linestring implements Comparable<Linestring>{
 		if( points.size() == toCompare.points.size() ){
 			
 			for( int i = 0; i < points.size(); ++i ){
-				if( points.get(i).compareTo(points.get(i) ) == -1 ){
+				if( points.get(i).compareTo(toCompare.points.get(i)) == -1 ){
 					return -1;
 				}
-				else if( points.get(i).compareTo(points.get(i) ) == 1 ){
+				else if( points.get(i).compareTo(toCompare.points.get(i)) == 1 ){
 					return 1;
 				}
 			}
@@ -60,7 +60,7 @@ public class Linestring implements Comparable<Linestring>{
 		StringBuilder result = new StringBuilder();
 		result.append("(");
 		for( Point p : points ){
-			result.append(p.getX() + " " + p.getY());
+			result.append(p.getXLowerCase() + " " + p.getYLowerCase());
 			result.append(",");
 		}
 		result.deleteCharAt(result.lastIndexOf(","));
