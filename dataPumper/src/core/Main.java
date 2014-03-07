@@ -49,7 +49,7 @@ public class Main {
 			
 			fillDomain(schema, originalDb);
 			
-			if( schema.getTableName().equals("company") ){
+			if( schema.getTableName().equals("licence_phase_hst") ){
 				logger.debug("Start debugging");
 			}
 			

@@ -26,7 +26,7 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 		
 		lastFreshInserted = null;
 		
-		granularity = Granularity.SECOND;
+		granularity = Granularity.DAY;
 		skip = 1;
 	}
 
@@ -89,27 +89,27 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 		
 		switch( granularity ){
 		case YEAR:{
-			value += 364 * 30 * 24 *360000 * skip; // TODO This is an approximation
+			value += 364 * 30 * 24 *3600000 * skip; // TODO This is an approximation
 			break;
 		}
 		case MONTH:{
-			value += 30 * 24 *360000 * skip;
+			value += 30 * 24 *3600000 * skip;
 			break;
 		}
 		case DAY:{
-			value += 24 *360000 * skip;
+			value += 24 *3600000 * skip;
 			break;
 		}
 		case HOUR:{
-			value += 360000 * skip;
+			value += 3600000 * skip;
 			break;
 		}
 		case MINUTE:{
-			value += 6000 * skip;
+			value += 60000 * skip;
 			break;
 		}
 		case SECOND:{
-			value += 1000 * skip;
+			value += 10000 * skip;
 			break;
 		}
 		default:

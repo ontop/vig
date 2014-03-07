@@ -47,56 +47,56 @@ public class MainTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		
-		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
+//		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
 		db1Original = new DBMSConnection(jdbcConnectorOriginal, databaseUrlOriginal, usernameOriginal, passwordOriginal);
 	}
 	
-	@Before
-	public void setUp(){
-		// INIT
-		db.setForeignCheckOff();
-		for( String sName : db.getAllTableNames() ){
-			
-			Template temp = new Template("delete from ?");
-			temp.setNthPlaceholder(1, sName);
-			
-			PreparedStatement init = db.getPreparedStatement(temp);
-			
-			try {
-				init.execute();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		db.setForeignCheckOn();
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	
-		db.close();
-	}
-	
-	@After
-	public void tearDown(){
-		// INIT
-		db.setForeignCheckOff();
-		for( String sName : db.getAllTableNames() ){
-			
-			Template temp = new Template("delete from ?");
-			temp.setNthPlaceholder(1, sName);
-			
-			PreparedStatement init = db.getPreparedStatement(temp);
-			
-			try {
-				init.execute();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		db.setForeignCheckOn();	
-	}
+//	@Before
+//	public void setUp(){
+//		// INIT
+//		db.setForeignCheckOff();
+//		for( String sName : db.getAllTableNames() ){
+//			
+//			Template temp = new Template("delete from ?");
+//			temp.setNthPlaceholder(1, sName);
+//			
+//			PreparedStatement init = db.getPreparedStatement(temp);
+//			
+//			try {
+//				init.execute();
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		db.setForeignCheckOn();
+//	}
+//
+//	@AfterClass
+//	public static void tearDownAfterClass() throws Exception {
+//	
+//		db.close();
+//	}
+//	
+//	@After
+//	public void tearDown(){
+//		// INIT
+//		db.setForeignCheckOff();
+//		for( String sName : db.getAllTableNames() ){
+//			
+//			Template temp = new Template("delete from ?");
+//			temp.setNthPlaceholder(1, sName);
+//			
+//			PreparedStatement init = db.getPreparedStatement(temp);
+//			
+//			try {
+//				init.execute();
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		db.setForeignCheckOn();	
+//	}
 	
 	@Test
 	public void testPumpDatabase() {
@@ -128,10 +128,10 @@ public class MainTest {
 		db1.setUniqueCheckOff();
 		long start = System.currentTimeMillis();
 	
-		main.pumpDatabase(db1Original, db1, 10);
+		main.pumpDatabase(db1Original, db1, 2);
 		long end = System.currentTimeMillis();
 
-		logger.info("Time elapsed to pump "+10+" rows: " + (end - start) + " msec.");
+		logger.info("Time elapsed to pump "+2+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 		db1.setUniqueCheckOn();
 		db1.setForeignCheckOn();

@@ -46,6 +46,13 @@ public class Generator4 extends Generator3 {
 		Map<String, List<String>> mFreshDuplicatesToDuplicatePks = new HashMap<String, List<String>>();
 		Queue<String> freshDuplicates = new LinkedList<String>();
 		
+		Map<String, List<String>> uncommittedFresh = new HashMap<String, List<String>>(); // Keeps track of uncommitted fresh values
+		for( Column c : schema.getColumns() ){
+			if( c.isPrimary() && c.referencedBy().size() > 0 ){
+				uncommittedFresh.put(c.getName(), new ArrayList<String>());
+			}
+		}
+		
 		try {
 			stmt = dbmsConn.getPreparedStatement(templateInsert);
 			logger.debug(templateInsert);
@@ -67,13 +74,16 @@ public class Generator4 extends Generator3 {
 
 					boolean stopChase = (column.referencesTo().size() > 0) && column.getMaximumChaseCycles() < column.getCurrentChaseCycle();
 					
-					if( j == nRows && (toInsert = column.getNextChased(dbmsConn, schema)) != null  ){
+					if( false && j == nRows && (toInsert = column.getNextChased(dbmsConn, schema)) != null && 
+							(!column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)) ){
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), toInsert); 
 						++nRows; // I haven't finished yet to insert chased values.
 						chaseInserted = true;
 					}
-					else if( ( 0.8 > random.nextFloat() ) && 
-							(toInsert = column.getNextChased(dbmsConn, schema) ) != null ){
+					else if( false && ( 0.8 > random.nextFloat() ) && 
+							(toInsert = column.getNextChased(dbmsConn, schema) ) != null && 
+							(!column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)) 
+							){
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), toInsert); 
 						chaseInserted = true;
 					}
@@ -109,6 +119,9 @@ public class Generator4 extends Generator3 {
 								String generatedRandom = column.getNextFreshValue();
 								if( generatedRandom == null ) logger.error("NULL!");
 								dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
+								if( column.isPrimary() && column.referencedBy().size() > 0){ // Chased values might be duplicate
+									addToUncommittedFresh(uncommittedFresh, column, generatedRandom);
+								}
 								if( freshDuplicates.size() < Generator3.freshDuplicatesSize ){
 									mFreshDuplicatesToDuplicatePks.put(generatedRandom, primaryDuplicateValues);
 									freshDuplicates.add(generatedRandom);
@@ -149,6 +162,10 @@ public class Generator4 extends Generator3 {
 						logger.debug("Adding Fresh");
 						dbmsConn.setter(stmt, ++columnIndex, column.getType(), generatedRandom);
 						
+						if( column.isPrimary() && column.referencedBy().size() > 0){ // Chased values might be duplicate
+							addToUncommittedFresh(uncommittedFresh, column, generatedRandom);
+						}
+						
 						// Let's do this
 						if( column.isPrimary() && (primaryDuplicateValues.size() == schema.getPks().size() - 1 ) ){
 							if( freshDuplicates.size() < Generator3.freshDuplicatesSize ){
@@ -172,15 +189,21 @@ public class Generator4 extends Generator3 {
 				if( (j % 1000000 == 0) ){ // Let's put a limit to the dimension of the stmt 
 					stmt.executeBatch();	
 					dbmsConn.commit();
+					for( String key : uncommittedFresh.keySet() )
+						uncommittedFresh.get(key).clear();
 				}
 				if( chaseInserted ){ //TODO Efficiency?
 					stmt.executeBatch();
 					dbmsConn.commit();
+					for( String key : uncommittedFresh.keySet() )
+						uncommittedFresh.get(key).clear();
 				}
 				if( maxNumDupsRepetition > Generator3.maxRepeatDuplicateWindowReads ){
 					logger.info("Advancing the set of candidate duplicates");
 					stmt.executeBatch();	
 					dbmsConn.commit();
+					for( String key : uncommittedFresh.keySet() )
+						uncommittedFresh.get(key).clear();
 					initDuplicateValues(schema, j);
 					initNumDupsRepetitionCounters();
 					mFreshDuplicatesToDuplicatePks.clear();
@@ -202,5 +225,17 @@ public class Generator4 extends Generator3 {
 		logger.info("Table '"+ schema.getTableName() + "' pumped with " + nRows +" rows.");
 				
 		return tablesToChase; 
+	}
+
+	private void addToUncommittedFresh(
+			Map<String, List<String>> uncommittedFresh, Column column,
+			String generatedRandom) {
+		
+		if( uncommittedFresh.containsKey(column.getName()) )
+			uncommittedFresh.get(column.getName()).add(generatedRandom);
+		else{
+			uncommittedFresh.put(column.getName(), new ArrayList<String>());
+			uncommittedFresh.get(column.getName()).add(generatedRandom);
+		}
 	}
 }
