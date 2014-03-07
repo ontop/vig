@@ -33,8 +33,14 @@ public class MainTest {
 	private static String username1 = "tir";
 	private static String password1 = "";
 	
+	private static String jdbcConnectorOriginal = "jdbc:mysql";
+	private static String databaseUrlOriginal = "localhost/provaNpdOriginal";
+	private static String usernameOriginal = "tir";
+	private static String passwordOriginal = "";
+	
 	private static DBMSConnection db;
 	private static DBMSConnection db1;
+	private static DBMSConnection db1Original;
 	
 	private static Logger logger = Logger.getLogger(MainTest.class.getCanonicalName());
 	
@@ -43,6 +49,7 @@ public class MainTest {
 		
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
+		db1Original = new DBMSConnection(jdbcConnectorOriginal, databaseUrlOriginal, usernameOriginal, passwordOriginal);
 	}
 	
 	@Before
@@ -108,7 +115,7 @@ public class MainTest {
 		
 		db.setForeignCheckOff();
 		db.setUniqueCheckOff();
-		main.pumpDatabase(db, 1);
+		main.pumpDatabase(db, db, 1);
 		db.setUniqueCheckOn();
 		db.setForeignCheckOn();
 	}
@@ -121,7 +128,7 @@ public class MainTest {
 		db1.setUniqueCheckOff();
 		long start = System.currentTimeMillis();
 	
-		main.pumpDatabase(db1, 10);
+		main.pumpDatabase(db1Original, db1, 10);
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump "+10+" rows: " + (end - start) + " msec.");

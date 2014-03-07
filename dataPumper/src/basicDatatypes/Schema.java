@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import columnTypes.BigDecimalColumn;
 import columnTypes.Column;
 import columnTypes.DateTimeColumn;
-import columnTypes.DoubleColumn;
 import columnTypes.IntColumn;
 import columnTypes.LinestringColumn;
 import columnTypes.MultiLinestringColumn;

@@ -3,26 +3,29 @@ package columnTypes;
 import java.util.Collections;
 import java.util.List;
 
+import core.ChasePicker;
 import basicDatatypes.MySqlDatatypes;
 
 public abstract class IncrementableColumn<T extends Comparable<? super T>> extends Column {
 
 	protected List<T> domain;
 	protected int domainIndex;
-	protected T lastInserted;
+	protected T lastFreshInserted;
 	protected T max;
 	protected T min;
+
+	protected ChasePicker cP;
 	
 	public IncrementableColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		domain = null;
 		domainIndex = 0;
+		cP = new ChasePicker(this);
 	}
 	
 	
 	public abstract T increment(T toIncrement);
 	public abstract T getCurrentMax();
-
 	
 	@Override
 	/** This method has to be called whenever information held for the column can be released **/
@@ -34,7 +37,7 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 	@Override
 	public String getNextFreshValue(){
 		
-		T toInsert = this.getLastInserted();
+		T toInsert = this.getLastFreshInserted();
 		
 		if( toInsert == null ) logger.error(this.toString() +" toInsert is NULL");
 		
@@ -46,19 +49,17 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 		}
 		while(toInsert.compareTo(this.getCurrentMax()) == 0);
 		
-//		while( increment(toInsert).compareTo(this.getCurrentMax()) > -1 && this.hasNextMax() ) this.nextMax();
-		
-		this.setLastInserted(toInsert);
+		this.setLastFreshInserted(toInsert);
 		
 		return toInsert.toString();
 	}
 
-	public void setLastInserted(T toInsert){
-		lastInserted = toInsert;
+	public void setLastFreshInserted(T toInsert){
+		lastFreshInserted = toInsert;
 	}
 
-	public T getLastInserted(){
-		return lastInserted;
+	public T getLastFreshInserted(){
+		return lastFreshInserted;
 	}
 	
 	
@@ -92,15 +93,6 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 			if( domain.size() != 0 )
 				Collections.sort(domain);
 		}
-		
-		// For memory reasons, there is an hard-limit about what the
-		// rows fetched from the database and that constitute the 
-		// 'domain' vector. Hence, the maximum value of the domain
-		// might NOT BE the maximum in the column.
-		if(domain.size() == 0) return;
-		if( domain.get(domain.size() -1).compareTo(max) == -1 )
-			domain.set(domain.size() -1, max);
 	}
-	
 }
 

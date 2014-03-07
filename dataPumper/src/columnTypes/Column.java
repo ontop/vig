@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.QualifiedName;
+import basicDatatypes.Schema;
 
 public abstract class Column implements FreshValuesGenerator {
 	private final String name;
@@ -16,6 +17,7 @@ public abstract class Column implements FreshValuesGenerator {
 	protected boolean geometric;
 	private boolean independent;
 	private boolean autoincrement;
+	private Schema schema;
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
 	private List<QualifiedName> referencedBy; // that.name subseteq this.name
 	
@@ -49,7 +51,30 @@ public abstract class Column implements FreshValuesGenerator {
 		this.duplicatesRatio = 0;
 		this.index = index;
 		this.geometric = false;
-		this.datatypeLength = 15;
+		this.datatypeLength = 15; // A default value
+		
+	}
+	
+	public Column(Schema schema, String name, MySqlDatatypes type, int index){
+		this.name = name;
+		this.type = type;
+		this.primary = false;
+		this.independent = false;
+		this.allDifferent = false;
+		this.autoincrement = false;
+		referencesTo = new ArrayList<QualifiedName>();
+		referencedBy = new ArrayList<QualifiedName>();
+		this.maximumChaseCycles = Integer.MAX_VALUE;
+		this.currentChaseCycle = 0;
+		this.duplicatesRatio = 0;
+		this.index = index;
+		this.geometric = false;
+		this.datatypeLength = 15; // A default value
+		this.schema = schema;
+	}
+	
+	public Schema getSchema(){
+		return schema;
 	}
 	
 	public boolean isGeometric(){

@@ -24,7 +24,7 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 	public DateTimeColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		
-		lastInserted = null;
+		lastFreshInserted = null;
 		
 		granularity = Granularity.SECOND;
 		skip = 1;
@@ -32,7 +32,7 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
-		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+" LIMIT 100000");
+		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName());
 		
 		List<Timestamp> values = null;
 		
@@ -54,6 +54,8 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 	@Override
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
 		
+		if( lastFreshInserted != null ) return; // Boundaries already filled
+		
 		Template t = new Template("select ? from "+schema.getTableName()+";");
 		PreparedStatement stmt;
 		
@@ -66,12 +68,12 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 			if( result.next() && (result.getTimestamp(1) != null) ){
 				setMinValue(result.getTimestamp(1));
 				setMaxValue(result.getTimestamp(2));
-				setLastInserted(result.getTimestamp(1));
+				setLastFreshInserted(result.getTimestamp(1));
 			}
 			else{
 				setMinValue(new Timestamp(0));
 				setMaxValue(new Timestamp(Long.MAX_VALUE));
-				setLastInserted(new Timestamp(0));
+				setLastFreshInserted(new Timestamp(0));
 			}
 			stmt.close();
 		}
@@ -122,5 +124,20 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 		if( domain.size() == 0 )
 			return new Timestamp(Long.MAX_VALUE);
 		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
+	}
+
+	@Override
+	public String getNextChased(DBMSConnection db, Schema schema) {
+		
+		String result = cP.pickChase(db, schema);
+		
+		if( result == null ) return null;
+
+		Timestamp chased = new Timestamp(Long.parseLong(result));
+		
+		if( chased.compareTo(lastFreshInserted) > 0 )
+			lastFreshInserted = chased;
+		
+		return result;
 	}
 };

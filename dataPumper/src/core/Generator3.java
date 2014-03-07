@@ -21,10 +21,10 @@ import basicDatatypes.*;
 
 public class Generator3 extends Generator {
 	
-	private Map<String, Integer> mNumChases;
-	private Map<String, ResultSet> referencedValues; 
-	private Map<String, Integer> mNumDupsRepetition;
-	private int maxNumDupsRepetition;
+	protected Map<String, Integer> mNumChases;
+	protected Map<String, ResultSet> referencedValues; 
+	protected Map<String, Integer> mNumDupsRepetition;
+	protected int maxNumDupsRepetition;
 
 	public static int duplicatesWindowSize = 80000;
 	public static int maxRepeatDuplicateWindowReads = 5;
@@ -221,7 +221,7 @@ public class Generator3 extends Generator {
 	 * @param nRows
 	 * @param schema
 	 */
-	private void updateDupRatios(int nRows, Schema schema) {
+	protected void updateDupRatios(int nRows, Schema schema) {
 		
 		for( Column c : schema.getColumns() ){
 			int numChases = mNumChases.containsKey(c.getName()) ? mNumChases.get(c.getName()) : 0;
@@ -235,19 +235,19 @@ public class Generator3 extends Generator {
 	}
 
 
-	private void resetState(Schema schema) {
+	protected void resetState(Schema schema) {
 		resetDuplicateValues();
 		resetColumns(schema);
 		System.gc();
 	}
 
-	private void resetColumns(Schema schema) {
+	protected void resetColumns(Schema schema) {
 		for( Column c : schema.getColumns() )
 			c.reset();
 	}
 
 
-	private void updateTablesToChase(Column column, List<Schema> tablesToChase) {
+	protected void updateTablesToChase(Column column, List<Schema> tablesToChase) {
 		// New values inserted imply new column to chase
 		for( QualifiedName qN : column.referencesTo() ){
 			if( !tablesToChase.contains(dbmsConn.getSchema(qN.getTableName())) ){
@@ -256,7 +256,7 @@ public class Generator3 extends Generator {
 		}
 	}
 
-	private void initDuplicateValues(Schema schema, int insertedRows) {
+	protected void initDuplicateValues(Schema schema, int insertedRows) {
 		resetDuplicateValues();
 		
 		for( Column c : schema.getColumns() ){
@@ -272,14 +272,14 @@ public class Generator3 extends Generator {
 		System.gc();
 	}
 	
-	private void initDuplicateRatios(Schema schema){
+	protected void initDuplicateRatios(Schema schema){
 		for( Column c : schema.getColumns() ){
 			c.setDuplicateRatio(findDuplicateRatio(schema, c));
 //			if(c.getDuplicateRatio() > 0.95) then c.setIndependent(); TODO Mindaugas
 		}
 	}
 
-	private int initChaseValues(int nRows, Schema schema){
+	protected int initChaseValues(int nRows, Schema schema){
 		for( String key : chasedValues.keySet() ){
 			for( ResultSet rs : chasedValues.get(key) ){
 				try {
@@ -311,7 +311,7 @@ public class Generator3 extends Generator {
 		return nRows;
 	}
 	
-	private void resetDuplicateValues(){
+	protected void resetDuplicateValues(){
 		for( String key : duplicateValues.keySet() ){
 			try {
 				duplicateValues.get(key).close();
@@ -413,7 +413,7 @@ public class Generator3 extends Generator {
 		return result;
 	}
 	
-	private void initNumDupsRepetitionCounters(){
+	protected void initNumDupsRepetitionCounters(){
 		maxNumDupsRepetition = 0;
 		mNumDupsRepetition.clear();
 	}

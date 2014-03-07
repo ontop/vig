@@ -1,20 +1,21 @@
 package columnTypes;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 import connection.DBMSConnection;
+import core.ChasePicker;
 
-public class StringColumn extends Column {
-	
-	private List<String> domain;
+public class StringColumn extends IncrementableColumn<String> {
 	
 	// For random generation of fixed size
 	private List<Integer> rndIndexes;
-	private String characters = "0123456789abcdefghijklmnopqrstuvwxyz";
-	private int nChar;
+	private String characters = "0123456789abcdefghijklmnopqrstuvwxyz"; // Ordered from the least to the bigger (String.compareTo)
 	
 	public StringColumn(String name, MySqlDatatypes type, int index){
 		super(name, type, index);
@@ -24,7 +25,7 @@ public class StringColumn extends Column {
 		for( int i = 0; i < datatypeLength; ++i )
 			rndIndexes.add(0);
 
-		nChar = characters.length();
+		cP = new ChasePicker(this);
 	}
 	
 	public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength){
@@ -36,47 +37,112 @@ public class StringColumn extends Column {
 		for( int i = 0; i < datatypeLength; ++i )
 			rndIndexes.add(0);
 
-		nChar = characters.length();
-	}
-
-	@Override
-	public String getNextFreshValue() {
-		
-		if( rndIndexes.get(rndIndexes.size()-1) == characters.indexOf("A") ){
-			logger.error("DEBUG");
-		}
-		
-		for( int i = datatypeLength -1; i >= 0; --i ){
-			if( rndIndexes.get(i) < nChar -1 ){
-				rndIndexes.set(i, rndIndexes.get(i) + 1);
-				break;
-			}
-			rndIndexes.set(i, 0);
-		}
-		
-		StringBuilder builder = new StringBuilder();
-		
-		for( Integer i : rndIndexes ){
-			builder.append(characters.charAt(i));
-		}
-		
-		return builder.toString();
-	}
-
-	@Override
-	public void reset() {
-		
+		cP = new ChasePicker(this);
 	}
 
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
-		// TODO 
+		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+" WHERE CHAR_LENGTH("+getName()+")="+datatypeLength);
+		
+		List<String> values = null;
+		
+		try {
+			ResultSet result = stmt.executeQuery();
+			
+			values = new ArrayList<String>();
+			
+			while( result.next() ){
+				values.add(result.getString(1));
+			}
+			stmt.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		setDomain(values);
 	}
 
 	@Override
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
-		// TODO 
+		
+		if( domain == null )
+			fillDomain(schema, db);
+		
+		if( lastFreshInserted != null ) return;
+		
+		if( domain.size() != 0 ){
+			min = domain.get(0);
+			max = domain.get(domain.size()-1);
+		}
+		else{
+			min = lowerBoundValue();
+			max = upperBoundValue();
+		}
+		setLastFreshInserted(min);
+	}
+
+	@Override
+	public String getNextChased(DBMSConnection db, Schema schema) {
+		
+		String result = cP.pickChase(db, schema);
+		
+		if( result == null ) return null;
+		
+		if( result.compareTo(lastFreshInserted) > 0 )
+			lastFreshInserted = result;
+		
+		return result;
+	}
+
+	@Override
+	public String increment(String toIncrement) {
+		
+		StringBuilder builder = new StringBuilder(toIncrement);
+		
+		for( int i = toIncrement.length() -1; i >= 0; --i ){
+			
+			if( toIncrement.substring(i, i+1).compareTo(upperBoundValue().substring(0, 1)) < 0 ){
+				builder.replace(i, i+1, characters.charAt(characters.indexOf(toIncrement.charAt(i)) + 1)+"");
+				return builder.toString();
+			}
+			int j = i;
+			
+			while( j >= 0 && toIncrement.charAt(j) == upperBoundValue().charAt(0) ){
+				builder.replace(j, j+1, lowerBoundValue().substring(0, 1));
+				--j;
+			}
+			if( j >= 0 ){
+				builder.replace(j, j+1, characters.charAt(characters.indexOf(toIncrement.charAt(j)) + 1)+"");
+				return builder.toString();
+			}
+		}
+		return null;
 	}
 	
+	@Override
+	public String getCurrentMax() {
+		if( domain.size() == 0 )
+			return upperBoundValue();
+		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
+	}
+	
+	private String lowerBoundValue(){
+		StringBuilder builder = new StringBuilder();
+		
+		for( int i = 0; i < datatypeLength; ++i ){
+			builder.append(characters.charAt(0)); // Minimum
+		}
+		
+		return builder.toString();
+	}
+	
+	private String upperBoundValue(){
+		StringBuilder builder = new StringBuilder();
+		
+		for( int i = 0; i < datatypeLength; ++i ){
+			builder.append(characters.charAt(characters.length()-1)); // Maximum
+		}
+		
+		return builder.toString();
+	}
 	
 }

@@ -24,7 +24,7 @@ public class PolygonColumn extends IncrementableColumn<Polygon>{
 	
 	public PolygonColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
-		lastInserted = null;
+		lastFreshInserted = null;
 		domain = null;
 		domainIndex = 0;
 		geometric = true;
@@ -40,6 +40,7 @@ public class PolygonColumn extends IncrementableColumn<Polygon>{
 	 */
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
+		// NOT USED
 		domain = new ArrayList<Polygon>(); // Although I might want to keep this null
 	}
 
@@ -98,7 +99,7 @@ public class PolygonColumn extends IncrementableColumn<Polygon>{
 			globalMinX = BigDecimal.valueOf(Double.MIN_VALUE);
 			globalMinY = BigDecimal.valueOf(Double.MIN_VALUE);
 		}
-		setLastInserted(min);		
+		setLastFreshInserted(min);		
 	}
 
 	@Override
@@ -137,5 +138,10 @@ public class PolygonColumn extends IncrementableColumn<Polygon>{
 	@Override
 	public Polygon getCurrentMax() {
 		return max;
+	}
+
+	@Override
+	public String getNextChased(DBMSConnection db, Schema schema) {
+		return cP.pickChase(db, schema);
 	}
 }

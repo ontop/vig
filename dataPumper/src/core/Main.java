@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import columnTypes.Column;
 import utils.TrivialQueue;
 import basicDatatypes.Schema;
 import connection.DBMSConnection;
@@ -24,9 +25,14 @@ public class Main {
 		
 		
 	}
-	
-	public void pumpDatabase(DBMSConnection db, int nRows){
-		Generator gen = new Generator3(db);
+	/**
+	 * 
+	 * @param originalDb
+	 * @param db
+	 * @param nRows
+	 */
+	public void pumpDatabase(DBMSConnection originalDb, DBMSConnection db, int nRows){
+		Generator gen = new Generator4(db);
 		
 		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
 		
@@ -40,6 +46,13 @@ public class Main {
 		int cnt = 0;
 		while(schemas.hasNext()){
 			Schema schema = schemas.dequeue();
+			
+			fillDomain(schema, originalDb);
+			
+			if( schema.getTableName().equals("company") ){
+				logger.debug("Start debugging");
+			}
+			
 			List<Schema> toChase = null;
 			if(schema.isFilled()){ // 
 				toChase = gen.pumpTable(0, schema);
@@ -56,6 +69,13 @@ public class Main {
 					
 				}
 			}
+		}
+	}
+
+	private void fillDomain(Schema schema, DBMSConnection originalDb) {
+		for( Column column : schema.getColumns() ){
+			column.fillDomain(schema, originalDb);
+			column.fillDomainBoundaries(schema, originalDb);
 		}
 	}
 };

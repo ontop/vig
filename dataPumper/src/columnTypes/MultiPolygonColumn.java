@@ -24,7 +24,7 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 	
 	public MultiPolygonColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
-		lastInserted = null;
+		lastFreshInserted = null;
 		domain = null;
 		domainIndex = 0;
 
@@ -40,6 +40,7 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 	 */
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
+		// NOT USED
 		domain = new ArrayList<MultiPolygon>(); // Although I might want to keep this null
 	}
 
@@ -101,7 +102,7 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 			globalMinY = BigDecimal.valueOf(Double.MIN_VALUE);
 		}
 		
-		setLastInserted(min);
+		setLastFreshInserted(min);
 	}
 
 	/**
@@ -150,6 +151,17 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 	@Override
 	public MultiPolygon getCurrentMax() {
 		return max;
+	}
+
+	@Override
+	public String getNextChased(DBMSConnection db, Schema schema) {
+		String chased = cP.pickChase(db, schema);
+		
+		
+		// Now, one should check if it is a (rectangle > than last inserted) and if it is, do
+		// setLastFreshInserted(new MultiPolygon(chased));
+		
+		return chased;
 	}
 
 }

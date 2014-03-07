@@ -17,6 +17,10 @@ import connection.DBMSConnection;
 
 /**
  * In NPD, no geographical type is involved in primary keys constraints 
+ * 
+ * In NPD, no polygon is primary key or referenced by a fk. Thus, 
+ * the "domain" attribute is not used.
+ * 
  * @author tir
  *
  */
@@ -31,7 +35,7 @@ public class PointColumn extends IncrementableColumn<Point> {
 				
 	public PointColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
-		lastInserted = null;
+		lastFreshInserted = null;
 		domain = null;
 		domainIndex = 0;
 		geometric = true;
@@ -39,6 +43,8 @@ public class PointColumn extends IncrementableColumn<Point> {
 
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
+		
+		if( max == null ) fillDomainBoundaries(schema, db);
 		
 		String queryString = "SELECT DISTINCT AsWKT("+getName()+") FROM "+schema.getTableName() +" "
 				+ " WHERE AsWKT("+ getName() +") IS NOT NULL LIMIT 100000";
@@ -68,6 +74,8 @@ public class PointColumn extends IncrementableColumn<Point> {
 
 	@Override
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
+		
+		if( max != null ) return; // Already filled
 		
 		Template template = new Template("SELECT min(?("+getName()+")), max(?("+getName()+")) FROM "+schema.getTableName());
 		
@@ -110,7 +118,7 @@ public class PointColumn extends IncrementableColumn<Point> {
 		max = new Point(globalMaxX, globalMaxY);
 		min = new Point(globalMinX, globalMinY);
 		
-		setLastInserted(min);
+		setLastFreshInserted(min);
 	}
 
 	@Override
@@ -130,5 +138,10 @@ public class PointColumn extends IncrementableColumn<Point> {
 		if( domain.size() == 0 )
 			return new Point(BigDecimal.valueOf(Double.MAX_VALUE), BigDecimal.valueOf(Double.MAX_VALUE));
 		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
+	}
+
+	@Override
+	public String getNextChased(DBMSConnection db, Schema schema) {
+		return cP.pickChase(db, schema);
 	}
 }

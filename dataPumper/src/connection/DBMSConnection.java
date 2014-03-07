@@ -265,7 +265,7 @@ public class DBMSConnection {
 			stmt.close();
 		
 			// Now, let's fill the Min & Max information
-			fillDomainBoundaries(schema);
+//			fillDomainBoundaries(schema);
 			
 		}
 		catch(SQLException e){

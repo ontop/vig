@@ -22,13 +22,11 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 	private BigDecimal globalMinY;
 	private BigDecimal globalMaxY;
 	
-	
-	
 	public LinestringColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		
 		geometric = true;
-		lastInserted = null;
+		lastFreshInserted = null;
 		domain = null;
 		domainIndex = 0;
 	}
@@ -70,16 +68,16 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 			min = new Linestring("Linestring(0 0,0 0)");
 			max = new Linestring("Linestring("+Double.MAX_VALUE+" "+Double.MAX_VALUE+","+Double.MAX_VALUE+" "+Double.MAX_VALUE+")");
 			
-			domain = retrievedPoints;
+			setDomain(retrievedPoints);
 		}
 		
-		lastInserted = min;
+		lastFreshInserted = new Linestring(min.toString());
 	}
 		
 	@Override
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
 		
-		fillDomain(schema, db);
+		if( domain == null ) fillDomain(schema, db);
 		
 		BigDecimal maxX = BigDecimal.valueOf(Double.MIN_VALUE);
 		BigDecimal maxY = BigDecimal.valueOf(Double.MIN_VALUE);
@@ -147,5 +145,10 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 							+Double.MAX_VALUE + " " + Double.MAX_VALUE + ")");
 		}
 		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
+	}
+
+	@Override
+	public String getNextChased(DBMSConnection db, Schema schema) {
+		return cP.pickChase(db, schema);
 	}
 }

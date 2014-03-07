@@ -16,16 +16,16 @@ public class IntColumn extends IncrementableColumn<Long> {
 	public IntColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		domain = null;
-		this.max = Long.valueOf(0);
-		this.min = Long.valueOf(0);
-		this.lastInserted = Long.valueOf(0);
+		this.max = null;
+		this.min = null;
+		this.lastFreshInserted = null;
 		
 		index = 0;
 	}
 	
 	@Override
 	public String getNextFreshValue(){
-		Long toInsert = this.getLastInserted();
+		Long toInsert = this.getLastFreshInserted();
 		
 		do{
 			toInsert = increment(toInsert);
@@ -34,10 +34,8 @@ public class IntColumn extends IncrementableColumn<Long> {
 				this.nextMax();
 		}
 		while(toInsert.compareTo(this.getCurrentMax()) == 0);
-		
-//		while( ++toInsert >= this.getCurrentMax() && this.hasNextMax() ) this.nextMax();
-		
-		this.setLastInserted(toInsert);
+				
+		this.setLastFreshInserted(toInsert);
 		
 		return Long.toString(toInsert);
 	}
@@ -66,6 +64,8 @@ public class IntColumn extends IncrementableColumn<Long> {
 	@Override
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
 		
+		if( lastFreshInserted != null ) return; // Boundaries already filled 
+		
 		Template t = new Template("select ? from "+schema.getTableName()+";");
 		PreparedStatement stmt;
 		
@@ -79,7 +79,12 @@ public class IntColumn extends IncrementableColumn<Long> {
 			if( result.next() ){
 				setMinValue(result.getLong(1));
 				setMaxValue(result.getLong(2));
-				setLastInserted(result.getLong(1));
+				setLastFreshInserted(result.getLong(1));
+			}
+			else{
+				setMinValue(Long.valueOf(0));
+				setMaxValue(Long.MAX_VALUE);
+				setLastFreshInserted(Long.valueOf(0));
 			}
 			stmt.close();
 		} catch (SQLException e) {
@@ -97,5 +102,19 @@ public class IntColumn extends IncrementableColumn<Long> {
 		if( domain.size() == 0 )
 			return Long.MAX_VALUE;
 		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
+	}
+
+	@Override
+	public String getNextChased(DBMSConnection db, Schema schema) {
+		String result = cP.pickChase(db, schema);
+		
+		if( result == null ) return null;
+		
+		long resultI = Long.parseLong(result);
+		
+		if( resultI > lastFreshInserted )
+			lastFreshInserted = resultI;
+		
+		return result;
 	}
 }
