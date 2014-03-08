@@ -42,6 +42,17 @@ public class ChasePicker {
 	}
 
 	
+	public void refillCurChaseSet(DBMSConnection db, Schema s){
+		if( toChase != null ){
+			try {
+				toChase.close();
+				toChase = fillChaseValues(db, s);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public String pickChase(DBMSConnection db, Schema s){
 		if( toChase != null ){
 			try {
@@ -65,9 +76,33 @@ public class ChasePicker {
 		}
 		return null;
 	}
+	
+	private String pickChase(DBMSConnection db, Schema s, boolean recursive){
+		if( toChase != null ){
+			try {
+				if( toChase.next() ){
+					return toChase.getString(1);
+				}
+				else{
+					if( nextChaseSet() ){
+						toChase.close();
+						toChase = fillChaseValues(db, s);
+						return pickChase(db, s, true);
+					}
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		else if( toChase() ){
+			toChase = fillChaseValues(db, s);
+			return pickChase(db, s, true);
+		}
+		return null;
+	}
 
-	private ResultSet fillChaseValues(DBMSConnection dbmsConn, Schema schema) {
 		
+	private ResultSet fillChaseValues(DBMSConnection dbmsConn, Schema schema) {
 		// SELECT referredByCol FROM referredByTable WHERE referredByCol NOT IN (SELECT column.name() FROM schema.name()); 
 		// TODO Distinguish between geometric and non-geometric		
 		

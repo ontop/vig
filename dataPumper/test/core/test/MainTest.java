@@ -128,10 +128,10 @@ public class MainTest {
 		db1.setUniqueCheckOff();
 		long start = System.currentTimeMillis();
 	
-		main.pumpDatabase(db1Original, db1, 2);
+		main.pumpDatabase(db1Original, db1, 1000);
 		long end = System.currentTimeMillis();
 
-		logger.info("Time elapsed to pump "+2+" rows: " + (end - start) + " msec.");
+		logger.info("Time elapsed to pump "+1000+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 		db1.setUniqueCheckOn();
 		db1.setForeignCheckOn();

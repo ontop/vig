@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import connection.DBMSConnection;
@@ -35,9 +36,13 @@ public class Distribution {
 	
 	public float naiveStrategy(String columnName, String tableName){
 		
+		logger.setLevel(Level.INFO);
+		
 		int nRows = nRows(columnName, tableName);
 		if( nRows == 0 ) return 0; // No rows in the table
 		int sizeProjection = sizeProjection(columnName, tableName);
+		
+		if( nRows - sizeProjection == 0 ) return 0;
 		
 		float ratio = (float)(nRows - sizeProjection) / (float)nRows;
 		

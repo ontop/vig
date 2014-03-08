@@ -369,7 +369,7 @@ public class Generator3 extends Generator {
 			ratio = distribution.naiveStrategy(column.getName(), s.getTableName());
 			Statistics.setFloat(s.getTableName()+"."+column.getName()+" dups ratio", ratio);
 		}
-		return ratio;
+		return ratio > 0.9 ? 1 : ratio < 0.1 ? 0 : ratio;
 	}	
 	
 	protected String pickNextDupFromOldValues(Schema schema, Column column, boolean force) {

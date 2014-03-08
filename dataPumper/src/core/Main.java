@@ -49,10 +49,6 @@ public class Main {
 			
 			fillDomain(schema, originalDb);
 			
-			if( schema.getTableName().equals("licence_phase_hst") ){
-				logger.debug("Start debugging");
-			}
-			
 			List<Schema> toChase = null;
 			if(schema.isFilled()){ // 
 				toChase = gen.pumpTable(0, schema);

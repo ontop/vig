@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import connection.DBMSConnection;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
@@ -32,6 +33,8 @@ public abstract class Column implements FreshValuesGenerator {
 	// --- Each fresh element triggers a chase if some other column depends on this column
 	private int currentChaseCycle;  // Number of times that this column triggered a chase during pumping
 	private float duplicatesRatio;
+	
+	private boolean chaseSetSkipOccurred; // True if it occurred a change of the set from where chased values were being taken.
 	
 	protected static Logger logger = Logger.getLogger(Column.class.getCanonicalName());
 	
@@ -165,4 +168,18 @@ public abstract class Column implements FreshValuesGenerator {
 		 // TODO
 		return 0;
 	}
+
+	public void setChaseSetSkipOccurred() {
+		chaseSetSkipOccurred = true;
+	}
+	
+	public boolean chaseSetSkipOccurred(){
+		return chaseSetSkipOccurred;
+	}
+	
+	public void unsetChaseSetSkipOccurred(){
+		chaseSetSkipOccurred = false;
+	}
+	
+	public abstract void refillCurChaseSet(DBMSConnection conn, Schema s);
 };

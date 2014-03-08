@@ -126,6 +126,9 @@ public class DBMSConnection {
 //				stmt.setLong(columnIndex, Long.parseLong(value));
 //				break;
 //			}
+//			case DATETIME:{
+//				stmt.setDate(columnIndex, value);
+//			}
 			default:
 				stmt.setString(columnIndex, value);
 				break;

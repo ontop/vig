@@ -3,8 +3,10 @@ package columnTypes;
 import java.util.Collections;
 import java.util.List;
 
+import connection.DBMSConnection;
 import core.ChasePicker;
 import basicDatatypes.MySqlDatatypes;
+import basicDatatypes.Schema;
 
 public abstract class IncrementableColumn<T extends Comparable<? super T>> extends Column {
 
@@ -32,6 +34,11 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 	public void reset(){
 		if( domain != null ) domain.clear();
 		domainIndex = 0;
+	}
+	
+	@Override
+	public void refillCurChaseSet(DBMSConnection dbConn, Schema s){
+		cP.refillCurChaseSet(dbConn, s);
 	}
 	
 	@Override

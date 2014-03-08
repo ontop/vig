@@ -4,7 +4,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import basicDatatypes.MySqlDatatypes;
@@ -54,6 +59,10 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 	@Override
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
 		
+		if( getName().equals("bsns_arr_area_operator") ){
+			logger.error("START DEBUG");
+		}
+		
 		if( lastFreshInserted != null ) return; // Boundaries already filled
 		
 		Template t = new Template("select ? from "+schema.getTableName()+";");
@@ -66,9 +75,17 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 			ResultSet result = stmt.executeQuery();
 			
 			if( result.next() && (result.getTimestamp(1) != null) ){
-				setMinValue(result.getTimestamp(1));
-				setMaxValue(result.getTimestamp(2));
-				setLastFreshInserted(result.getTimestamp(1));
+				
+				if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(new Timestamp(Long.MAX_VALUE)) == 0 ){ // It looks crazy but it happens
+					setMinValue(new Timestamp(0));
+					setMaxValue(new Timestamp(Long.MAX_VALUE));
+					setLastFreshInserted(new Timestamp(0));
+				}
+				else{
+					setMinValue(result.getTimestamp(1));
+					setMaxValue(result.getTimestamp(2));
+					setLastFreshInserted(result.getTimestamp(1));
+				}
 			}
 			else{
 				setMinValue(new Timestamp(0));
@@ -85,38 +102,49 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 	@Override
 	public Timestamp increment(Timestamp toIncrement) {
 		
-		long value = toIncrement.getTime();
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//		
+//		sdf.format(toIncrement);
 		
-		switch( granularity ){
-		case YEAR:{
-			value += 364 * 30 * 24 *3600000 * skip; // TODO This is an approximation
-			break;
-		}
-		case MONTH:{
-			value += 30 * 24 *3600000 * skip;
-			break;
-		}
-		case DAY:{
-			value += 24 *3600000 * skip;
-			break;
-		}
-		case HOUR:{
-			value += 3600000 * skip;
-			break;
-		}
-		case MINUTE:{
-			value += 60000 * skip;
-			break;
-		}
-		case SECOND:{
-			value += 10000 * skip;
-			break;
-		}
-		default:
-			break;
+		Calendar c = Calendar.getInstance();
 		
-		}
-		return new Timestamp(value);
+		c.setTime(toIncrement);
+		c.add(Calendar.DATE, 1);
+		
+		return new Timestamp(c.getTimeInMillis());
+		
+//		long value = toIncrement.getTime();
+//		
+//		switch( granularity ){
+//		case YEAR:{
+//			value += 364 * 30 * 24 *3600000 * skip; // TODO This is an approximation
+//			break;
+//		}
+//		case MONTH:{
+//			value += 30 * 24 *3600000 * skip;
+//			break;
+//		}
+//		case DAY:{
+//			value += 24 *3600000 * skip;
+//			break;
+//		}
+//		case HOUR:{
+//			value += 3600000 * skip;
+//			break;
+//		}
+//		case MINUTE:{
+//			value += 60000 * skip;
+//			break;
+//		}
+//		case SECOND:{
+//			value += 10000 * skip;
+//			break;
+//		}
+//		default:
+//			break;
+//		
+//		}
+//		return new Timestamp(value);
 	}
 
 	@Override

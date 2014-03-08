@@ -464,6 +464,38 @@ public class GeneratorTest {
 		logger.info(Statistics.printStats());
 	}
 	
+	@Test
+	public void testGenerateDate(){
+		
+		// Init
+		PreparedStatement init = db.getPreparedStatement("insert into dateTest values (1, '2005-11-23')");
+		
+		try{
+			init.execute();
+		}
+		catch(SQLException e){
+			e.printStackTrace();
+		}
+		
+		Schema schema = db.getSchema("dateTest");
+		
+		for( Column c : schema.getColumns() ){
+			c.fillDomain(schema, db);
+			c.fillDomainBoundaries(schema, db);
+		}
+		
+//		db.fillDatabaseSchemas();
+		
+		Generator gen = new Generator4(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("dateTest"));
+		long end = System.currentTimeMillis();
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
 //	@Test
 //	public void testPumpWithNullInGeometry(){
 //				

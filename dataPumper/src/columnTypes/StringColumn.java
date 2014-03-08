@@ -17,6 +17,8 @@ public class StringColumn extends IncrementableColumn<String> {
 	private List<Integer> rndIndexes;
 	private String characters = "0123456789abcdefghijklmnopqrstuvwxyz"; // Ordered from the least to the bigger (String.compareTo)
 	
+	private int backupIndex = 0;
+	
 	public StringColumn(String name, MySqlDatatypes type, int index){
 		super(name, type, index);
 		
@@ -114,8 +116,10 @@ public class StringColumn extends IncrementableColumn<String> {
 				builder.replace(j, j+1, characters.charAt(characters.indexOf(toIncrement.charAt(j)) + 1)+"");
 				return builder.toString();
 			}
-		}
-		return null;
+		} // Available symbols are finished. Put a duplicate.
+		logger.info("NOT POSSIBLE TO ADD A FRESH VALUE. RE-GENERATING");
+		
+		return characters.charAt(++backupIndex % characters.length())+"";
 	}
 	
 	@Override
