@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import columnTypes.BigDecimalColumn;
-import columnTypes.Column;
+import columnTypes.ColumnPumper;
 import columnTypes.DateTimeColumn;
 import columnTypes.IntColumn;
 import columnTypes.LinestringColumn;
@@ -18,9 +18,9 @@ import columnTypes.StringColumn;
 import basicDatatypes.MySqlDatatypes;
 
 public class Schema{
-	private List<Column> columns;
+	private List<ColumnPumper> columns;
 	private final String tableName;  // Final in order to avoid the well-known "mutability" problem with the <i>equals</i> method.
-	private List<Column> primaryKeys;
+	private List<ColumnPumper> primaryKeys;
 	
 	// Fields related to the pumping
 	private boolean filledFlag; // It keeps the information whether this schema has been already pumped once
@@ -30,8 +30,8 @@ public class Schema{
 	
 	public Schema(String tableName){
 		this.tableName = tableName;
-		columns = new ArrayList<Column>();
-		primaryKeys = new ArrayList<Column>();
+		columns = new ArrayList<ColumnPumper>();
+		primaryKeys = new ArrayList<ColumnPumper>();
 		filledFlag = false;
 		maxDupsRepetition = 0;
 	}
@@ -74,8 +74,8 @@ public class Schema{
 		}
 	}
 	
-	public Column getColumn(String colName){
-		for( Column col : columns ){
+	public ColumnPumper getColumn(String colName){
+		for( ColumnPumper col : columns ){
 			if( col.getName().equals(colName) )
 				return col;
 		}
@@ -85,7 +85,7 @@ public class Schema{
 	 * Returns a list of all columns. Side-effects if the list is changed
 	 * @return
 	 */
-	public List<Column> getColumns(){
+	public List<ColumnPumper> getColumns(){
 		return columns;
 	}	
 	public String getTableName(){
@@ -116,11 +116,11 @@ public class Schema{
 		return this.getTableName().hashCode();
 		
 	}
-	public List<Column> getPks(){
+	public List<ColumnPumper> getPks(){
 		if( primaryKeys.size() == 0 ){
 			
 			// INIT
-			for( Column c : columns ){
+			for( ColumnPumper c : columns ){
 				if( c.isPrimary() )
 					primaryKeys.add(c);
 			}

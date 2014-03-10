@@ -12,11 +12,11 @@ import connection.DBMSConnection;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
-import columnTypes.Column;
+import columnTypes.ColumnPumper;
 
 public class ChasePicker {
 
-	private Column column;
+	private ColumnPumper column;
 	
 	private int maximumChaseCycles; // The maximum number of times fresh elements should be created for this column 
 	// --- Each fresh element triggers a chase if some other column depends on this column
@@ -27,7 +27,7 @@ public class ChasePicker {
 	
 	protected static Logger logger = Logger.getLogger(ChasePicker.class.getCanonicalName());
 	
-	public ChasePicker(Column column){
+	public ChasePicker(ColumnPumper column){
 		this.column = column;
 	}
 	

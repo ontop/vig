@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import columnTypes.Column;
+import columnTypes.ColumnPumper;
 import utils.TrivialQueue;
 import basicDatatypes.Schema;
 import connection.DBMSConnection;
@@ -25,6 +25,53 @@ public class Main {
 		
 		
 	}
+	
+	/**
+	 * 
+	 * @param originalDb
+	 * @param db
+	 * @param nRows
+	 */
+	public void pumpDatabase(DBMSConnection originalDb, DBMSConnection db, float percentage){
+		Generator gen = new Generator(db);
+		
+		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
+		
+		// Init the queue
+		for( String tableName : db.getAllTableNames()){
+			schemas.enqueue(db.getSchema(tableName));
+		}
+		
+		// Breadth first strategy
+		// TODO I need a limit, for the moment I put an hard one.
+		int cnt = 0;
+		while(schemas.hasNext()){
+			Schema schema = schemas.dequeue();
+			
+			fillDomain(schema, originalDb);
+			
+			List<Schema> toChase = null;
+			if(schema.isFilled()){ // 
+				toChase = gen.pumpTable(1, schema);
+			}
+			else{
+				int nRows = originalDb.getNRows(schema.getTableName());
+				nRows = (int) (nRows * percentage);
+				
+				toChase = gen.pumpTable(nRows, schema);
+				schema.setFilled();
+			}
+			for( Schema s : toChase ){
+				if(!schemas.contains(s)){
+					
+					if(++cnt % 1 == 0) logger.debug("Ciclo "+cnt);
+					schemas.enqueue(s);
+					
+				}
+			}
+		}
+	}
+	
 	/**
 	 * 
 	 * @param originalDb
@@ -32,7 +79,7 @@ public class Main {
 	 * @param nRows
 	 */
 	public void pumpDatabase(DBMSConnection originalDb, DBMSConnection db, int nRows){
-		Generator4 gen = new Generator4(db);
+		Generator gen = new Generator(db);
 		
 		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
 		
@@ -69,7 +116,7 @@ public class Main {
 	}
 
 	private void fillDomain(Schema schema, DBMSConnection originalDb) {
-		for( Column column : schema.getColumns() ){
+		for( ColumnPumper column : schema.getColumns() ){
 			column.fillDomain(schema, originalDb);
 			column.fillDomainBoundaries(schema, originalDb);
 		}

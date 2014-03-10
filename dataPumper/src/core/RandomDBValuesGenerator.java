@@ -5,7 +5,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import columnTypes.Column;
+import columnTypes.ColumnPumper;
 import columnTypes.DateTimeColumn;
 import columnTypes.IntColumn;
 @Deprecated

@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import columnTypes.Column;
+import columnTypes.ColumnPumper;
 import utils.Statistics;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
@@ -134,7 +134,7 @@ public class MainTest {
 		
 		for( String tableName : db1.getAllTableNames() ){
 			Schema s = db1.getSchema(tableName);
-			for( Column c : s.getColumns() ){
+			for( ColumnPumper c : s.getColumns() ){
 				if( !c.referencesTo().isEmpty() ){
 					c.setMaximumChaseCycles(4);
 				}
@@ -147,6 +147,33 @@ public class MainTest {
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump "+10000+" rows: " + (end - start) + " msec.");
+//		logger.info(Statistics.printStats());
+		db1.setUniqueCheckOn();
+		db1.setForeignCheckOn();
+	}
+	
+	@Test
+	public void testPumpNPDPercentage() {
+		Main main = new Main();		
+		
+		db1.setForeignCheckOff();
+		db1.setUniqueCheckOff();
+		
+		for( String tableName : db1.getAllTableNames() ){
+			Schema s = db1.getSchema(tableName);
+			for( ColumnPumper c : s.getColumns() ){
+				if( !c.referencesTo().isEmpty() ){
+					c.setMaximumChaseCycles(4);
+				}
+			}
+		}
+		
+		long start = System.currentTimeMillis();
+	
+		main.pumpDatabase(db1Original, db1, (float)0.5);
+		long end = System.currentTimeMillis();
+
+		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
 //		logger.info(Statistics.printStats());
 		db1.setUniqueCheckOn();
 		db1.setForeignCheckOn();

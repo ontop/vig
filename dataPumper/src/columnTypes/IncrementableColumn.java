@@ -8,7 +8,7 @@ import core.ChasePicker;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 
-public abstract class IncrementableColumn<T extends Comparable<? super T>> extends Column {
+public abstract class IncrementableColumn<T extends Comparable<? super T>> extends ColumnPumper {
 
 	protected List<T> domain;
 	protected int domainIndex;

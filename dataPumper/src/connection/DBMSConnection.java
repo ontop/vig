@@ -13,7 +13,7 @@ import java.util.Map;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import columnTypes.Column;
+import columnTypes.ColumnPumper;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
@@ -158,7 +158,7 @@ public class DBMSConnection {
 		insertQuery.append("INSERT into "+s.getTableName()+" (");
 		int i = 0;
 		
-		for( Column col : s.getColumns() ){
+		for( ColumnPumper col : s.getColumns() ){
 			insertQuery.append(col.getName());
 			if( ++i < s.getNumColumns() )
 				insertQuery.append(", ");
@@ -166,7 +166,7 @@ public class DBMSConnection {
 		insertQuery.append(") VALUES (");
 		
 		i = 0;
-		for( Column c : s.getColumns() ){
+		for( ColumnPumper c : s.getColumns() ){
 			if( c.getType() == MySqlDatatypes.POINT ||
 					c.getType() == MySqlDatatypes.POLYGON ||
 					c.getType() == MySqlDatatypes.MULTIPOLYGON ||
@@ -206,7 +206,7 @@ public class DBMSConnection {
 		
 		// Fill the REFERENCED_BY fks
 		for( String tableName : schemas.keySet() ){
-			for( Column c : schemas.get(tableName).getColumns() ){
+			for( ColumnPumper c : schemas.get(tableName).getColumns() ){
 				for( QualifiedName qN : c.referencesTo() ){
 					schemas.get(qN.getTableName()).getColumn(qN.getColName()).referencedBy().add(new QualifiedName(tableName, c.getName()));
 				}
@@ -241,8 +241,8 @@ public class DBMSConnection {
 			
 			// Retrieve columns with allDifferent()
 			int cnt = 0;
-			Column ref = null;
-			for( Column c : schema.getColumns() ){
+			ColumnPumper ref = null;
+			for( ColumnPumper c : schema.getColumns() ){
 				if( c.isPrimary() ){ ref = c; ++cnt; }
 			}
 			if( cnt == 1 ) ref.setAllDifferent();
@@ -284,7 +284,7 @@ public class DBMSConnection {
 	 * @param schema
 	 */
 	public void initColumns(Schema schema){
-		for( Column column : schema.getColumns() )
+		for( ColumnPumper column : schema.getColumns() )
 			column.fillDomain(schema, this);
 	}
 
@@ -368,4 +368,25 @@ public class DBMSConnection {
 			e.printStackTrace();
 		}
 	}
+	
+	public int getNRows(String tableName){
+		int result = 0;
+		
+		PreparedStatement stmt = this.getPreparedStatement("SELECT COUNT(*) FROM "+tableName);
+		
+		try {
+			ResultSet rs = stmt.executeQuery();
+			
+			if( rs.next() ){
+				result = rs.getInt(1);
+			}
+
+			stmt.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
 };
