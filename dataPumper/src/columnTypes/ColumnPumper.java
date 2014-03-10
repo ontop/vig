@@ -1,66 +1,81 @@
 package columnTypes;
 
 import connection.DBMSConnection;
+import core.ChasePicker;
+import core.DuplicatesPicker;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 
 public abstract class ColumnPumper extends Column implements FreshValuesGenerator{
 	
-	// Pumping related properties (as they change during the execution of pumpTable)
-	
-	private int maximumChaseCycles; // The maximum number of times fresh elements should be created for this column 
-	// --- Each fresh element triggers a chase if some other column depends on this column
-	private int currentChaseCycle;  // Number of times that this column triggered a chase during pumping
-	private float duplicatesRatio;
-	
-	private boolean chaseSetSkipOccurred; // True if it occurred a change of the set from where chased values were being taken.
-	
+	protected ChasePicker cP;
+	private DuplicatesPicker dP;
 	
 	public ColumnPumper(String name, MySqlDatatypes type, int index){
 		super(name, type, index);
-	
-		this.maximumChaseCycles = Integer.MAX_VALUE;
-		this.currentChaseCycle = 0;
-		this.duplicatesRatio = 0;
+		cP = new ChasePicker(this);
+		dP = new DuplicatesPicker(this);
 	}
 	
-	public abstract boolean hasNextChase();
-	
-	public abstract void refillCurChaseSet(DBMSConnection conn, Schema s);
-	
 	public void setDuplicateRatio(float ratio){
-		duplicatesRatio = ratio;
+		dP.setDuplicateRatio(ratio);
 	}
 	
 	public float getDuplicateRatio(){
-		return duplicatesRatio;
+		return dP.getDuplicateRatio();
 	}
 	
+	@Override
+	public String pickNextDupFromDuplicatesToInsert(){
+		return dP.pickNextDupFromDuplicatesToInsert();
+	}
+	@Override
+	public void beforeFirstDuplicatesToInsert(){
+		dP.beforeFirstDuplicatesToInsert();
+	}
+	
+	@Override
+	public void fillDuplicates(DBMSConnection dbmsConn, Schema schema, int insertedRows){
+		dP.fillDuplicates(dbmsConn, schema.getTableName(), insertedRows);
+	}
+	
+	@Override
+	public void refillCurChaseSet(DBMSConnection dbConn, Schema s){
+		cP.refillCurChaseSet(dbConn, s);
+	}
+	@Override
+	public boolean hasNextChase(){
+		return cP.hasNextChase();
+	}
+	
+	@Override
 	public int getCurrentChaseCycle(){
-		return currentChaseCycle;
+		return cP.getCurrentChaseCycle();
 	}
 	
+	@Override
 	public void incrementCurrentChaseCycle(){
-		++currentChaseCycle;
+		cP.incrementChaseCycle();
+	}
+	
+	@Override
+	public int getMaximumChaseCycles(){
+		return cP.getMaximumChaseCycles();
+	}
+	
+	@Override
+	public void setMaximumChaseCycles(int maximumChaseCycles){
+		cP.setMaximumChaseCycles(maximumChaseCycles);
+	}
+	
+	@Override
+	public String getFromReferenced(DBMSConnection db, Schema schema){
+		return cP.getFromReferenced(db, schema);
 	}
 
-	public int getMaximumChaseCycles() {
-		return maximumChaseCycles;
-	}
-
-	public void setMaximumChaseCycles(int maximumChaseCycles) {
-		this.maximumChaseCycles = maximumChaseCycles;
-	}
-	
-	public void setChaseSetSkipOccurred() {
-		chaseSetSkipOccurred = true;
-	}
-	
-	public boolean chaseSetSkipOccurred(){
-		return chaseSetSkipOccurred;
-	}
-	
-	public void unsetChaseSetSkipOccurred(){
-		chaseSetSkipOccurred = false;
+	@Override
+	public void reset(){
+		cP.reset();
+		dP.reset();
 	}
 };

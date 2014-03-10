@@ -34,7 +34,7 @@ public class DBMSConnection {
 	
 	public DBMSConnection(String jdbcConnector, String database, String username, String password){
 		
-//		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.INFO);
 		
 		this.jdbcConnector = jdbcConnector;
 		this.databaseUrl = database;
@@ -183,13 +183,6 @@ public class DBMSConnection {
 		}
 		insertQuery.append(")");
 		
-//		for( i = 0; i < s.getNumColumns(); ++i ){
-//			insertQuery.append("?");
-//			if( i < s.getNumColumns() - 1 )
-//				insertQuery.append(", ");
-//		}
-//		insertQuery.append(")");
-		
 		return insertQuery.toString();
 	}
 	
@@ -215,6 +208,9 @@ public class DBMSConnection {
 	}
 	
 	private Schema fillTableSchema(String tableName){
+		
+		logger.info("Adding schema "+tableName);
+		
 		Schema schema = new Schema(tableName);
 		
 		try{
@@ -225,7 +221,7 @@ public class DBMSConnection {
 			// Field - Type - Null - Default - Extra
 			int index = 0;
 			while(result.next()){
-//				logger.debug("Adding column " + result.getString(1) + " from table " + tableName);
+				logger.debug("Adding column " + result.getString(1) + " from table " + tableName);
 
 				schema.addColumn(result.getString(1), result.getString(2), ++index);
 				
@@ -266,11 +262,7 @@ public class DBMSConnection {
 				.referencesTo().add(new QualifiedName(result.getString(4), result.getString(5)));
 			}
 			
-			stmt.close();
-		
-			// Now, let's fill the Min & Max information
-//			fillDomainBoundaries(schema);
-			
+			stmt.close();		
 		}
 		catch(SQLException e){
 			e.printStackTrace();
@@ -322,16 +314,6 @@ public class DBMSConnection {
 		}
 	}
 	
-//	/** 
-//	 * Types in FactPages db
-//	 * int, datetime, varchar, decimal, char, text, longtext, point, linestring, polygon, multipolygon, multilinestring
-//	 */
-//	private void fillDomainBoundaries(Schema s){
-//		
-//		for( Column c : s.getColumns() )
-//			c.fillDomainBoundaries(s, this);
-//		
-//	}	
 	public void setForeignCheckOff(){
 		try {
 			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0");

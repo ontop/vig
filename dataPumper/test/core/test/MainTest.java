@@ -147,7 +147,6 @@ public class MainTest {
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump "+10000+" rows: " + (end - start) + " msec.");
-//		logger.info(Statistics.printStats());
 		db1.setUniqueCheckOn();
 		db1.setForeignCheckOn();
 	}

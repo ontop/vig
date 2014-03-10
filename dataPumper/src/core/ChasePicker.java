@@ -3,8 +3,6 @@ package core;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
@@ -23,12 +21,19 @@ public class ChasePicker {
 	private int currentChaseCycle;  // Number of times that this column triggered a chase during pumping
 	
 	private int chaseFrom; // The column from which one has to chase
+	
+	private ResultSet referencedValues;
+	
 	public ResultSet toChase;
 	
 	protected static Logger logger = Logger.getLogger(ChasePicker.class.getCanonicalName());
 	
 	public ChasePicker(ColumnPumper column){
 		this.column = column;
+		this.currentChaseCycle = 0;
+		this.maximumChaseCycles = Integer.MAX_VALUE;
+		this.referencedValues = null;
+		this.toChase = null;
 	}
 	
 	public boolean hasNextChaseSet(){
@@ -46,7 +51,22 @@ public class ChasePicker {
 	public boolean toChase(){
 		return (column.referencedBy() != null) && chaseFrom < column.referencedBy().size(); 
 	}
-
+	
+	public int getMaximumChaseCycles(){
+		return maximumChaseCycles;
+	}
+	
+	public void setMaximumChaseCycles(int maxCh){
+		maximumChaseCycles = maxCh;
+	}
+	
+	public int getCurrentChaseCycle(){
+		return currentChaseCycle;
+	}
+	
+	public void incrementChaseCycle(){
+		++currentChaseCycle;
+	}
 	
 	public void refillCurChaseSet(DBMSConnection db, Schema s){
 		if( toChase != null ){
@@ -85,7 +105,6 @@ public class ChasePicker {
 		
 	private ResultSet fillChaseValues(DBMSConnection dbmsConn, Schema schema) {
 		// SELECT referredByCol FROM referredByTable WHERE referredByCol NOT IN (SELECT column.name() FROM schema.name()); 
-		// TODO Distinguish between geometric and non-geometric		
 		
 		Template query = null;
 		ResultSet rs = null;
@@ -134,6 +153,54 @@ public class ChasePicker {
 		return returnVal;
 	}
 	
+	/**
+	 * This method, for the moment, assumes that it is possible
+	 * to reference AT MOST 1 TABLE.
+	 * NOT VERY EFFICIENT. 
+	 * @param schema
+	 * @param column
+	 * @return
+	 */
+	public String getFromReferenced(DBMSConnection dbmsConn, Schema schema) {
+		
+		String result = null;
+		
+		if( referencedValues == null ){
+			
+			// SELECT referencedColumn FROM referencedTable WHERE referencedColumn NOT IN (select thisColumn from thisTable)
+			Template templ = new Template("SELECT DISTINCT ? FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
+			
+			if( !column.referencesTo().isEmpty() ){
+				QualifiedName refQN = column.referencesTo().get(0);
+				templ.setNthPlaceholder(1, refQN.getColName());
+				templ.setNthPlaceholder(2, refQN.getTableName());
+				templ.setNthPlaceholder(3, refQN.getColName());
+				templ.setNthPlaceholder(4, column.getName());
+				templ.setNthPlaceholder(5, schema.getTableName());
+			}
+			else{
+				logger.error("Cannot access a referenced field");
+			}
+			
+			PreparedStatement stmt = dbmsConn.getPreparedStatement(templ);
+			try {
+				referencedValues = stmt.executeQuery();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try {
+			if( !referencedValues.next() ){
+				logger.debug("Not possible to add a non-duplicate value. No row will be added");
+			}else
+				result = referencedValues.getString(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
 	public void reset(){
 		chaseFrom = 0;
 		if( toChase != null ){
@@ -144,5 +211,13 @@ public class ChasePicker {
 			}
 		}
 		toChase = null;
+		if( referencedValues != null ){
+			try {
+				referencedValues.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		referencedValues = null;
 	}
 };

@@ -1,7 +1,6 @@
 package core;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +16,6 @@ import org.apache.log4j.Logger;
 import utils.Statistics;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
-import basicDatatypes.Template;
 import columnTypes.ColumnPumper;
 import connection.DBMSConnection;
 
@@ -27,8 +25,6 @@ public class Generator{
 	protected DBMSConnection dbmsConn;
 	private Random random;
 	
-	protected Map<String, ResultSet> referencedValues; 
-	protected Map<String, ResultSet> duplicateValues;     // Pointers to ResultSets storing duplicate values for each column
 	protected Map<String, Integer> mNumDupsRepetition;
 	protected int maxNumDupsRepetition;
 
@@ -42,10 +38,7 @@ public class Generator{
 		this.dbmsConn = dbmsConn;
 		this.distribution = new Distribution(dbmsConn);
 		this.random = new Random();
-		
-		duplicateValues = new HashMap<String, ResultSet>();
-		
-		referencedValues = new HashMap<String, ResultSet>();
+				
 		mNumDupsRepetition = new HashMap<String, Integer>();
 		maxNumDupsRepetition = 0;
 
@@ -53,37 +46,31 @@ public class Generator{
 	}
 	
 	public List<Schema> pumpTable(int nRows, Schema schema){
-		
-		logger.setLevel(Level.INFO);
-		initDuplicateValues(schema, 0);
-		initDuplicateRatios(schema);
-		
+				
 		PreparedStatement stmt = null;
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
-		
 		List<Schema> tablesToChase = new LinkedList<Schema>();
-		referencedValues.clear();
-		initNumDupsRepetitionCounters();
-		
 		Map<String, List<String>> mFreshDuplicatesToDuplicatePks = new HashMap<String, List<String>>();
 		Queue<String> freshDuplicates = new LinkedList<String>();
-		
 		Map<String, List<String>> uncommittedFresh = new HashMap<String, List<String>>(); // Keeps track of uncommitted fresh values
+		
+		initDuplicateValues(schema, 0);
+		initDuplicateRatios(schema);		
+		initNumDupsRepetitionCounters();
+		increaseChaseCycles(schema);
+		
 		for( ColumnPumper c : schema.getColumns() ){
 			if( c.isPrimary() && c.referencedBy().size() > 0 ){
 				uncommittedFresh.put(c.getName(), new ArrayList<String>());
 			}
 		}
-		increaseChaseCycles(schema);
 		try {
 			stmt = dbmsConn.getPreparedStatement(templateInsert);
 			logger.debug(templateInsert);
 			
 			// Disable auto-commit
 			dbmsConn.setAutoCommit(false);
-
-			// Idea: I can say that nRows = number of things that need to be chased, when the maximum
-			// cycle is reached. To test this out			
+		
 			for( int j = 1; j <= nRows; ++j ){
 				
 				List<String> primaryDuplicateValues = new ArrayList<String>();
@@ -116,7 +103,7 @@ public class Generator{
 					else if( stopChase ){
 						// We cannot take a chase value, neither we can pick a duplicate. The only way out is 
 						// to tale the necessary number of elements (non-duplicate with this column) from the referenced column(s)
-						toInsert = pickFromReferenced(schema, column, referencedValues);
+						toInsert = column.getFromReferenced(dbmsConn, schema);
 						
 						if( toInsert == null ){
 							stmt.close();
@@ -240,60 +227,8 @@ public class Generator{
 		}
 	}
 	
-	/**
-	 * This method, for the moment, assumes that it is possible
-	 * to reference AT MOST 1 TABLE.
-	 * NOT VERY EFFICIENT. If slow, then refactor as the others
-	 * @param schema
-	 * @param column
-	 * @return
-	 */
-	protected String pickFromReferenced(Schema schema, ColumnPumper column, Map<String, ResultSet> referencedValues) {
-		
-		String result = null;
-		
-		if( !referencedValues.containsKey(column.getName()) ){
-			
-			// SELECT referencedColumn FROM referencedTable WHERE referencedColumn NOT IN (select thisColumn from thisTable)
-			Template templ = new Template("SELECT DISTINCT ? FROM ? WHERE ? NOT IN (SELECT ? FROM ?)");
-			
-			if( !column.referencesTo().isEmpty() ){
-				QualifiedName refQN = column.referencesTo().get(0);
-				templ.setNthPlaceholder(1, refQN.getColName());
-				templ.setNthPlaceholder(2, refQN.getTableName());
-				templ.setNthPlaceholder(3, refQN.getColName());
-				templ.setNthPlaceholder(4, column.getName());
-				templ.setNthPlaceholder(5, schema.getTableName());
-			}
-			else{
-				logger.error("Cannot access a referenced field");
-			}
-			
-			PreparedStatement stmt = dbmsConn.getPreparedStatement(templ);
-			try {
-				referencedValues.put(column.getName(), stmt.executeQuery());
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		ResultSet rs = referencedValues.get(column.getName());
-		
-		try {
-			if( !rs.next() ){
-				logger.debug("Not possible to add a non-duplicate value. No row will be added");
-//				throw new SQLException();
-			}else
-				result = rs.getString(1);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		return result;
-	}
-	
 	protected void resetState(Schema schema) {
-		resetDuplicateValues();
+		resetDuplicateValues(schema);
 		resetColumns(schema);
 		System.gc();
 	}
@@ -313,17 +248,9 @@ public class Generator{
 	}
 	
 	protected void initDuplicateValues(Schema schema, int insertedRows) {
-		resetDuplicateValues();
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			ResultSet rs = fillDuplicates(c, schema.getTableName(), insertedRows);
-			try {
-				if( duplicateValues.containsKey(c.getName()) )
-					duplicateValues.get(c.getName()).close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			duplicateValues.put(c.getName(), rs);
+			c.fillDuplicates(dbmsConn, schema, insertedRows);
 		}
 		System.gc();
 	}
@@ -334,39 +261,10 @@ public class Generator{
 		}
 	}
 	
-	protected void resetDuplicateValues(){
-		for( String key : duplicateValues.keySet() ){
-			try {
-				duplicateValues.get(key).close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+	protected void resetDuplicateValues(Schema schema){
+		for( ColumnPumper c : schema.getColumns()){
+			c.reset();
 		}
-		duplicateValues.clear();
-	}
-	
-	protected ResultSet fillDuplicates(ColumnPumper column, String tableName, int insertedRows) {
-		
-		ResultSet result = null;
-		int startIndex = insertedRows - Generator.duplicatesWindowSize > 0 ? insertedRows - Generator.duplicatesWindowSize : 0;
-		
-		String queryString = null;
-		
-		if( column.isGeometric() ){
-			queryString = "SELECT AsWKT(" + column.getName() + ") FROM " + tableName + " "
-					+ " WHERE AsWKT(" + column.getName() + ") IS NOT NULL LIMIT " + startIndex + ", " + Generator.duplicatesWindowSize;
-		}
-		else{
-			queryString = "SELECT "+column.getName()+ " FROM "+tableName+" WHERE "+column.getName()+" IS NOT NULL LIMIT "+ startIndex +", "+Generator.duplicatesWindowSize;
-		}
-		try{
-			PreparedStatement stmt = dbmsConn.getPreparedStatement(queryString);
-			result = stmt.executeQuery();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		return result;
 	}
 	
 	public float findDuplicateRatio(Schema s, ColumnPumper column){
@@ -389,44 +287,26 @@ public class Generator{
 		return ratio > 0.9 ? 1 : ratio < 0.1 ? 0 : ratio;
 	}	
 	
-	protected String pickNextDupFromOldValues(Schema schema, ColumnPumper column, boolean force) {
+	private String pickNextDupFromOldValues(Schema schema, ColumnPumper column) {
 		
-		ResultSet duplicatesToInsert = duplicateValues.get(column.getName());
-		if(duplicatesToInsert == null){
-			logger.error("duplicateValues was not correctly initialized");
-			return null;
-		}
-		String result = null;
+		String result = column.pickNextDupFromDuplicatesToInsert();
 		
-		try {
-			
-			boolean hasNext = duplicatesToInsert.next();
-			
-			if( !hasNext && force ){
-				if( mNumDupsRepetition.containsKey(column.getName()) ){
-					if( maxNumDupsRepetition < (mNumDupsRepetition.get(column.getName()) + 1) ){
-						maxNumDupsRepetition = mNumDupsRepetition.get(column.getName()) + 1;
-					}
-					mNumDupsRepetition.put(column.getName(), mNumDupsRepetition.get(column.getName()) + 1);
+		if( result == null ){
+			if( mNumDupsRepetition.containsKey(column.getName()) ){
+				if( maxNumDupsRepetition < (mNumDupsRepetition.get(column.getName()) + 1) ){
+					maxNumDupsRepetition = mNumDupsRepetition.get(column.getName()) + 1;
 				}
-				else{
-					mNumDupsRepetition.put(column.getName(), 1);
-					if( maxNumDupsRepetition < 1 ) ++maxNumDupsRepetition;
-				}
-				duplicatesToInsert.beforeFirst();
-				if( !duplicatesToInsert.next() ){
-					logger.error(column.toString() + ": No duplicate element can be forced");
-				}
+				mNumDupsRepetition.put(column.getName(), mNumDupsRepetition.get(column.getName()) + 1);
 			}
-			else if( !hasNext && !force ){
-				return null;
+			else{
+				mNumDupsRepetition.put(column.getName(), 1);
+				if( maxNumDupsRepetition < 1 ) ++maxNumDupsRepetition;
 			}
-			String retrieved = duplicatesToInsert.getString(1);
-			if( retrieved == null ) logger.error(schema.getTableName() + "." + column.getName() +": Retrieved is null");
-			result = duplicatesToInsert.getString(1);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+			column.beforeFirstDuplicatesToInsert();
+			if( (result = column.pickNextDupFromDuplicatesToInsert()) == null ){
+				logger.error(column.toString() + ": No duplicate element can be forced");
+			}
+		}	
 		return result;
 	}
 
@@ -486,7 +366,7 @@ public class Generator{
 			logger.debug("Adding a duplicate for "+ (new QualifiedName(schema.getTableName(), column.getName())).toString());
 			Statistics.addInt(schema.getTableName()+"."+column.getName()+" Adding a duplicate from initial database values", 1);
 			
-			String nextDuplicate = pickNextDupFromOldValues(schema, column, true);
+			String nextDuplicate = pickNextDupFromOldValues(schema, column);
 			
 			if( nextDuplicate == null ) logger.error("NULL duplicate"); 
 			toInsert = nextDuplicate;

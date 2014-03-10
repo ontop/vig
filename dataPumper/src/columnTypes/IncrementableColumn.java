@@ -2,11 +2,7 @@ package columnTypes;
 
 import java.util.Collections;
 import java.util.List;
-
-import connection.DBMSConnection;
-import core.ChasePicker;
 import basicDatatypes.MySqlDatatypes;
-import basicDatatypes.Schema;
 
 public abstract class IncrementableColumn<T extends Comparable<? super T>> extends ColumnPumper {
 
@@ -15,14 +11,11 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 	protected T lastFreshInserted;
 	protected T max;
 	protected T min;
-
-	protected ChasePicker cP;
 	
 	public IncrementableColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		domain = null;
 		domainIndex = 0;
-		cP = new ChasePicker(this);
 	}
 	
 	
@@ -32,14 +25,9 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 	@Override
 	/** This method has to be called whenever information held for the column can be released **/
 	public void reset(){
+		super.reset();
 		if( domain != null ) domain.clear();
 		domainIndex = 0;
-		cP.reset();
-	}
-	
-	@Override
-	public void refillCurChaseSet(DBMSConnection dbConn, Schema s){
-		cP.refillCurChaseSet(dbConn, s);
 	}
 	
 	@Override
@@ -101,10 +89,6 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 			if( domain.size() != 0 )
 				Collections.sort(domain);
 		}
-	}
-	@Override
-	public boolean hasNextChase(){
-		return cP.hasNextChase();
 	}
 }
 

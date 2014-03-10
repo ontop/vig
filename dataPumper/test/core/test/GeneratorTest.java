@@ -11,8 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -26,10 +24,8 @@ import basicDatatypes.Template;
 import utils.Statistics;
 import connection.DBMSConnection;
 import core.Generator;
-import core.Generator;
 
 /**
- * TODO Make of this a proper unit test
  * @author tir
  *
  */
@@ -41,13 +37,13 @@ public class GeneratorTest {
 	private static String username = "test";
 	private static String password = "ontop2014";
 	
-	private static String jdbcConnector1 = "jdbc:mysql";
-	private static String databaseUrl1 = "localhost/provaNpd";
-	private static String username1 = "tir";
-	private static String password1 = "";
+//	private static String jdbcConnector1 = "jdbc:mysql";
+//	private static String databaseUrl1 = "localhost/provaNpd";
+//	private static String username1 = "tir";
+//	private static String password1 = "";
 	
 	private static DBMSConnection db;
-	private static DBMSConnection db1;
+//	private static DBMSConnection db1;
 	private static Connection conn;
 //	private static Connection conn1;
 	
@@ -60,7 +56,7 @@ public class GeneratorTest {
 	public static void setUpBeforeClass(){
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		conn = db.getConnection();
-		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
+//		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
 //		conn1 = db1.getConnection();
 	}
 	
@@ -117,14 +113,6 @@ public class GeneratorTest {
 	@Test
 	public void testPumpTable(){
 		
-		PreparedStatement init = db.getPreparedStatement("DELETE FROM trivial");
-		
-		try {
-			init.execute();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
-		
 		Generator gen = new Generator(db);
 		
 		for( ColumnPumper c : db.getSchema("trivial").getColumns() ){
@@ -147,7 +135,6 @@ public class GeneratorTest {
 		
 			if(result.next()) assertTrue(result.getInt(1) == nRowsToInsert); // Careful, it is the ''next'' which moves the cursor (how awful)
 		
-			init.execute(); // Re-init
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -155,13 +142,6 @@ public class GeneratorTest {
 
 	@Test
 	public void testRatioDupsPumpTable(){
-		PreparedStatement init = db.getPreparedStatement("DELETE FROM trivial");
-		
-		try {
-			init.execute();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
 		
 		PreparedStatement insertions = db.getPreparedStatement("INSERT INTO trivial VALUES (1,'ciao'), (2,'ciriciao'), (1,'ciriciriciao')");
 		
@@ -185,27 +165,22 @@ public class GeneratorTest {
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
-		logger.info(Statistics.printStats());
-				
-//		assertEquals(6, Statistics.getIntStat("trivial.id canAdd"));
 		
-		try {
-			init.execute();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}		
+		assertEquals(new Float(0.33333334), new Float(Statistics.getFloatStat("trivial.id dups ratio")));
+		logger.info(Statistics.printStats());
+					
 	}
 	
 	@Test
 	public void testUnaryPkey(){
-		PreparedStatement init = db.getPreparedStatement("DELETE FROM pkeyTest");
 		
-		try {
-			init.execute();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		Schema schema = db.getSchema("pkeyTest");
+		
+		for( ColumnPumper c : schema.getColumns() ){
+			c.fillDomain(schema, db);
+			c.fillDomainBoundaries(schema, db);
 		}
-		
+
 		Generator gen = new Generator(db);
 		
 		long start = System.currentTimeMillis();
@@ -224,7 +199,6 @@ public class GeneratorTest {
 			logger.info(result.getInt(1));
 			assertEquals(nRowsToInsert, result.getInt(1));
 			
-			init.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -232,14 +206,6 @@ public class GeneratorTest {
 	
 	@Test
 	public void testBinaryPkey(){
-		
-		PreparedStatement init = db.getPreparedStatement("DELETE FROM testBinaryKey");
-		
-		try {
-			init.execute();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
 		
 		PreparedStatement insertions = 
 				db.getPreparedStatement("INSERT INTO testBinaryKey VALUES (1, 1, 'ciao'), (2, 1, 'ciriciao'), (3, 1, 'ciriciriciao'), (3, 2, 'ciriciri'), (4, 2, 'ciriciri')");
@@ -256,58 +222,14 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 
-//		db.fillDatabaseSchemas(); // Refill schemas
-		
 		Generator gen = new Generator(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
-		logger.info(Statistics.printStats());
-	}
-	
-	@Test
-	public void testGenerateDatetime(){
-		
-		// Init
-		PreparedStatement init = db.getPreparedStatement("insert into datetimeTest values (1, '2005-11-23 12:56:00')");
-		
-		try{
-			init.execute();
-		}
-		catch(SQLException e){
-			e.printStackTrace();
-		}
-		
-		Schema schema = db.getSchema("datetimeTest");
-		
-		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
-			c.fillDomainBoundaries(schema, db);
-		}
-		
-//		db.fillDatabaseSchemas();
-		
-		Generator gen = new Generator(db);
-		
-		long start = System.currentTimeMillis();
-		gen.pumpTable(nRowsToInsert, db.getSchema("datetimeTest"));
-		long end = System.currentTimeMillis();
-		
-		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
-		logger.info(Statistics.printStats());
-	}
-	
-	@Test
-	public void testGenerateDatetime_1(){
-				
-		Generator gen = new Generator(db);
-		
-		long start = System.currentTimeMillis();
-		gen.pumpTable(nRowsToInsert, db.getSchema("datetimeTest"));
-		long end = System.currentTimeMillis();
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testBinaryKey.id Adding a duplicate from initial database values") + 
+				Statistics.getIntStat("testBinaryKey.id fresh values"));
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
@@ -329,6 +251,8 @@ public class GeneratorTest {
 		gen.pumpTable(nRowsToInsert, db.getSchema("pointTest"));
 		long end = System.currentTimeMillis();
 		
+		assertEquals(nRowsToInsert, Statistics.getIntStat("pointTest.id fresh values"));
+		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 	}
@@ -348,6 +272,8 @@ public class GeneratorTest {
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testLinestring"));
 		long end = System.currentTimeMillis();
+		
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testLinestring.id fresh values"));
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
@@ -369,6 +295,8 @@ public class GeneratorTest {
 		gen.pumpTable(nRowsToInsert, db.getSchema("testPolygon"));
 		long end = System.currentTimeMillis();
 		
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testPolygon.id fresh values"));
+		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 	}	
@@ -388,6 +316,8 @@ public class GeneratorTest {
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testMultilinestring"));
 		long end = System.currentTimeMillis();
+		
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testMultilinestring.id fresh values"));
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
@@ -409,6 +339,8 @@ public class GeneratorTest {
 		gen.pumpTable(nRowsToInsert, db.getSchema("testMultipolygon"));
 		long end = System.currentTimeMillis();
 		
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testMultipolygon.id fresh values"));
+		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 	}
@@ -429,38 +361,11 @@ public class GeneratorTest {
 		gen.pumpTable(nRowsToInsert, db.getSchema("testAutoincrement"));
 		long end = System.currentTimeMillis();
 		
-		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
-		logger.info(Statistics.printStats());
-	}
-	
-	@Test
-	public void testAutoincrement_1(){
-		
-		// Init
-		PreparedStatement init = db.getPreparedStatement("insert into testAutoincrement values (1, 100)");
-		
-		try{
-			init.execute();
-		}
-		catch(SQLException e){
-			e.printStackTrace();
-		}
-		
-		Schema schema = db.getSchema("testAutoincrement");
-		
-		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
-			c.fillDomainBoundaries(schema, db);
-		}
-		
-		Generator gen = new Generator(db);
-		
-		long start = System.currentTimeMillis();
-		gen.pumpTable(nRowsToInsert, db.getSchema("testAutoincrement"));
-		long end = System.currentTimeMillis();
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
+
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testAutoincrement.id fresh values"));
 	}
 	
 	@Test
@@ -483,74 +388,16 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 		
-//		db.fillDatabaseSchemas();
-		
 		Generator gen = new Generator(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("dateTest"));
 		long end = System.currentTimeMillis();
 		
+		assertEquals(nRowsToInsert, Statistics.getIntStat("dateTest.id fresh values"));
+		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());
 	}
 	
-//	@Test
-//	public void testPumpWithNullInGeometry(){
-//				
-//		Generator gen = new Generator4(db1);
-//		
-//		long start = System.currentTimeMillis();
-//		gen.pumpTable(nRowsToInsert, db1.getSchema("apaAreaNet"));
-//		long end = System.currentTimeMillis();
-//		
-//		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
-//		logger.info(Statistics.printStats());
-//	}
-//	
-//	@Test
-//	public void checkPrimaryKeyIntegerSkips(){
-//		Generator gen = new Generator4(db1);
-//		
-//		long start = System.currentTimeMillis();
-//		gen.pumpTable(nRowsToInsert, db1.getSchema("bsns_arr_area"));
-//		long end = System.currentTimeMillis();
-//		
-//		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
-//		logger.info(Statistics.printStats());
-//	}
-//	
-	@Test
-	public void provetta(){
-		
-		Schema schema = db1.getSchema("wellbore_development_all");
-		
-		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db1);
-			c.fillDomainBoundaries(schema, db1);
-		}
-		
-		Generator gen = new Generator(db1);
-		
-		db1.setForeignCheckOff();
-		
-		long start = System.currentTimeMillis();
-		List<Schema> schemas = gen.pumpTable(100000, db1.getSchema("wellbore_development_all"));
-		long end = System.currentTimeMillis();
-		
-		while( !schemas.isEmpty() ){
-			Schema cur = schemas.remove(0);
-			for( ColumnPumper c : cur.getColumns() ){
-				c.fillDomain(cur, db1);
-				c.fillDomainBoundaries(cur, db1);
-			}
-			
-			schemas.addAll(gen.pumpTable(0, cur));
-		}
-		
-		db1.setForeignCheckOn();
-		
-		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
-		logger.info(Statistics.printStats());
-	}
 }
