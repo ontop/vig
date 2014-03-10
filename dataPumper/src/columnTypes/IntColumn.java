@@ -13,6 +13,26 @@ import connection.DBMSConnection;
 
 public class IntColumn extends IncrementableColumn<Long> {
 	
+	private int datatypeLengthFirstArgument;
+	private int datatypeLengthSecondArgument;
+	
+	private long modulo;
+	
+	public IntColumn(String name, MySqlDatatypes type, int index, int datatypeLengthFirst, int datatypeLengthSecondArgument) {
+		super(name, type, index);
+		domain = null;
+		this.max = null;
+		this.min = null;
+		this.lastFreshInserted = null;
+		
+		this.datatypeLengthFirstArgument = datatypeLengthFirst;
+		this.datatypeLengthSecondArgument = datatypeLengthSecondArgument;
+		
+		fillModulo();
+		
+		index = 0;
+	}
+	
 	public IntColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		domain = null;
@@ -20,9 +40,26 @@ public class IntColumn extends IncrementableColumn<Long> {
 		this.min = null;
 		this.lastFreshInserted = null;
 		
+		this.datatypeLengthFirstArgument = Integer.MAX_VALUE;
+		this.datatypeLengthSecondArgument = 0;
+		
+		modulo = Long.MAX_VALUE;
+		
 		index = 0;
 	}
 	
+	private void fillModulo() {
+		
+		StringBuilder builder = new StringBuilder();
+		
+		for( int i = 0; i < (datatypeLengthFirstArgument - datatypeLengthSecondArgument); ++i ){
+			builder.append("9");
+		}
+		
+		modulo = Long.parseLong(builder.toString());
+		
+	}
+
 	@Override
 	public String getNextFreshValue(){
 		Long toInsert = this.getLastFreshInserted();
@@ -42,8 +79,8 @@ public class IntColumn extends IncrementableColumn<Long> {
 
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
-		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+" LIMIT 100000");
 		
+		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName());
 		List<Long> values = null;
 		
 		try {
@@ -94,7 +131,7 @@ public class IntColumn extends IncrementableColumn<Long> {
 
 	@Override
 	public Long increment(Long toIncrement) {
-		return ++toIncrement;
+		return ((toIncrement + 1) % modulo);
 	}
 
 	@Override

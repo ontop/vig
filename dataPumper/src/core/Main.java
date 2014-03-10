@@ -32,7 +32,7 @@ public class Main {
 	 * @param nRows
 	 */
 	public void pumpDatabase(DBMSConnection originalDb, DBMSConnection db, int nRows){
-		Generator gen = new Generator4(db);
+		Generator4 gen = new Generator4(db);
 		
 		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
 		
@@ -51,7 +51,7 @@ public class Main {
 			
 			List<Schema> toChase = null;
 			if(schema.isFilled()){ // 
-				toChase = gen.pumpTable(0, schema);
+				toChase = gen.pumpTable(1, schema);
 			}
 			else{
 				toChase = gen.pumpTable(nRows, schema);

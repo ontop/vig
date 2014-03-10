@@ -34,6 +34,7 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 	public void reset(){
 		if( domain != null ) domain.clear();
 		domainIndex = 0;
+		cP.reset();
 	}
 	
 	@Override
@@ -100,6 +101,10 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 			if( domain.size() != 0 )
 				Collections.sort(domain);
 		}
+	}
+	@Override
+	public boolean hasNextChase(){
+		return cP.hasNextChase();
 	}
 }
 

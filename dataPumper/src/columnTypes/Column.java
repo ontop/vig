@@ -3,6 +3,7 @@ package columnTypes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import connection.DBMSConnection;
@@ -56,6 +57,8 @@ public abstract class Column implements FreshValuesGenerator {
 		this.geometric = false;
 		this.datatypeLength = 15; // A default value
 		
+		logger.setLevel(Level.INFO);
+		
 	}
 	
 	public Column(Schema schema, String name, MySqlDatatypes type, int index){
@@ -74,6 +77,8 @@ public abstract class Column implements FreshValuesGenerator {
 		this.geometric = false;
 		this.datatypeLength = 15; // A default value
 		this.schema = schema;
+		
+		logger.setLevel(Level.INFO);
 	}
 	
 	public Schema getSchema(){
@@ -168,6 +173,8 @@ public abstract class Column implements FreshValuesGenerator {
 		 // TODO
 		return 0;
 	}
+	
+	public abstract boolean hasNextChase();
 
 	public void setChaseSetSkipOccurred() {
 		chaseSetSkipOccurred = true;

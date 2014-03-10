@@ -223,10 +223,11 @@ public class DBMSConnection {
 			ResultSet result = stmt.executeQuery();
 			
 			// Field - Type - Null - Default - Extra
+			int index = 0;
 			while(result.next()){
 //				logger.debug("Adding column " + result.getString(1) + " from table " + tableName);
 
-				schema.addColumn(result.getString(1), result.getString(2));
+				schema.addColumn(result.getString(1), result.getString(2), ++index);
 				
 				
 				// Primary keys need to be all different
@@ -321,16 +322,16 @@ public class DBMSConnection {
 		}
 	}
 	
-	/** 
-	 * Types in FactPages db
-	 * int, datetime, varchar, decimal, char, text, longtext, point, linestring, polygon, multipolygon, multilinestring
-	 */
-	private void fillDomainBoundaries(Schema s){
-		
-		for( Column c : s.getColumns() )
-			c.fillDomainBoundaries(s, this);
-		
-	}	
+//	/** 
+//	 * Types in FactPages db
+//	 * int, datetime, varchar, decimal, char, text, longtext, point, linestring, polygon, multipolygon, multilinestring
+//	 */
+//	private void fillDomainBoundaries(Schema s){
+//		
+//		for( Column c : s.getColumns() )
+//			c.fillDomainBoundaries(s, this);
+//		
+//	}	
 	public void setForeignCheckOff(){
 		try {
 			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0");

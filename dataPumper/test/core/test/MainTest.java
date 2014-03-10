@@ -13,12 +13,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import columnTypes.Column;
 import utils.Statistics;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import connection.DBMSConnection;
 import core.Generator;
-import core.Generator3;
 import core.Main;
 
 public class MainTest {
@@ -27,6 +27,11 @@ public class MainTest {
 	private static String databaseUrl = "10.7.20.39:3306/pumperTest";
 	private static String username = "test";
 	private static String password = "ontop2014";
+	
+//	private static String jdbcConnector1 = "jdbc:mysql";
+//	private static String databaseUrl1 = "10.7.20.39:3306/pumperNpd";
+//	private static String username1 = "test";
+//	private static String password1 = "ontop2014";
 	
 	private static String jdbcConnector1 = "jdbc:mysql";
 	private static String databaseUrl1 = "localhost/provaNpd";
@@ -47,56 +52,56 @@ public class MainTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		
-//		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
+		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
 		db1Original = new DBMSConnection(jdbcConnectorOriginal, databaseUrlOriginal, usernameOriginal, passwordOriginal);
 	}
 	
-//	@Before
-//	public void setUp(){
-//		// INIT
-//		db.setForeignCheckOff();
-//		for( String sName : db.getAllTableNames() ){
-//			
-//			Template temp = new Template("delete from ?");
-//			temp.setNthPlaceholder(1, sName);
-//			
-//			PreparedStatement init = db.getPreparedStatement(temp);
-//			
-//			try {
-//				init.execute();
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		db.setForeignCheckOn();
-//	}
-//
-//	@AfterClass
-//	public static void tearDownAfterClass() throws Exception {
-//	
-//		db.close();
-//	}
-//	
-//	@After
-//	public void tearDown(){
-//		// INIT
-//		db.setForeignCheckOff();
-//		for( String sName : db.getAllTableNames() ){
-//			
-//			Template temp = new Template("delete from ?");
-//			temp.setNthPlaceholder(1, sName);
-//			
-//			PreparedStatement init = db.getPreparedStatement(temp);
-//			
-//			try {
-//				init.execute();
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		db.setForeignCheckOn();	
-//	}
+	@Before
+	public void setUp(){
+		// INIT
+		db.setForeignCheckOff();
+		for( String sName : db.getAllTableNames() ){
+			
+			Template temp = new Template("delete from ?");
+			temp.setNthPlaceholder(1, sName);
+			
+			PreparedStatement init = db.getPreparedStatement(temp);
+			
+			try {
+				init.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		db.setForeignCheckOn();
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	
+		db.close();
+	}
+	
+	@After
+	public void tearDown(){
+		// INIT
+		db.setForeignCheckOff();
+		for( String sName : db.getAllTableNames() ){
+			
+			Template temp = new Template("delete from ?");
+			temp.setNthPlaceholder(1, sName);
+			
+			PreparedStatement init = db.getPreparedStatement(temp);
+			
+			try {
+				init.execute();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		db.setForeignCheckOn();	
+	}
 	
 	@Test
 	public void testPumpDatabase() {
@@ -109,9 +114,9 @@ public class MainTest {
 		Schema schemaB = db.getSchema("fKeyB"); 
 		Schema schemaC = db.getSchema("selfDependency");
 		
-		schemaA.getColumn("value").setMaximumChaseCycles(1);
-		schemaB.getColumn("id").setMaximumChaseCycles(1);
-		schemaC.getColumn("id").setMaximumChaseCycles(3);
+		schemaA.getColumn("value").setMaximumChaseCycles(3);
+		schemaB.getColumn("id").setMaximumChaseCycles(3);
+		schemaC.getColumn("id").setMaximumChaseCycles(2);
 		
 		db.setForeignCheckOff();
 		db.setUniqueCheckOff();
@@ -126,13 +131,23 @@ public class MainTest {
 		
 		db1.setForeignCheckOff();
 		db1.setUniqueCheckOff();
+		
+		for( String tableName : db1.getAllTableNames() ){
+			Schema s = db1.getSchema(tableName);
+			for( Column c : s.getColumns() ){
+				if( !c.referencesTo().isEmpty() ){
+					c.setMaximumChaseCycles(4);
+				}
+			}
+		}
+		
 		long start = System.currentTimeMillis();
 	
-		main.pumpDatabase(db1Original, db1, 1000);
+		main.pumpDatabase(db1Original, db1, 10000);
 		long end = System.currentTimeMillis();
 
-		logger.info("Time elapsed to pump "+1000+" rows: " + (end - start) + " msec.");
-		logger.info(Statistics.printStats());
+		logger.info("Time elapsed to pump "+10000+" rows: " + (end - start) + " msec.");
+//		logger.info(Statistics.printStats());
 		db1.setUniqueCheckOn();
 		db1.setForeignCheckOn();
 	}

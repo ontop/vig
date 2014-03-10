@@ -31,6 +31,12 @@ public class ChasePicker {
 		this.column = column;
 	}
 	
+	public boolean hasNextChaseSet(){
+		if( column.referencedBy() == null ) return false;
+		if( chaseFrom + 1 < column.referencedBy().size() ){ return true; }
+		return false;
+	}
+	
 	public boolean nextChaseSet(){
 		if( column.referencedBy() == null ) return false;
 		if( chaseFrom + 1 < column.referencedBy().size() ){ ++chaseFrom; return true; }
@@ -76,31 +82,6 @@ public class ChasePicker {
 		}
 		return null;
 	}
-	
-	private String pickChase(DBMSConnection db, Schema s, boolean recursive){
-		if( toChase != null ){
-			try {
-				if( toChase.next() ){
-					return toChase.getString(1);
-				}
-				else{
-					if( nextChaseSet() ){
-						toChase.close();
-						toChase = fillChaseValues(db, s);
-						return pickChase(db, s, true);
-					}
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		else if( toChase() ){
-			toChase = fillChaseValues(db, s);
-			return pickChase(db, s, true);
-		}
-		return null;
-	}
-
 		
 	private ResultSet fillChaseValues(DBMSConnection dbmsConn, Schema schema) {
 		// SELECT referredByCol FROM referredByTable WHERE referredByCol NOT IN (SELECT column.name() FROM schema.name()); 
@@ -133,5 +114,35 @@ public class ChasePicker {
 			e.printStackTrace();
 		}
 		return rs;
+	}
+	
+	public boolean hasNextChase(){
+		
+		boolean returnVal = false;
+		
+		if( toChase != null ){
+			try {
+				returnVal = !(toChase.isLast() || toChase.isAfterLast());
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		else if( hasNextChaseSet() ){
+			returnVal = true;
+		}
+		
+		return returnVal;
+	}
+	
+	public void reset(){
+		chaseFrom = 0;
+		if( toChase != null ){
+			try {
+				toChase.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		toChase = null;
 	}
 };

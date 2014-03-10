@@ -117,7 +117,7 @@ public class StringColumn extends IncrementableColumn<String> {
 				return builder.toString();
 			}
 		} // Available symbols are finished. Put a duplicate.
-		logger.info("NOT POSSIBLE TO ADD A FRESH VALUE. RE-GENERATING");
+		logger.debug("NOT POSSIBLE TO ADD A FRESH VALUE. RE-GENERATING");
 		
 		return characters.charAt(++backupIndex % characters.length())+"";
 	}

@@ -13,12 +13,29 @@ import basicDatatypes.Template;
 import connection.DBMSConnection;
 
 public class BigDecimalColumn extends IncrementableColumn<BigDecimal>{
+	
+	private int datatypeFirstLength;
+	
+	public BigDecimalColumn(String name, MySqlDatatypes type, int index, int datatypeFirstLength) {
+		super(name, type, index);
+		domain = null;
+		this.max = null;
+		this.min = null;
+		this.lastFreshInserted = null;
+		
+		this.datatypeFirstLength = datatypeFirstLength;
+		
+		index = 0;
+	}
+	
 	public BigDecimalColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		domain = null;
 		this.max = null;
 		this.min = null;
 		this.lastFreshInserted = null;
+		
+		this.datatypeFirstLength = 30;
 		
 		index = 0;
 	}
