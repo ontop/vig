@@ -14,11 +14,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import columnTypes.ColumnPumper;
-import utils.Statistics;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import connection.DBMSConnection;
-import core.Generator;
 import core.Main;
 
 public class MainTest {
@@ -34,14 +32,14 @@ public class MainTest {
 //	private static String password1 = "ontop2014";
 	
 	private static String jdbcConnector1 = "jdbc:mysql";
-	private static String databaseUrl1 = "localhost/provaNpd";
-	private static String username1 = "tir";
-	private static String password1 = "";
+	private static String databaseUrl1 = "10.7.20.39:3306/npd_3";
+	private static String username1 = "test";
+	private static String password1 = "ontop2014";
 	
 	private static String jdbcConnectorOriginal = "jdbc:mysql";
-	private static String databaseUrlOriginal = "localhost/provaNpdOriginal";
-	private static String usernameOriginal = "tir";
-	private static String passwordOriginal = "";
+	private static String databaseUrlOriginal = "10.7.20.39:3306/npd";
+	private static String usernameOriginal = "test";
+	private static String passwordOriginal = "ontop2014";
 	
 	private static DBMSConnection db;
 	private static DBMSConnection db1;
@@ -169,13 +167,23 @@ public class MainTest {
 		
 		long start = System.currentTimeMillis();
 	
-		main.pumpDatabase(db1Original, db1, (float)0.5);
+		main.pumpDatabase(db1Original, db1, (float)3);
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
 //		logger.info(Statistics.printStats());
 		db1.setUniqueCheckOn();
 		db1.setForeignCheckOn();
+	}
+	
+	@Test
+	public void takeReferredFrom(){
+		
+		Schema s = db1Original.getSchema("wellbore_formation_top");
+		
+		ColumnPumper c = s.getColumn("lsuNpdidLithoStrat");
+		
+		System.err.println(c.referencedBy().size());
 	}
 }
 
