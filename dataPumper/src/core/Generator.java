@@ -30,7 +30,7 @@ public class Generator{
 
 	public static int duplicatesWindowSize = 80000;
 	public static int maxRepeatDuplicateWindowReads = 5;
-	public static int freshDuplicatesSize = 20;
+	public static int freshDuplicatesSize = 2000;
 	
 	private static Logger logger = Logger.getLogger(Generator.class.getCanonicalName());
 
@@ -48,7 +48,6 @@ public class Generator{
 	public List<Schema> pumpTable(int nRows, Schema schema){
 				
 		PreparedStatement stmt = null;
-		String templateInsert = dbmsConn.createInsertTemplate(schema);
 		List<Schema> tablesToChase = new LinkedList<Schema>(); // Return value
 		
 		/** mapping (vn -> v_1, ..., v_n-1) where (v1, ..., vn) is a pk **/
@@ -67,6 +66,9 @@ public class Generator{
 				uncommittedFresh.put(c.getName(), new ArrayList<String>());
 			}
 		}
+		// templateInsert to be called AFTER the ratios initialization
+		// because of the reordering of the columns
+		String templateInsert = dbmsConn.createInsertTemplate(schema);
 		try {
 			stmt = dbmsConn.getPreparedStatement(templateInsert);
 			logger.debug(templateInsert);
@@ -372,7 +374,11 @@ public class Generator{
 				
 				dbmsConn.setter(stmt, column.getIndex(), column.getType(), toInsert);
 			}
-			else{ // Cannot find an element among fresh, try with random
+			else{ 
+				
+				// TODO Expensive Strategy
+				
+				// Cannot find an element among fresh, try with random
 				
 				Statistics.addInt(schema.getTableName()+"."+column.getName()+" forced fresh values", 1);
 				Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);

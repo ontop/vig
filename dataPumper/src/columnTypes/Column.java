@@ -25,7 +25,7 @@ public abstract class Column {
 	// Length of the datatype
 	protected int datatypeLength;
 	
-	private final int index;	
+	private int index;	
 	
 	protected static Logger logger = Logger.getLogger(ColumnPumper.class.getCanonicalName());
 	
@@ -78,6 +78,10 @@ public abstract class Column {
 	
 	public int getIndex(){
 		return index;
+	}
+	
+	public void setIndex(int index){
+		this.index = index;
 	}
 	
 	public void setPrimary(){

@@ -1,5 +1,6 @@
 package core;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import configuration.Conf;
@@ -19,6 +20,8 @@ public class Main {
 			System.err.println("Usage: program -f percentage");
 			System.exit(1);
 		}
+		
+		BasicConfigurator.configure();
 		
 		float percentage = Float.parseFloat(args[1]);
 		

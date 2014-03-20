@@ -5,7 +5,9 @@ package core.test;
 
 import static org.junit.Assert.*;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -50,6 +52,7 @@ public class GeneratorTest {
 	// Parameters
 	private static int nRowsToInsert = 1000;
 
+	
 	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
 	
 	@BeforeClass
@@ -88,6 +91,9 @@ public class GeneratorTest {
 			}
 		}
 		db.setForeignCheckOn();
+		//PropertiesConfigurator is used to configure logger from properties file
+		PropertyConfigurator.configure("log4j.properties");
+//		BasicConfigurator.configure();
 	}
 	
 	@After
@@ -228,8 +234,8 @@ public class GeneratorTest {
 		gen.pumpTable(nRowsToInsert, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		assertEquals(nRowsToInsert, Statistics.getIntStat("testBinaryKey.id Adding a duplicate from initial database values") + 
-				Statistics.getIntStat("testBinaryKey.id fresh values"));
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testBinaryKey.id1 Adding a duplicate from initial database values") + 
+				Statistics.getIntStat("testBinaryKey.id1 fresh values"));
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
 		logger.info(Statistics.printStats());

@@ -133,12 +133,17 @@ public class Schema{
 	public void sortColumnsAccordingToDupRatios(){
 		Collections.sort(columns, new Comparator<ColumnPumper>() {
 			  @Override
-			  public int compare(ColumnPumper c1, ColumnPumper c2) {
+			  public int compare(ColumnPumper c1, ColumnPumper c2) { // Descending order
 				  
-				  return c1.getDuplicateRatio() > c2.getDuplicateRatio() ? 1 : 
-					  c1.getDuplicateRatio() == c2.getDuplicateRatio() ? 0 : -1;
+				  return c1.getDuplicateRatio() > c2.getDuplicateRatio() ? -1 : 
+					  c1.getDuplicateRatio() == c2.getDuplicateRatio() ? 0 : 1;
 			  }
 			});
+		// Update the indexes
+		int index = 0;
+		for( ColumnPumper cP : columns ){
+			cP.setIndex(++index);
+		}
 	}
 	
 }
