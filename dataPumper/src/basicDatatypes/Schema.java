@@ -1,6 +1,8 @@
 package basicDatatypes;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -86,7 +88,7 @@ public class Schema{
 	 * @return
 	 */
 	public List<ColumnPumper> getColumns(){
-		return columns;
+		return Collections.unmodifiableList(columns);
 	}	
 	public String getTableName(){
 		return tableName;
@@ -127,6 +129,18 @@ public class Schema{
 		}
 		return primaryKeys;
 	}
+	
+	public void sortColumnsAccordingToDupRatios(){
+		Collections.sort(columns, new Comparator<ColumnPumper>() {
+			  @Override
+			  public int compare(ColumnPumper c1, ColumnPumper c2) {
+				  
+				  return c1.getDuplicateRatio() > c2.getDuplicateRatio() ? 1 : 
+					  c1.getDuplicateRatio() == c2.getDuplicateRatio() ? 0 : -1;
+			  }
+			});
+	}
+	
 }
 class TypeStringParser{
 	

@@ -50,7 +50,10 @@ public class Generator{
 		PreparedStatement stmt = null;
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
 		List<Schema> tablesToChase = new LinkedList<Schema>(); // Return value
-		Map<String, List<String>> mFreshDuplicatesToDuplicatePks = new HashMap<String, List<String>>(); // mapping (vn -> v_1, ..., v_n-1) where (v1, ..., vn) is a pk
+		
+		/** mapping (vn -> v_1, ..., v_n-1) where (v1, ..., vn) is a pk **/
+		Map<String, List<String>> mFreshDuplicatesToDuplicatePks = new HashMap<String, List<String>>(); 
+		                                                                                                  
 		Queue<String> freshDuplicates = new LinkedList<String>(); // Freshly generated strings from which duplicates can be chosen
 		Map<String, List<String>> uncommittedFresh = new HashMap<String, List<String>>(); // Keeps track of uncommitted fresh values
 		
@@ -73,6 +76,8 @@ public class Generator{
 		
 			for( int j = 1; j <= nRows; ++j ){
 				
+				/** Keeps track of the DUPLICATE values chosen ---for the current row---
+				 *  for columns part of a primary key  **/
 				List<String> primaryDuplicateValues = new ArrayList<String>();
 				
 				for( ColumnPumper column : schema.getColumns() ){
@@ -276,6 +281,7 @@ public class Generator{
 		for( ColumnPumper c : schema.getColumns() ){
 			c.setDuplicateRatio(findDuplicateRatio(schema, c));
 		}
+		schema.sortColumnsAccordingToDupRatios();
 	}
 	
 	protected void resetDuplicateValues(Schema schema){
