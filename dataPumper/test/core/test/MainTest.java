@@ -32,7 +32,7 @@ public class MainTest {
 //	private static String password1 = "ontop2014";
 	
 	private static String jdbcConnector1 = "jdbc:mysql";
-	private static String databaseUrl1 = "10.7.20.39:3306/npd_3";
+	private static String databaseUrl1 = "10.7.20.39:3306/pumperNpd";
 	private static String username1 = "test";
 	private static String password1 = "ontop2014";
 	
