@@ -17,7 +17,7 @@ import columnTypes.ColumnPumper;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import connection.DBMSConnection;
-import core.Main;
+import core.DatabasePumper;
 
 public class MainTest {
 	
@@ -101,80 +101,80 @@ public class MainTest {
 		db.setForeignCheckOn();	
 	}
 	
-	@Test
-	public void testPumpDatabase() {
-		
-		logger.setLevel(Level.INFO);
-		
-		Main main = new Main();
-		
-		Schema schemaA = db.getSchema("fKeyA");
-		Schema schemaB = db.getSchema("fKeyB"); 
-		Schema schemaC = db.getSchema("selfDependency");
-		
-		schemaA.getColumn("value").setMaximumChaseCycles(3);
-		schemaB.getColumn("id").setMaximumChaseCycles(3);
-		schemaC.getColumn("id").setMaximumChaseCycles(2);
-		
-		db.setForeignCheckOff();
-		db.setUniqueCheckOff();
-		main.pumpDatabase(db, db, 1);
-		db.setUniqueCheckOn();
-		db.setForeignCheckOn();
-	}
-
-	@Test
-	public void testPumpNPD() {
-		Main main = new Main();		
-		
-		db1.setForeignCheckOff();
-		db1.setUniqueCheckOff();
-		
-		for( String tableName : db1.getAllTableNames() ){
-			Schema s = db1.getSchema(tableName);
-			for( ColumnPumper c : s.getColumns() ){
-				if( !c.referencesTo().isEmpty() ){
-					c.setMaximumChaseCycles(4);
-				}
-			}
-		}
-		
-		long start = System.currentTimeMillis();
-	
-		main.pumpDatabase(db1Original, db1, 10000);
-		long end = System.currentTimeMillis();
-
-		logger.info("Time elapsed to pump "+10000+" rows: " + (end - start) + " msec.");
-		db1.setUniqueCheckOn();
-		db1.setForeignCheckOn();
-	}
-	
-	@Test
-	public void testPumpNPDPercentage() {
-		Main main = new Main();		
-		
-		db1.setForeignCheckOff();
-		db1.setUniqueCheckOff();
-		
-		for( String tableName : db1.getAllTableNames() ){
-			Schema s = db1.getSchema(tableName);
-			for( ColumnPumper c : s.getColumns() ){
-				if( !c.referencesTo().isEmpty() ){
-					c.setMaximumChaseCycles(4);
-				}
-			}
-		}
-		
-		long start = System.currentTimeMillis();
-	
-		main.pumpDatabase(db1Original, db1, (float)3);
-		long end = System.currentTimeMillis();
-
-		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
-//		logger.info(Statistics.printStats());
-		db1.setUniqueCheckOn();
-		db1.setForeignCheckOn();
-	}
+//	@Test
+//	public void testPumpDatabase() {
+//		
+//		logger.setLevel(Level.INFO);
+//		
+//		DatabasePumper main = new DatabasePumper();
+//		
+//		Schema schemaA = db.getSchema("fKeyA");
+//		Schema schemaB = db.getSchema("fKeyB"); 
+//		Schema schemaC = db.getSchema("selfDependency");
+//		
+//		schemaA.getColumn("value").setMaximumChaseCycles(3);
+//		schemaB.getColumn("id").setMaximumChaseCycles(3);
+//		schemaC.getColumn("id").setMaximumChaseCycles(2);
+//		
+//		db.setForeignCheckOff();
+//		db.setUniqueCheckOff();
+//		main.pumpDatabase(db, db, 1);
+//		db.setUniqueCheckOn();
+//		db.setForeignCheckOn();
+//	}
+//
+//	@Test
+//	public void testPumpNPD() {
+//		DatabasePumper main = new DatabasePumper();		
+//		
+//		db1.setForeignCheckOff();
+//		db1.setUniqueCheckOff();
+//		
+//		for( String tableName : db1.getAllTableNames() ){
+//			Schema s = db1.getSchema(tableName);
+//			for( ColumnPumper c : s.getColumns() ){
+//				if( !c.referencesTo().isEmpty() ){
+//					c.setMaximumChaseCycles(4);
+//				}
+//			}
+//		}
+//		
+//		long start = System.currentTimeMillis();
+//	
+//		main.pumpDatabase(db1Original, db1, 10000);
+//		long end = System.currentTimeMillis();
+//
+//		logger.info("Time elapsed to pump "+10000+" rows: " + (end - start) + " msec.");
+//		db1.setUniqueCheckOn();
+//		db1.setForeignCheckOn();
+//	}
+//	
+//	@Test
+//	public void testPumpNPDPercentage() {
+//		DatabasePumper main = new DatabasePumper();		
+//		
+//		db1.setForeignCheckOff();
+//		db1.setUniqueCheckOff();
+//		
+//		for( String tableName : db1.getAllTableNames() ){
+//			Schema s = db1.getSchema(tableName);
+//			for( ColumnPumper c : s.getColumns() ){
+//				if( !c.referencesTo().isEmpty() ){
+//					c.setMaximumChaseCycles(4);
+//				}
+//			}
+//		}
+//		
+//		long start = System.currentTimeMillis();
+//	
+//		main.pumpDatabase(db1Original, db1, (float)3);
+//		long end = System.currentTimeMillis();
+//
+//		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
+////		logger.info(Statistics.printStats());
+//		db1.setUniqueCheckOn();
+//		db1.setForeignCheckOn();
+//	}
 	
 	@Test
 	public void takeReferredFrom(){

@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import core.test.GeneratorTest;
-
 public class MultiLinestring implements Comparable<MultiLinestring>{
 	
 	protected List<Linestring> linestrings;
