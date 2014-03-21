@@ -30,7 +30,9 @@ public class Generator{
 
 	public static int duplicatesWindowSize = 80000;
 	public static int maxRepeatDuplicateWindowReads = 5;
-	public static int freshDuplicatesSize = 2000;
+	public static int freshDuplicatesSize = 1000;
+	private static int maxPrimaryDuplicateValuesBufferSize = 5;
+	private static int maxRetries = 100; // If something bad happens, keep trying!
 	
 	private static Logger logger = Logger.getLogger(Generator.class.getCanonicalName());
 
@@ -46,14 +48,15 @@ public class Generator{
 	}
 	
 	public List<Schema> pumpTable(int nRows, Schema schema){
-				
+		
+		int currentRetry = 0; // For recovering
 		PreparedStatement stmt = null;
 		List<Schema> tablesToChase = new LinkedList<Schema>(); // Return value
 		
 		/** mapping (vn -> v_1, ..., v_n-1) where (v1, ..., vn) is a pk **/
-		Map<String, List<String>> mFreshDuplicatesToDuplicatePks = new HashMap<String, List<String>>(); 
+		Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks = new HashMap<String, List<List<String>>>(); 
 		                                                                                                  
-		Queue<String> freshDuplicates = new LinkedList<String>(); // Freshly generated strings from which duplicates can be chosen
+		List<String> freshDuplicates = new LinkedList<String>(); // Freshly generated strings from which duplicates can be chosen
 		Map<String, List<String>> uncommittedFresh = new HashMap<String, List<String>>(); // Keeps track of uncommitted fresh values
 		
 		initDuplicateValues(schema, 0);
@@ -69,47 +72,59 @@ public class Generator{
 		// templateInsert to be called AFTER the ratios initialization
 		// because of the reordering of the columns
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
-		try {
-			stmt = dbmsConn.getPreparedStatement(templateInsert);
-			logger.debug(templateInsert);
-			
-			// Disable auto-commit
-			dbmsConn.setAutoCommit(false);
 		
-			for( int j = 1; j <= nRows; ++j ){
-				
-				/** Keeps track of the DUPLICATE values chosen ---for the current row---
-				 *  for columns part of a primary key  **/
-				List<String> primaryDuplicateValues = new ArrayList<String>();
-				
-				for( ColumnPumper column : schema.getColumns() ){
-					boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
-							mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
-					
-					if( terminate )	return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
-				}
+		
+		stmt = dbmsConn.getPreparedStatement(templateInsert);
+		logger.debug(templateInsert);
+
+		// Disable auto-commit
+		dbmsConn.setAutoCommit(false);
+
+		for( int j = 1; j <= nRows; ++j ){
+
+			/** Keeps track of the DUPLICATE values chosen ---for the current row---
+			 *  for columns part of a primary key  **/
+			List<String> primaryDuplicateValues = new ArrayList<String>();
+
+			for( ColumnPumper column : schema.getColumns() ){
+				boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
+						mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
+
+				if( terminate )	return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
+			}
+			try{
 				stmt.addBatch();
-				if( (j % 300000 == 0) ){ // Let's put a limit to the dimension of the stmt 
-					
+			}catch(SQLException e){
+				e.printStackTrace();
+			}
+			if( (j % 350000 == 0) ){ // Let's put a limit to the dimension of the stmt 
+				try{
 					stmt.executeBatch();	
 					dbmsConn.commit();
-					
-					initUncommittedFresh(schema, uncommittedFresh);					
+				}catch(SQLException e){
+					e.printStackTrace();
 				}
-				if( maxNumDupsRepetition > Generator.maxRepeatDuplicateWindowReads ){
-					logger.info("Advancing the set of candidate duplicates");
-					
+				initUncommittedFresh(schema, uncommittedFresh);					
+			}
+			if( maxNumDupsRepetition > Generator.maxRepeatDuplicateWindowReads ){
+				logger.info("Advancing the set of candidate duplicates");
+
+				try{
 					stmt.executeBatch();	
 					dbmsConn.commit();
-					
-					initUncommittedFresh(schema, uncommittedFresh);
-					initDuplicateValues(schema, j);
-					initNumDupsRepetitionCounters();
-					mFreshDuplicatesToDuplicatePks.clear();
-					freshDuplicates.clear();
-					System.gc();
+				}catch(SQLException e){
+					e.printStackTrace();
 				}
-			} 
+
+				initUncommittedFresh(schema, uncommittedFresh);
+				initDuplicateValues(schema, j);
+				initNumDupsRepetitionCounters();
+				mFreshDuplicatesToDuplicatePks.clear();
+				freshDuplicates.clear();
+				System.gc();
+			}
+		}
+		try{
 			stmt.executeBatch();	
 			dbmsConn.commit();
 			stmt.close();
@@ -117,22 +132,20 @@ public class Generator{
 			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
-		dbmsConn.setAutoCommit(true);
-		
+		dbmsConn.setAutoCommit(true);	
 		resetState(schema); // Frees memory
-		
 		logger.info("Table '"+ schema.getTableName() + "' pumped with " + nRows +" rows.");
-				
+		
 		return tablesToChase; 
 	}
-
+	
 	private boolean pumpColumn(Schema schema, ColumnPumper column,
 			PreparedStatement stmt, int nRows,
 			int j,
 			List<String> primaryDuplicateValues,
 			Map<String, List<String>> uncommittedFresh,
-			Map<String, List<String>> mFreshDuplicatesToDuplicatePks,
-			Queue<String> freshDuplicates, List<Schema> tablesToChase) {
+			Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks,
+			List<String> freshDuplicates, List<Schema> tablesToChase) {
 		
 		
 		String toInsert = null;
@@ -199,14 +212,18 @@ public class Generator{
 
 	private void updateFreshDuplicates(Schema schema, ColumnPumper column,
 			String generatedRandom, List<String> primaryDuplicateValues,
-			Queue<String> freshDuplicates,
-			Map<String, List<String>> mFreshDuplicatesToDuplicatePks) {
+			List<String> freshDuplicates,
+			Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks) {
 		
 		
-		// Let's do this
+		// If (c_1,..,c_n, column) is a primary key AND
+		// from_dup(c_i), where 1 <= i <= n, THEN keep track
+		// of column -> (c_1, ..., c_n)
 		if( column.isPrimary() && (primaryDuplicateValues.size() == schema.getPks().size() - 1 ) ){
 			if( freshDuplicates.size() < Generator.freshDuplicatesSize ){
-				mFreshDuplicatesToDuplicatePks.put(generatedRandom, primaryDuplicateValues);
+				List<List<String>> listOfPrimaryDuplicateValues = new ArrayList<List<String>>();
+				listOfPrimaryDuplicateValues.add(primaryDuplicateValues);
+				mFreshDuplicatesToDuplicatePks.put(generatedRandom, listOfPrimaryDuplicateValues);
 				
 				Statistics.addInt(schema.getTableName()+"."+column.getName()+"___adds_to_mFreshDuplicatesToDuplicatePks", 1);
 			}
@@ -309,7 +326,7 @@ public class Generator{
 			ratio = distribution.naiveStrategy(column.getName(), s.getTableName());
 			Statistics.setFloat(s.getTableName()+"."+column.getName()+" dups ratio", ratio);
 		}
-		return ratio > 0.9 ? 1 : ratio < 0.1 ? 0 : ratio;
+		return ratio > 0.95 ? 1 : ratio < 0.05 ? 0 : ratio;
 	}	
 	
 	private String pickNextDupFromOldValues(Schema schema, ColumnPumper column) {
@@ -341,8 +358,8 @@ public class Generator{
 	}
 	
 	protected void putDuplicate(Schema schema, ColumnPumper column, List<String> primaryDuplicateValues, 
-			Map<String, List<String>> mFreshDuplicatesToDuplicatePks,
-			Queue<String> freshDuplicates, PreparedStatement stmt,
+			Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks,
+			List<String> freshDuplicates, PreparedStatement stmt,
 			Map<String, List<String>> uncommittedFresh,
 			List<Schema> tablesToChase){
 		
@@ -358,15 +375,37 @@ public class Generator{
 			long start = System.currentTimeMillis();
 			// Search among uncommitted fresh values
 			String toAdd = null;
-			while( toAdd == null && !freshDuplicates.isEmpty() ){
-				String suitableDup = freshDuplicates.poll();
-				if( !mFreshDuplicatesToDuplicatePks.containsKey(suitableDup) )
+			int i = 0;
+			while( toAdd == null && i < freshDuplicates.size() ){
+				String suitableDup = freshDuplicates.get(i);
+				if( !mFreshDuplicatesToDuplicatePks.containsKey(suitableDup) ){
 					toAdd = suitableDup;
-				else{
-					if( !mFreshDuplicatesToDuplicatePks.get(suitableDup).equals(primaryDuplicateValues) )
-						toAdd = suitableDup;
-					mFreshDuplicatesToDuplicatePks.remove(suitableDup);
+					List<List<String>> listOfPrimaryDuplicateValues = new ArrayList<List<String>>();
+					listOfPrimaryDuplicateValues.add(primaryDuplicateValues);
+					mFreshDuplicatesToDuplicatePks.put(toAdd, listOfPrimaryDuplicateValues);
 				}
+				else{
+					// Now we do an expensive foreach. Still, less expensive than going into the database
+					boolean duplicatePKey = false;
+					for( List<String> primaryDuplicateValuesOldTuple : mFreshDuplicatesToDuplicatePks.get(suitableDup) ){ 						
+						if( primaryDuplicateValuesOldTuple.equals(primaryDuplicateValues) ){
+							duplicatePKey = true;
+							break;
+						}
+					}
+					if(!duplicatePKey){
+						toAdd = suitableDup;
+						mFreshDuplicatesToDuplicatePks.get(suitableDup).add(primaryDuplicateValues);
+						
+						// Size check
+						if( mFreshDuplicatesToDuplicatePks.get(suitableDup).size() > Generator.maxPrimaryDuplicateValuesBufferSize ){
+							freshDuplicates.remove(i);
+							mFreshDuplicatesToDuplicatePks.remove(suitableDup);
+//							System.gc(); // TODO How expensive is this?
+						}
+					}
+				}
+				++i;
 			}
 			if( toAdd != null ){
 				toInsert = toAdd;

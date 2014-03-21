@@ -142,7 +142,7 @@ public class StringColumn extends IncrementableColumn<String> {
 	private String upperBoundValue(){
 		StringBuilder builder = new StringBuilder();
 		
-		for( int i = 0; i < datatypeLength; ++i ){
+		for( int i = 0; i < (datatypeLength > 20 ? 20 : datatypeLength); ++i ){
 			builder.append(characters.charAt(characters.length()-1)); // Maximum
 		}
 		

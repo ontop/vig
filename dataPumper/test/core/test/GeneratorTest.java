@@ -231,10 +231,10 @@ public class GeneratorTest {
 		Generator gen = new Generator(db);
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(nRowsToInsert, db.getSchema("testBinaryKey"));
+		gen.pumpTable(nRowsToInsert*1000, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		assertEquals(nRowsToInsert, Statistics.getIntStat("testBinaryKey.id1 Adding a duplicate from initial database values") + 
+		assertEquals(nRowsToInsert*1000, Statistics.getIntStat("testBinaryKey.id1 Adding a duplicate from initial database values") + 
 				Statistics.getIntStat("testBinaryKey.id1 fresh values"));
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");

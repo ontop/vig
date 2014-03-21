@@ -71,6 +71,7 @@ public class DatabasePumper {
 			else{
 				int nRows = dbOriginal.getNRows(schema.getTableName());
 				nRows = (int) (nRows * percentage);
+				logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
 				
 				toChase = gen.pumpTable(nRows, schema);
 				schema.setFilled();
