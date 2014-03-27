@@ -17,9 +17,10 @@ public class Main {
 		
 		if( args.length < 2 ){
 			
-			System.err.println("Usage: program -f percentage");
+			System.err.println("Usage: program -f percentage [--from tableName]");
 			System.exit(1);
 		}
+		
 		
 		BasicConfigurator.configure();
 		
@@ -30,6 +31,15 @@ public class Main {
 		
 		DatabasePumper pumper = new DatabasePumper(dbOriginal, dbToPump);
 		
-		pumper.pumpDatabase(percentage);
+		if( Conf.pureRandomGeneration() ){
+			pumper.setPureRandomGeneration();
+		}
+		
+		if( args.length == 4 && args[2].equals("--from") ){
+			pumper.pumpDatabase(percentage, args[3]);
+		}
+		else{
+			pumper.pumpDatabase(percentage);
+		}
 	}
 };

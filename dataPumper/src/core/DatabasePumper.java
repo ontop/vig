@@ -17,12 +17,75 @@ public class DatabasePumper {
 	
 	private DBMSConnection dbOriginal;
 	private DBMSConnection dbToPump;
+	private boolean pureRandom = false;
 	
 	private static Logger logger = Logger.getLogger(DatabasePumper.class.getCanonicalName());	
 	
 	public DatabasePumper(DBMSConnection dbOriginal, DBMSConnection dbToPump){
 		this.dbOriginal = dbOriginal;
 		this.dbToPump = dbToPump;
+	}
+	
+	public void pumpDatabase(float percentage, String fromTable){
+		long startTime = System.currentTimeMillis();
+		
+		dbToPump.setForeignCheckOff();
+		dbToPump.setUniqueCheckOff();
+		
+		Generator gen = new Generator(dbToPump);
+		if( pureRandom ) gen.setPureRandomGeneration();
+		
+		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
+		
+		for( String tableName : dbToPump.getAllTableNames() ){
+			Schema s = dbToPump.getSchema(tableName);
+			for( ColumnPumper c : s.getColumns() ){
+				if( !c.referencesTo().isEmpty() ){
+					c.setMaximumChaseCycles(2); // Default for npd
+				}
+			}
+		}
+		
+		// Init the queue
+		boolean reached = false;
+		for( String tableName : dbToPump.getAllTableNames()){
+			if( !tableName.equals(fromTable) && !reached ) continue;
+			reached = true;
+			schemas.enqueue(dbToPump.getSchema(tableName));
+		}
+		
+		// Breadth first strategy
+		// TODO I need a limit, for the moment I put an hard one.
+		int cnt = 0;
+		while(schemas.hasNext()){
+			Schema schema = schemas.dequeue();
+			
+			fillDomain(schema, dbOriginal);
+			
+			List<Schema> toChase = null;
+			if(schema.isFilled()){ // 
+				toChase = gen.pumpTable(1, schema);
+			}
+			else{
+				int nRows = dbOriginal.getNRows(schema.getTableName());
+				nRows = (int) (nRows * percentage);
+				logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
+				
+				toChase = gen.pumpTable(nRows, schema);
+				schema.setFilled();
+			}
+			for( Schema s : toChase ){
+				if(!schemas.contains(s)){
+					
+					if(++cnt % 1 == 0) logger.debug("Ciclo "+cnt);
+					schemas.enqueue(s);
+					
+				}
+			}
+		}
+		long endTime = System.currentTimeMillis();
+		
+		logger.info("Database pumped in " + (endTime - startTime) + " msec.");
 	}
 	
 	/**
@@ -39,6 +102,7 @@ public class DatabasePumper {
 		dbToPump.setUniqueCheckOff();
 		
 		Generator gen = new Generator(dbToPump);
+		if( pureRandom ) gen.setPureRandomGeneration();
 		
 		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
 		
@@ -95,5 +159,9 @@ public class DatabasePumper {
 			column.fillDomain(schema, originalDb);
 			column.fillDomainBoundaries(schema, originalDb);
 		}
+	}
+
+	public void setPureRandomGeneration() {
+		pureRandom = true;
 	}
 };

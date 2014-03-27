@@ -38,6 +38,10 @@ public class Conf {
 	public static String dbPasswordToPump(){
 		return searchTag("DbPasswordToPump");
 	}
+	public static boolean pureRandomGeneration(){
+		String randomValue = searchTag("randomGen");
+		return randomValue.equals("true");
+	}
 	
 	private static String searchTag(String tag){
 		try{

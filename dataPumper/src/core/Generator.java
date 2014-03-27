@@ -28,11 +28,13 @@ public class Generator{
 	protected Map<String, Integer> mNumDupsRepetition;
 	protected int maxNumDupsRepetition;
 
-	public static int duplicatesWindowSize = 80000;
+	/** Size of the window for duplicates picking **/
+	public static int duplicatesWindowSize = 30000;
 	public static int maxRepeatDuplicateWindowReads = 5;
 	public static int freshDuplicatesSize = 1000;
 	private static int maxPrimaryDuplicateValuesBufferSize = 5;
 	private static int maxRetries = 100; // If something bad happens, keep trying!
+	private boolean pureRandom = false;
 	
 	private static Logger logger = Logger.getLogger(Generator.class.getCanonicalName());
 
@@ -297,6 +299,12 @@ public class Generator{
 	}
 	
 	protected void initDuplicateRatios(Schema schema){
+		if( pureRandom ){
+			for( ColumnPumper c : schema.getColumns() ){
+				c.setDuplicateRatio((float) 0.0);
+			}
+			return;
+		}
 		for( ColumnPumper c : schema.getColumns() ){
 			c.setDuplicateRatio(findDuplicateRatio(schema, c));
 		}
@@ -450,5 +458,9 @@ public class Generator{
 		for( ColumnPumper column : schema.getColumns() ){
 			column.incrementCurrentChaseCycle();
 		}
+	}
+
+	public void setPureRandomGeneration() {
+		pureRandom = true;
 	}
 }

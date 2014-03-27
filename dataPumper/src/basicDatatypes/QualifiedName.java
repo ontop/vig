@@ -11,6 +11,13 @@ public class QualifiedName {
 		this.colName = colName;
 	}
 	
+	public QualifiedName(String csvName){
+		// "\\s+"
+		String[] splits = csvName.split(" ");
+		tableName = splits[0];
+		colName = splits[1];
+	}
+		
 	public String getTableName() {
 		return tableName;
 	}

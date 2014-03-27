@@ -4,12 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import basicDatatypes.MySqlDatatypes;
@@ -19,20 +15,10 @@ import connection.DBMSConnection;
 
 public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 	
-	private enum Granularity{YEAR, MONTH, DAY, HOUR, MINUTE, SECOND};
-	
-	// 2013-04-09 00:00:00
-	
-	private Granularity granularity; 
-	private int skip;
-	
 	public DateTimeColumn(String name, MySqlDatatypes type, int index) {
 		super(name, type, index);
 		
 		lastFreshInserted = null;
-		
-		granularity = Granularity.DAY;
-		skip = 1;
 	}
 
 	@Override
@@ -100,51 +86,25 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 	}
 
 	@Override
-	public Timestamp increment(Timestamp toIncrement) {
-		
-//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//		
-//		sdf.format(toIncrement);
+	public Timestamp increment(Timestamp toIncrement) {		
 		
 		Calendar c = Calendar.getInstance();
 		
+		c.set(9999,11,31);
+		Timestamp upperBound = new Timestamp(c.getTimeInMillis());
+		
 		c.setTime(toIncrement);
+		Timestamp temp = new Timestamp(c.getTimeInMillis());
+		if (temp.compareTo(upperBound) > -1 ){
+			logger.debug("Insufficient number of days. Fresh value generation can no longer be guaranteed"
+					+ "for column "+this.getName());
+			return min;  // Altro giro di giostra
+		}
+		
 		c.add(Calendar.DATE, 1);
 		
 		return new Timestamp(c.getTimeInMillis());
 		
-//		long value = toIncrement.getTime();
-//		
-//		switch( granularity ){
-//		case YEAR:{
-//			value += 364 * 30 * 24 *3600000 * skip; // TODO This is an approximation
-//			break;
-//		}
-//		case MONTH:{
-//			value += 30 * 24 *3600000 * skip;
-//			break;
-//		}
-//		case DAY:{
-//			value += 24 *3600000 * skip;
-//			break;
-//		}
-//		case HOUR:{
-//			value += 3600000 * skip;
-//			break;
-//		}
-//		case MINUTE:{
-//			value += 60000 * skip;
-//			break;
-//		}
-//		case SECOND:{
-//			value += 10000 * skip;
-//			break;
-//		}
-//		default:
-//			break;
-//		
-//		}
-//		return new Timestamp(value);
 	}
 
 	@Override

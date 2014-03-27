@@ -179,9 +179,9 @@ public class MainTest {
 	@Test
 	public void takeReferredFrom(){
 		
-		Schema s = db1Original.getSchema("wellbore_formation_top");
+		Schema s = db1Original.getSchema("licence_area_poly_hst");
 		
-		ColumnPumper c = s.getColumn("lsuNpdidLithoStrat");
+		ColumnPumper c = s.getColumn("prlAreaPolyDateValidFrom");
 		
 		System.err.println(c.referencedBy().size());
 	}
