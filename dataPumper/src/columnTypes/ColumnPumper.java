@@ -3,6 +3,7 @@ package columnTypes;
 import connection.DBMSConnection;
 import core.ChasePicker;
 import core.DuplicatesPicker;
+import core.TuplesPicker;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 
@@ -11,10 +12,16 @@ public abstract class ColumnPumper extends Column implements FreshValuesGenerato
 	protected ChasePicker cP;
 	private DuplicatesPicker dP;
 	
+	private TuplesPicker tP;
+	
 	public ColumnPumper(String name, MySqlDatatypes type, int index){
 		super(name, type, index);
 		cP = new ChasePicker(this);
 		dP = new DuplicatesPicker(this);
+	}
+	
+	public void attachTuplesPicker(TuplesPicker tP){
+		this.tP = tP;
 	}
 	
 	public void setDuplicateRatio(float ratio){
@@ -77,5 +84,25 @@ public abstract class ColumnPumper extends Column implements FreshValuesGenerato
 	public void reset(){
 		cP.reset();
 		dP.reset();
+		tP = null; // Detach tP.
+		System.gc();
+	}
+	
+	/**
+	 * TODO
+	 * @return
+	 */
+	public boolean partOfTuple() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	/**
+	 * TODO
+	 * @return
+	 */
+	public boolean takeValue() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 };

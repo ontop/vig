@@ -13,7 +13,10 @@ import java.util.Map;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import configuration.Conf;
+import core.TuplesToCSV;
 import columnTypes.ColumnPumper;
+//import examples.PlayWithMappings;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
@@ -268,7 +271,24 @@ public class DBMSConnection {
 		catch(SQLException e){
 			e.printStackTrace();
 		}
+		
+		fillTuplesSchemas(schema);
+		
 		return schema;
+	}
+	/** 
+	 * ONTOP dependency
+	 * @param schema
+	 */
+	private void fillTuplesSchemas(Schema schema) {
+		TuplesToCSV tupleSchemasExtractor = new TuplesToCSV(Conf.mappingsFile(), "resources/tuplesCSV.csv"); 
+		try {
+			tupleSchemasExtractor.play();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// TODO Now, read the csv file (I'd like an awk)
 	}
 
 	/**

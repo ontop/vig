@@ -17,6 +17,7 @@ import utils.Statistics;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
 import columnTypes.ColumnPumper;
+import core.TuplesPicker;
 import connection.DBMSConnection;
 
 public class Generator{
@@ -33,8 +34,10 @@ public class Generator{
 	public static int maxRepeatDuplicateWindowReads = 5;
 	public static int freshDuplicatesSize = 1000;
 	private static int maxPrimaryDuplicateValuesBufferSize = 5;
-	private static int maxRetries = 100; // If something bad happens, keep trying!
 	private boolean pureRandom = false;
+	
+	/** It picks tuples that need to be repeated **/
+	private TuplesPicker tP;
 	
 	private static Logger logger = Logger.getLogger(Generator.class.getCanonicalName());
 
@@ -51,7 +54,6 @@ public class Generator{
 	
 	public List<Schema> pumpTable(int nRows, Schema schema){
 		
-		int currentRetry = 0; // For recovering
 		PreparedStatement stmt = null;
 		List<Schema> tablesToChase = new LinkedList<Schema>(); // Return value
 		
@@ -82,6 +84,9 @@ public class Generator{
 		// Disable auto-commit
 		dbmsConn.setAutoCommit(false);
 
+		// Init the tuplesPicker
+		tP.init(schema);
+		
 		for( int j = 1; j <= nRows; ++j ){
 
 			/** Keeps track of the DUPLICATE values chosen ---for the current row---
@@ -89,10 +94,27 @@ public class Generator{
 			List<String> primaryDuplicateValues = new ArrayList<String>();
 
 			for( ColumnPumper column : schema.getColumns() ){
-				boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
-						mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
-
-				if( terminate )	return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
+				boolean taken = false;
+				if( column.partOfTuple() ){ // If it is part of some tuple defined in the mappings
+					taken = column.takeValue(); // TODO
+				}
+				if( !taken ){ 
+					if( false /*join_col()*/ ){
+						// TODO
+						// P mateched in a certain way
+						// P non-matched
+						// Put everything under a cumulative distribution function
+					}
+					else if( false /*where_col()*/){
+						// TODO Think about this
+					}
+					else{ // Go Normally
+						boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
+								mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
+						
+						if( terminate )	return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
+					}
+				}
 			}
 			try{
 				stmt.addBatch();

@@ -42,6 +42,10 @@ public class Conf {
 		String randomValue = searchTag("randomGen");
 		return randomValue.equals("true");
 	}
+	/** Returns the obda file containing the mappings **/
+	public static String mappingsFile(){
+		return searchTag("obdaFile");
+	}
 	
 	private static String searchTag(String tag){
 		try{
