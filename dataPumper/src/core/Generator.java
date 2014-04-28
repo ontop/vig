@@ -94,27 +94,9 @@ public class Generator{
 			List<String> primaryDuplicateValues = new ArrayList<String>();
 
 			for( ColumnPumper column : schema.getColumns() ){
-				boolean taken = false;
-				if( column.partOfTuple() ){ // If it is part of some tuple defined in the mappings
-					taken = column.takeValue(); // TODO
-				}
-				if( !taken ){ 
-					if( false /*join_col()*/ ){
-						// TODO
-						// P mateched in a certain way
-						// P non-matched
-						// Put everything under a cumulative distribution function
-					}
-					else if( false /*where_col()*/){
-						// TODO Think about this
-					}
-					else{ // Go Normally
-						boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
-								mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
-						
-						if( terminate )	return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
-					}
-				}
+				boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
+						mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
+				if( terminate )	return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
 			}
 			try{
 				stmt.addBatch();
@@ -184,6 +166,12 @@ public class Generator{
 			addToUncommittedFresh(uncommittedFresh, column, toInsert);
 			if( column.hasNextChase() )	++nRows; // I haven't finished yet to insert chased values.
 		}
+		// TODO You can do the cumulative probability distribution
+		//      here
+		// Something like
+		// rand()
+		// if rand( > n < n2 ) then do that, and be cool
+		else if( (toInsert = putDuplicate2() != null) ){
 		else if( column.getDuplicateRatio() > random.nextFloat() ){
 			putDuplicate(schema, column, primaryDuplicateValues, 
 					mFreshDuplicatesToDuplicatePks, freshDuplicates, stmt, uncommittedFresh, tablesToChase);	
@@ -197,7 +185,7 @@ public class Generator{
 		}
 		else if( stopChase ){
 			// We cannot take a chase value, neither we can pick a duplicate. The only way out is 
-			// to tale the necessary number of elements (non-duplicate with this column) from the referenced column(s)
+			// to take the necessary number of elements (non-duplicate with this column) from the referenced column(s)
 			toInsert = column.getFromReferenced(dbmsConn, schema);
 			
 			if( toInsert == null ){

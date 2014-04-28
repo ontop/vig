@@ -10,9 +10,8 @@ public class TuplesPicker {
 		return false; // TODO
 	}
 	
-	/** It sets up the tuplesPicker so that it can do its job **/
 	public void init(Schema s){
-		
+		return ;
 	}
 	
 	private String get(){

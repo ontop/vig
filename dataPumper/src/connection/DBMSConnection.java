@@ -289,6 +289,8 @@ public class DBMSConnection {
 		}
 		
 		// TODO Now, read the csv file (I'd like an awk)
+		
+		// TODO, and here, put the "Tuples" in the schema columns
 	}
 
 	/**
