@@ -1,7 +1,8 @@
 package core;
 
-import mappings.Tuple;
 import basicDatatypes.Schema;
+import basicDatatypes.Tuple;
+
 
 public class TuplesPicker {
 	private Tuple tuple;

@@ -32,6 +32,14 @@ public abstract class ColumnPumper extends Column implements FreshValuesGenerato
 		return dP.getDuplicateRatio();
 	}
 	
+	public float getNullRatio(){
+		return dP.getNullRatio();
+	}
+	
+	public void setNullRatio(float ratio){
+		dP.setNullRatio(ratio);
+	}
+	
 	@Override
 	public String pickNextDupFromDuplicatesToInsert(){
 		return dP.pickNextDupFromDuplicatesToInsert();

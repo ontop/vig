@@ -12,11 +12,13 @@ public class DuplicatesPicker {
 	private ColumnPumper column;
 	private ResultSet duplicatesToInsert;
 	private float duplicatesRatio;
+	private float nullRatio;
 	
 	public DuplicatesPicker(ColumnPumper column){
 		this.column = column;
 		this.duplicatesToInsert = null;
 		this.duplicatesRatio = 0;
+		this.nullRatio = 0;
 	}
 	
 	public void setDuplicateRatio(float ratio){
@@ -25,6 +27,14 @@ public class DuplicatesPicker {
 	
 	public float getDuplicateRatio(){
 		return duplicatesRatio;
+	}
+	
+	public void setNullRatio(float ratio){
+		nullRatio = ratio;
+	}
+	
+	public float getNullRatio(){
+		return nullRatio;
 	}
 	
 	public void fillDuplicates(DBMSConnection dbmsConn, String tableName, int insertedRows) {
@@ -85,4 +95,5 @@ public class DuplicatesPicker {
 		}
 		duplicatesToInsert = null;
 	}
+
 }
