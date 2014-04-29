@@ -272,25 +272,9 @@ public class DBMSConnection {
 			e.printStackTrace();
 		}
 		
-		fillTuplesSchemas(schema);
+//		fillTuplesSchemas(schema);
 		
 		return schema;
-	}
-	/** 
-	 * ONTOP dependency
-	 * @param schema
-	 */
-	private void fillTuplesSchemas(Schema schema) {
-		TuplesToCSV tupleSchemasExtractor = new TuplesToCSV(Conf.mappingsFile(), "resources/tuplesCSV.csv"); 
-		try {
-			tupleSchemasExtractor.play();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// TODO Now, read the csv file (I'd like an awk)
-		
-		// TODO, and here, put the "Tuples" in the schema columns
 	}
 
 	/**

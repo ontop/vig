@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -73,6 +74,7 @@ public class MainTest {
 			}
 		}
 		db.setForeignCheckOn();
+		PropertyConfigurator.configure("log4j.properties");
 	}
 
 	@AfterClass
@@ -149,32 +151,32 @@ public class MainTest {
 //		db1.setForeignCheckOn();
 //	}
 //	
-//	@Test
-//	public void testPumpNPDPercentage() {
-//		DatabasePumper main = new DatabasePumper();		
-//		
-//		db1.setForeignCheckOff();
-//		db1.setUniqueCheckOff();
-//		
-//		for( String tableName : db1.getAllTableNames() ){
-//			Schema s = db1.getSchema(tableName);
-//			for( ColumnPumper c : s.getColumns() ){
-//				if( !c.referencesTo().isEmpty() ){
-//					c.setMaximumChaseCycles(4);
-//				}
-//			}
-//		}
-//		
-//		long start = System.currentTimeMillis();
-//	
-//		main.pumpDatabase(db1Original, db1, (float)3);
-//		long end = System.currentTimeMillis();
-//
-//		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
-////		logger.info(Statistics.printStats());
-//		db1.setUniqueCheckOn();
-//		db1.setForeignCheckOn();
-//	}
+	@Test
+	public void testPumpNPDPercentage() {
+		DatabasePumper main = new DatabasePumper(db1Original, db1);		
+		
+		db1.setForeignCheckOff();
+		db1.setUniqueCheckOff();
+		
+		for( String tableName : db1.getAllTableNames() ){
+			Schema s = db1.getSchema(tableName);
+			for( ColumnPumper c : s.getColumns() ){
+				if( !c.referencesTo().isEmpty() ){
+					c.setMaximumChaseCycles(4);
+				}
+			}
+		}
+		
+		long start = System.currentTimeMillis();
+	
+		main.pumpDatabase((float)2);
+		long end = System.currentTimeMillis();
+
+		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
+//		logger.info(Statistics.printStats());
+		db1.setUniqueCheckOn();
+		db1.setForeignCheckOn();
+	}
 	
 	@Test
 	public void takeReferredFrom(){

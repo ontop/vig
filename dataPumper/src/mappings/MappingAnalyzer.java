@@ -12,14 +12,12 @@ import core.TuplesToCSV;
  * @note This is a singleton class
  */
 public class MappingAnalyzer {
-	private String obdaFile;
-	private TupleStore store;
-	private DBMSConnection dbmsConn;
+	private final String obdaFile;
+	private final TupleStore store;
+	private final DBMSConnection dbmsConn;
 	
 	private static String outCSVFile = "resources/mappingsCSV.csv";
 	private static MappingAnalyzer instance = null;
-	
-	private MappingAnalyzer() {}
 	
 	private MappingAnalyzer(DBMSConnection dbmsConn){
 		
@@ -33,9 +31,10 @@ public class MappingAnalyzer {
 			e.printStackTrace();
 		}
 		CSVPlayer csvParser = new CSVPlayer(outCSVFile);
-		MyHashMapList<String, String> tuplesHash = new MyHashMapList<String, String>(csvParser.printCSVFile());
+		MyHashMapList<String, String> tuplesHash = 
+				new MyHashMapList<String, String>(csvParser.printCSVFile());
 		
-		
+		this.store = TupleStore.getInstance(tuplesHash);
 	}
 	
 	public static MappingAnalyzer getInstance(){
@@ -44,11 +43,18 @@ public class MappingAnalyzer {
 	
 	public static void setInstance(DBMSConnection dbmsConn, String obdaFile){
 		if( instance != null ) return;
-		instance = new MappingAnalyzer(dbmsConn, obdaFile);
+		instance = new MappingAnalyzer(dbmsConn);
+	}
+
+	public void initTuples(){
+		
+	}
+	public DBMSConnection getDBMSConnection(){
+		return this.dbmsConn;
 	}
 	
 	public TupleStore getTupleStoreInstance(){
-		
+		return store;
 	}
 	
 }

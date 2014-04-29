@@ -1,8 +1,9 @@
 package mappings;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import utils.MyHashMapList;
 
@@ -12,15 +13,37 @@ import utils.MyHashMapList;
  *
  */
 public class Tuple {
-	private String functionName;
+	private final String functName;
 	
-	private MyHashMapList<String, String> mTableName_Columns;
+	private final MyHashMapList<String, String> mTableName_Columns;
 	private final int id;
 	private Map<String, Float> mTableName_inDupR;
 	private float dupR;
 	
-	public Tuple(int id){
+	/**
+	 * Sets up all the sub-structures
+	 * @param id
+	 */
+	Tuple(int id, String functName, MyHashMapList<String, String> mTableName_Columns){ // It can be created only in this package
+		this.functName = functName;
 		this.id = id;
+		this.mTableName_Columns = mTableName_Columns;
+	}
+	
+	public String getFunctName(){
+		return functName;
+	}
+	
+	public int getId(){
+		return id;
+	}
+	
+	public Set<String>getReferredTables(){
+		return mTableName_Columns.keyset();
+	}
+	
+	public List<String> getColumnsInTable(String tableName){
+		return Collections.unmodifiableList(mTableName_Columns.get(tableName));
 	}
 
 	/**
@@ -33,10 +56,20 @@ public class Tuple {
 		mTableName_inDupR.put(tableName, dupRatio);
 	}
 	
+	/**
+	 * 
+	 * @param tableName
+	 * @return The duplicate ratio of <b>this</b> tuple relative to
+	 * table <b>tableName</b>
+	 */
 	public float getInDupR(String tableName){
 		return mTableName_inDupR.get(tableName);
 	}
 	
+	/**
+	 * 
+	 * @return The duplicate ratio for the whole relation <b>this</b>
+	 */
 	public float getDupR() {
 		return dupR;
 	}
@@ -44,8 +77,4 @@ public class Tuple {
 	public void setDupR(float dupR) {
 		this.dupR = dupR;
 	}
-	
-	
-	
-	
 }

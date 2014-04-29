@@ -9,9 +9,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -48,7 +46,7 @@ public class ConnectionTest {
 		
 		Connection conn = database.getConnection();
 		
-		assertNotEquals(conn, null);
+		assertNotSame(conn, null);
 		
 		PreparedStatement stmt;
 		try {
@@ -70,7 +68,7 @@ public class ConnectionTest {
 		
 		Connection conn = database.getConnection();
 		
-		assertNotEquals(conn, null);
+		assertNotSame(conn, null);
 		
 		DatabaseMetaData metaData;
 		try {

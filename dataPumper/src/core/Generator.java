@@ -53,7 +53,7 @@ public class Generator{
 	}
 	
 	public List<Schema> pumpTable(int nRows, Schema schema){
-		
+				
 		PreparedStatement stmt = null;
 		List<Schema> tablesToChase = new LinkedList<Schema>(); // Return value
 		
@@ -84,9 +84,6 @@ public class Generator{
 
 		// Disable auto-commit
 		dbmsConn.setAutoCommit(false);
-
-		// Init the tuplesPicker
-		tP.init(schema);
 		
 		for( int j = 1; j <= nRows; ++j ){
 
