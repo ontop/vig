@@ -34,6 +34,33 @@ public class Distribution {
 		
 	}
 	
+	public float nullRatioNaive(String columnName, String tableName) {
+		PreparedStatement st1 = dbmsConn.getPreparedStatement("SELECT COUNT("+columnName+") FROM "+tableName);
+		PreparedStatement st2 = dbmsConn.getPreparedStatement("SELECT COUNT("+columnName+") FROM "+tableName+ " WHERE " + columnName + " IS NOT NULL");
+		int total = 0;
+		try {
+			ResultSet rs = st1.executeQuery();
+			if( rs.next() )
+				total = rs.getInt(1);
+			st1.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		int nonNull = 0;
+		try {
+			ResultSet rs = st2.executeQuery();
+			if( rs.next() )
+				nonNull = rs.getInt(1);
+			st2.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		if (total > 0) {
+			return (total - nonNull) / total;
+		}
+		return 0;
+	}
+	
 	public float naiveStrategy(String columnName, String tableName){
 		
 		logger.setLevel(Level.INFO);

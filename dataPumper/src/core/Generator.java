@@ -63,6 +63,7 @@ public class Generator{
 		List<String> freshDuplicates = new LinkedList<String>(); // Freshly generated strings from which duplicates can be chosen
 		Map<String, List<String>> uncommittedFresh = new HashMap<String, List<String>>(); // Keeps track of uncommitted fresh values
 		
+		initNullRatios(schema);
 		initDuplicateValues(schema, 0);
 		initDuplicateRatios(schema);		
 		initNumDupsRepetitionCounters();
@@ -173,6 +174,9 @@ public class Generator{
 		// if rand( > n < n2 ) then do that, and be cool
 		else if( (toInsert = putDuplicate2() != null) ){
 		else if( column.getDuplicateRatio() > random.nextFloat() ){
+			if (column.getDuplicateRatio() + column.getNullRatio() > random.nextFloat()) {
+				putNull(schema, column, stmt);
+			} else
 			putDuplicate(schema, column, primaryDuplicateValues, 
 					mFreshDuplicatesToDuplicatePks, freshDuplicates, stmt, uncommittedFresh, tablesToChase);	
 		}
@@ -321,12 +325,29 @@ public class Generator{
 		schema.sortColumnsAccordingToDupRatios();
 	}
 	
+	protected void initNullRatios(Schema schema){
+		if( pureRandom ){
+			for( ColumnPumper c : schema.getColumns() ){
+				c.setNullRatio((float) 0.0);
+			}
+			return;
+		}
+		for( ColumnPumper c : schema.getColumns() ){
+			c.setNullRatio(findNullRatio(schema, c));
+		}
+		//schema.sortColumnsAccordingToDupRatios();
+	}
+	
 	protected void resetDuplicateValues(Schema schema){
 		for( ColumnPumper c : schema.getColumns()){
 			c.reset();
 		}
 	}
-	
+	public float findNullRatio(Schema s, ColumnPumper column){
+		float ratio = 0;
+		ratio = distribution.nullRatioNaive(column.getName(), s.getTableName());
+		return ratio;
+	}
 	public float findDuplicateRatio(Schema s, ColumnPumper column){
 		float ratio = 0; // Ratio of the duplicates
 		// If generating fresh values will lead to a chase, and the maximum number of chases is reached
@@ -373,6 +394,10 @@ public class Generator{
 	protected void initNumDupsRepetitionCounters(){
 		maxNumDupsRepetition = 0;
 		mNumDupsRepetition.clear();
+	}
+	protected void putNull(Schema schema, ColumnPumper column, PreparedStatement stmt){
+		String toAdd = null;
+		dbmsConn.setter(stmt, column.getIndex(), column.getType(), toAdd);
 	}
 	
 	protected void putDuplicate(Schema schema, ColumnPumper column, List<String> primaryDuplicateValues, 
