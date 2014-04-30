@@ -47,8 +47,23 @@ public class MappingAnalyzer {
 	}
 
 	public void initTuples(){
-		
+		// For each tuple, evaluate its duplicate ratio
+		for( Tuple t : store.allTuples() ){
+			// 1) Set local dup ratios
+			// 2) Set global dup ratios
+			StringBuilder unionQuery
+			for( String tableName : t.getReferredTables() ){
+				float localRatio = localDupRatio(tableName, t);
+				
+			}
+		}
 	}
+	
+	private float localDupRatio(String tableName, Tuple t) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 	public DBMSConnection getDBMSConnection(){
 		return this.dbmsConn;
 	}

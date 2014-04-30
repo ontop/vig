@@ -1,6 +1,7 @@
 package mappings;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,5 +56,9 @@ public class TupleStore {
 			store = new TupleStore(tuplesHash);
 		}
 		return store;
+	}
+	
+	public List<Tuple> allTuples(){
+		return Collections.unmodifiableList(tuples);
 	}
 }

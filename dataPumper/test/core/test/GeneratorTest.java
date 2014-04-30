@@ -378,7 +378,7 @@ public class GeneratorTest {
 	public void testGenerateDate(){
 		
 		// Init
-		PreparedStatement init = db.getPreparedStatement("insert into dateTest values (1, '2005-11-23')");
+		PreparedStatement init = db.getPreparedStatement("insert into dateTest values (1, NULL)");
 		
 		try{
 			init.execute();
