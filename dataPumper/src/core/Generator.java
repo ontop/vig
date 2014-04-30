@@ -74,7 +74,7 @@ public class Generator{
 				uncommittedFresh.put(c.getName(), new ArrayList<String>());
 			}
 		}
-		// templateInsert to be called AFTER the ratios initialization
+		// templateInsert to be called AFTER the ratios initializations
 		// because of the reordering of the columns
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
 		
