@@ -164,9 +164,9 @@ public class Generator{
 			putDuplicate(schema, column, primaryDuplicateValues, 
 					mFreshDuplicatesToDuplicatePks, freshDuplicates, stmt, uncommittedFresh, tablesToChase);	
 		}
-		else if( column.getNullRatio() > (dupOrNullToss - column.getDuplicateRatio()) ){
-			putNull(schema, column, stmt);
-		}
+//		else if( column.getNullRatio() > (dupOrNullToss - column.getDuplicateRatio()) ){
+//			putNull(schema, column, stmt);
+//		}
 		else if( ( 0.8 > random.nextFloat() ) && 
 				(toInsert = column.getNextChased(dbmsConn, schema) ) != null && 
 				(!column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)) 
