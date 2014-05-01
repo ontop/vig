@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Random;
 
 import org.apache.log4j.Level;
@@ -17,7 +16,6 @@ import utils.Statistics;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
 import columnTypes.ColumnPumper;
-import core.TuplesPicker;
 import connection.DBMSConnection;
 
 public class Generator{
@@ -35,9 +33,6 @@ public class Generator{
 	public static int freshDuplicatesSize = 1000;
 	private static int maxPrimaryDuplicateValuesBufferSize = 5;
 	private boolean pureRandom = false;
-	
-	/** It picks tuples that need to be repeated **/
-	private TuplesPicker tP;
 	
 	private static Logger logger = Logger.getLogger(Generator.class.getCanonicalName());
 
@@ -74,7 +69,7 @@ public class Generator{
 				uncommittedFresh.put(c.getName(), new ArrayList<String>());
 			}
 		}
-		// templateInsert to be called AFTER the ratios initializations
+		// templateInsert to be called AFTER the ratios initialization
 		// because of the reordering of the columns
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
 		
@@ -153,7 +148,8 @@ public class Generator{
 		
 		
 		String toInsert = null;
-
+		float dupOrNullToss = random.nextFloat();
+		
 		boolean stopChase = (column.referencesTo().size() > 0) && column.getMaximumChaseCycles() < column.getCurrentChaseCycle();
 		if( stopChase && (column.getDuplicateRatio() > 0 || !column.isPrimary()) ){
 			column.setDuplicateRatio(1); // DO NOT generate fresh values. Fresh values trigger new chase steps.
@@ -164,12 +160,12 @@ public class Generator{
 			addToUncommittedFresh(uncommittedFresh, column, toInsert);
 			if( column.hasNextChase() )	++nRows; // I haven't finished yet to insert chased values.
 		}
-		else if( column.getDuplicateRatio() > random.nextFloat() ){
-			if (column.getDuplicateRatio() + column.getNullRatio() > random.nextFloat()) {
-				putNull(schema, column, stmt);
-			} else
+		else if( column.getDuplicateRatio() > dupOrNullToss){
 			putDuplicate(schema, column, primaryDuplicateValues, 
 					mFreshDuplicatesToDuplicatePks, freshDuplicates, stmt, uncommittedFresh, tablesToChase);	
+		}
+		else if( column.getNullRatio() > (dupOrNullToss - column.getDuplicateRatio()) ){
+			putNull(schema, column, stmt);
 		}
 		else if( ( 0.8 > random.nextFloat() ) && 
 				(toInsert = column.getNextChased(dbmsConn, schema) ) != null && 

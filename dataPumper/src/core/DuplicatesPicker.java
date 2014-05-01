@@ -68,8 +68,11 @@ public class DuplicatesPicker {
 	public String pickNextDupFromDuplicatesToInsert(){
 		String result = null;
 		try {
-			if( duplicatesToInsert.next() ){
-				result = duplicatesToInsert.getString(1);
+			boolean stop = false;
+			while( result == null && !stop ){
+				if( duplicatesToInsert.next() ){
+					result = duplicatesToInsert.getString(1);
+				}else stop = true;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
