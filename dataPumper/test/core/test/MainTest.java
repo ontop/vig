@@ -150,7 +150,7 @@ public class MainTest {
 //		db1.setUniqueCheckOn();
 //		db1.setForeignCheckOn();
 //	}
-//	
+//	//
 	@Test
 	public void testPumpNPDPercentage() {
 		DatabasePumper main = new DatabasePumper(db1Original, db1);		
