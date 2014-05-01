@@ -83,7 +83,7 @@ public class Generator{
 		
 		if( candidate != null ){
 			System.out.println("CANDIDATE N. OF REFERRED TABLES: ");
-			System.out.println(candidate.undecorate().getReferredTables().size());
+			System.out.println(candidate.getReferredTables().size());
 		}
 		// templateInsert to be called AFTER the ratios initialization
 		// because of the reordering of the columns

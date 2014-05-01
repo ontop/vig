@@ -109,18 +109,17 @@ class DuplicateRatiosFinder{
 	private float findDuplicateRatio(TupleTemplateDecorator ttD){
 		
 		DBMSConnection dbOriginal = TupleStoreFactory.getInstance().getDBMSConnection();
-		TupleTemplate tt = ttD.undecorate();
 		
 		// Find duplicates ratios
-		int nTables = tt.getReferredTables().size();
+		int nTables = ttD.getReferredTables().size();
 		
 		Pair<String, String> templDiff_templUnion = getTemplateStrings(nTables); 
 		
 		Template tDiff = new Template(templDiff_templUnion.first);
 		Template tUnion = new Template(templDiff_templUnion.second);
 		
-		fillTemplate(tDiff, tt);
-		fillTemplate(tUnion, tt);
+		fillTemplate(tDiff, ttD);
+		fillTemplate(tUnion, ttD);
 		
 		PreparedStatement stmtDiff = dbOriginal.getPreparedStatement(tDiff);
 		int numDiff = countNumResults(stmtDiff);

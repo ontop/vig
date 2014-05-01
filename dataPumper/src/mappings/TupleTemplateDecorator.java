@@ -1,6 +1,8 @@
 package mappings;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * It enriches the Tuple class with 
@@ -8,7 +10,7 @@ import java.util.Map;
  * @author tir
  *
  */
-public class TupleTemplateDecorator {
+public class TupleTemplateDecorator extends TupleTemplate{
 	private Map<String, Float> mTableName_inDupR;
 	private float dupR;
 	
@@ -16,10 +18,6 @@ public class TupleTemplateDecorator {
 	
 	TupleTemplateDecorator(TupleTemplate tt){
 		decorated = tt;
-	}
-	
-	public TupleTemplate undecorate(){
-		return decorated;
 	}
 	
 	/**
@@ -52,5 +50,25 @@ public class TupleTemplateDecorator {
 
 	public void setDupR(float dupR) {
 		this.dupR = dupR;
+	}
+
+	@Override
+	public String getTemplatesString() {
+		return decorated.getTemplatesString();
+	}
+
+	@Override
+	public Set<String> getReferredTables() {
+		return decorated.getReferredTables();
+	}
+
+	@Override
+	public List<String> getColumnsInTable(String tableName) {
+		return decorated.getColumnsInTable(tableName);
+	}
+
+	@Override
+	public String toString() {
+		return decorated.toString();
 	}
 }
