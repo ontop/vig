@@ -56,14 +56,7 @@ public class DatabasePumper {
 			reached = true;
 			schemas.enqueue(dbToPump.getSchema(tableName));
 		}
-		
-		// Analyze the tuples
-		MappingAnalyzer.setInstance(dbOriginal, Conf.mappingsFile());
-		MappingAnalyzer mA = MappingAnalyzer.getInstance();
-		
-		mA.initTuples();
-		
-		
+				
 		// Breadth first strategy
 		// TODO I need a limit, for the moment I put an hard one.
 		int cnt = 0;
@@ -130,6 +123,12 @@ public class DatabasePumper {
 			schemas.enqueue(dbToPump.getSchema(tableName));
 		}
 		
+		// Analyze the tuples
+		MappingAnalyzer.setInstance(dbOriginal, Conf.mappingsFile());
+		MappingAnalyzer mA = MappingAnalyzer.getInstance();
+		
+//		mA.initTuples();
+		
 		// Breadth first strategy
 		// TODO I need a limit, for the moment I put an hard one.
 		int cnt = 0;
@@ -169,10 +168,6 @@ public class DatabasePumper {
 			column.fillDomain(schema, originalDb);
 			column.fillDomainBoundaries(schema, originalDb);
 		}
-	}
-	
-	private void fillTuples(Schema schema, DBMSConnection dbOriginal2) {
-		MappingAnalyzer mA = MappingAnalyzer.getInstance();
 	}
 
 	public void setPureRandomGeneration() {

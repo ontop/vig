@@ -36,7 +36,7 @@ public class LinestringColumn extends IncrementableColumn<Linestring>{
 		
 		if( domain != null && domain.size() != 0 ) return; // To avoid duplicate calls
 		
-		String queryString = "SELECT DISTINCT AsWKT("+getName()+") FROM "+schema.getTableName();
+		String queryString = "SELECT DISTINCT AsWKT("+getName()+") FROM "+schema.getTableName()+ " WHERE "+getName()+" IS NOT NULL";
 		
 		PreparedStatement stmt = db.getPreparedStatement(queryString);
 		

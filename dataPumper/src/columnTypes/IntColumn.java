@@ -80,7 +80,7 @@ public class IntColumn extends IncrementableColumn<Long> {
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
 		
-		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName());
+		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+ " WHERE "+getName()+" IS NOT NULL");
 		List<Long> values = null;
 		
 		try {

@@ -31,8 +31,9 @@ public class MappingAnalyzer {
 			e.printStackTrace();
 		}
 		CSVPlayer csvParser = new CSVPlayer(outCSVFile);
+		System.err.println(csvParser.printCSVFile());
 		MyHashMapList<String, String> tuplesHash = 
-				new MyHashMapList<String, String>(csvParser.printCSVFile());
+				MyHashMapList.parse(csvParser.printCSVFile());
 		
 		this.store = TupleStore.getInstance(tuplesHash);
 	}
@@ -46,18 +47,17 @@ public class MappingAnalyzer {
 		instance = new MappingAnalyzer(dbmsConn);
 	}
 
-	public void initTuples(){
-		// For each tuple, evaluate its duplicate ratio
-		for( Tuple t : store.allTuples() ){
-			// 1) Set local dup ratios
-			// 2) Set global dup ratios
-			StringBuilder unionQuery
-			for( String tableName : t.getReferredTables() ){
-				float localRatio = localDupRatio(tableName, t);
-				
-			}
-		}
-	}
+//	public void initTuples(){
+//		// For each tuple, evaluate its duplicate ratio
+//		for( Tuple t : store.allTuples() ){
+//			// 1) Set local dup ratios
+//			// 2) Set global dup ratios
+//			for( String tableName : t.getReferredTables() ){
+//				float localRatio = localDupRatio(tableName, t);
+////				pushInTempTable()
+//			}
+//		}
+//	}
 	
 	private float localDupRatio(String tableName, Tuple t) {
 		// TODO Auto-generated method stub

@@ -30,15 +30,18 @@ public class TupleStore {
 		
 		for( String functName : tuplesHash.keyset() ){
 			MyHashMapList<String, String> mTable_Columns = new MyHashMapList<String, String>();
+			MyHashMapList<String, String> mTupleTemplate_Tables = new MyHashMapList<String, String>();
 			
 			// Extract the info regarding the tables and the columns
 			for( String csvProj : tuplesHash.get(functName) ){
 				List<String> temp = CSVPlayer.parseRow(csvProj, " ");
 				String tableName = temp.get(0);
-				List<String> columns = temp.subList(1, temp.size());
+				String tupleTemplate = temp.get(1) + temp.get(2);
+				List<String> columns = temp.subList(3, temp.size());
 				mTable_Columns.putAll(tableName, columns);
+				mTupleTemplate_Tables.put(tupleTemplate, tableName);
 			}
-			Tuple newT = new Tuple(++tupleCnt, functName, mTable_Columns);
+			Tuple newT = new Tuple(++tupleCnt, functName, mTable_Columns, mTupleTemplate_Tables);
 			tuples.add(newT);
 			mId_Tuple.put(tupleCnt, newT);
 			for( String tableName : mTable_Columns.keyset() ){
@@ -60,5 +63,9 @@ public class TupleStore {
 	
 	public List<Tuple> allTuples(){
 		return Collections.unmodifiableList(tuples);
+	}
+	
+	public String toString(){
+		return allTuples().toString();
 	}
 }

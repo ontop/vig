@@ -32,7 +32,7 @@ public class BigDecimalColumn extends IncrementableColumn<BigDecimal>{
 	
 	@Override
 	public void fillDomain(Schema schema, DBMSConnection db) {
-		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+" LIMIT 100000");
+		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+ " WHERE "+getName()+" IS NOT NULL");
 		
 		List<BigDecimal> values = null;
 		
