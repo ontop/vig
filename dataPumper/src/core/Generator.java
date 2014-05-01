@@ -4,10 +4,18 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+
+import mappings.Tuple;
+import mappings.TupleStore;
+import mappings.TupleStoreFactory;
+import mappings.TupleTemplate;
+import mappings.TupleTemplateDecorator;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -69,6 +77,14 @@ public class Generator{
 				uncommittedFresh.put(c.getName(), new ArrayList<String>());
 			}
 		}
+		
+		// TODO Something about the tuples ...
+		TupleTemplateDecorator candidate = searchForCandidate(schema.getTableName());		
+		
+		if( candidate != null ){
+			System.out.println("CANDIDATE N. OF REFERRED TABLES: ");
+			System.out.println(candidate.undecorate().getReferredTables().size());
+		}
 		// templateInsert to be called AFTER the ratios initialization
 		// because of the reordering of the columns
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
@@ -79,6 +95,8 @@ public class Generator{
 
 		// Disable auto-commit
 		dbmsConn.setAutoCommit(false);
+		
+		
 		
 		for( int j = 1; j <= nRows; ++j ){
 
@@ -138,6 +156,45 @@ public class Generator{
 		return tablesToChase; 
 	}
 	
+	/**
+	 * 
+	 * @return A <b>TupleTemplate</b> spreading over several tables AND 
+	 *         whose columns set subsumes <b>this.primary_key</b>
+	 */
+	private TupleTemplateDecorator searchForCandidate(String tableName) {
+		
+		TupleStore ts = TupleStoreFactory.getInstance().getTupleStoreInstance();
+		
+		// Find, among the tuples related to this table,
+		// those whose templates fall in more than one table 
+		// TODO This is only temporary, the complete algorithm would require different
+		List<Tuple> referringTuples = ts.getAllTuplesOfTable(tableName);
+		if( referringTuples == null ) return null;
+		
+		int max = 0;
+		TupleTemplate maxTemplate = null;
+		for( Tuple t : referringTuples ){
+			for( TupleTemplate tt : t.getTupleTemplates() ){
+				if(!tt.getReferredTables().contains(tableName)) continue;
+				
+				// Check if the columns subsume the pk
+				List<ColumnPumper> pk = this.dbmsConn.getSchema(tableName).getPk();
+				Set<String> names = new HashSet<String>();
+				for( ColumnPumper cP : pk ){
+					if( !names.contains(cP.getName())) names.add( cP.getName() );
+				}
+				
+				if( tt.getColumnsInTable(tableName).containsAll(names) ){					
+					if( max < tt.getReferredTables().size() ){
+						max = tt.getReferredTables().size(); maxTemplate = tt; 
+					}  
+				}
+			}
+		}
+		
+		return maxTemplate == null ? null : ts.decorateTupleTemplate(maxTemplate);
+	}
+
 	private boolean pumpColumn(Schema schema, ColumnPumper column,
 			PreparedStatement stmt, int nRows,
 			int j,
@@ -222,7 +279,7 @@ public class Generator{
 		// If (c_1,..,c_n, column) is a primary key AND
 		// from_dup(c_i), where 1 <= i <= n, THEN keep track
 		// of column -> (c_1, ..., c_n)
-		if( column.isPrimary() && (primaryDuplicateValues.size() == schema.getPks().size() - 1 ) ){
+		if( column.isPrimary() && (primaryDuplicateValues.size() == schema.getPk().size() - 1 ) ){
 			if( freshDuplicates.size() < Generator.freshDuplicatesSize ){
 				List<List<String>> listOfPrimaryDuplicateValues = new ArrayList<List<String>>();
 				listOfPrimaryDuplicateValues.add(primaryDuplicateValues);
@@ -232,7 +289,7 @@ public class Generator{
 			}
 		}
 		
-		if( schema.getPks().size() > 0 && column.getIndex() == schema.getPks().get(schema.getPks().size()-1).getIndex() ){
+		if( schema.getPk().size() > 0 && column.getIndex() == schema.getPk().get(schema.getPk().size()-1).getIndex() ){
 			if( freshDuplicates.size() < Generator.freshDuplicatesSize ){
 				freshDuplicates.add(generatedRandom);
 				
@@ -402,7 +459,7 @@ public class Generator{
 		// If, in all columns but one of the primary key I've put duplicates, 
 		// pay attention to how you pick the last column. You might generate
 		// a duplicate row if you do not do it correctly
-		if( (primaryDuplicateValues.size() == schema.getPks().size() - 1) && column.isPrimary() ){
+		if( (primaryDuplicateValues.size() == schema.getPk().size() - 1) && column.isPrimary() ){
 			
 			long start = System.currentTimeMillis();
 			// Search among uncommitted fresh values

@@ -2,7 +2,11 @@ package core;
 
 import java.util.List;
 
-import mappings.MappingAnalyzer;
+import mappings.Tuple;
+import mappings.TupleStore;
+import mappings.TupleStoreFactory;
+import mappings.TupleTemplate;
+import mappings.TupleTemplateDecorator;
 
 import org.apache.log4j.Logger;
 
@@ -124,8 +128,17 @@ public class DatabasePumper {
 		}
 		
 		// Analyze the tuples
-		MappingAnalyzer.setInstance(dbOriginal, Conf.mappingsFile());
-		MappingAnalyzer mA = MappingAnalyzer.getInstance();
+		TupleStoreFactory.setInstance(dbOriginal, Conf.mappingsFile());
+		TupleStoreFactory mA = TupleStoreFactory.getInstance();
+		
+//		// Duplicate Templates : 54. Not many ... actually, quite a few.
+//		TupleStore store = mA.getTupleStoreInstance();
+//		
+//		for( Tuple t : store.allTuples() ){
+//			for( TupleTemplate tt : t.getTupleTemplates() ){
+//				TupleTemplateDecorator ttd = store.decorateTupleTemplate(tt);
+//			}
+//		}
 		
 //		mA.initTuples();
 		

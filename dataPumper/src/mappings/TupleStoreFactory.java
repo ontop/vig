@@ -11,18 +11,18 @@ import core.TuplesToCSV;
  * @author tir
  * @note This is a singleton class
  */
-public class MappingAnalyzer {
+public class TupleStoreFactory {
 	private final String obdaFile;
 	private final TupleStore store;
-	private final DBMSConnection dbmsConn;
+	private final DBMSConnection dbmsConnOriginal;
 	
 	private static String outCSVFile = "resources/mappingsCSV.csv";
-	private static MappingAnalyzer instance = null;
+	private static TupleStoreFactory instance = null;
 	
-	private MappingAnalyzer(DBMSConnection dbmsConn){
+	private TupleStoreFactory(DBMSConnection dbmsConnOriginal){
 		
 		this.obdaFile = Conf.mappingsFile();
-		this.dbmsConn = dbmsConn;
+		this.dbmsConnOriginal = dbmsConnOriginal;
 		
 		TuplesToCSV tuplesExtractor = new TuplesToCSV(obdaFile, outCSVFile);
 		try {
@@ -38,34 +38,17 @@ public class MappingAnalyzer {
 		this.store = TupleStore.getInstance(tuplesHash);
 	}
 	
-	public static MappingAnalyzer getInstance(){
+	public static TupleStoreFactory getInstance(){
 		return instance;
 	}
 	
-	public static void setInstance(DBMSConnection dbmsConn, String obdaFile){
+	public static void setInstance(DBMSConnection dbmsConnOriginal, String obdaFile){
 		if( instance != null ) return;
-		instance = new MappingAnalyzer(dbmsConn);
-	}
-
-//	public void initTuples(){
-//		// For each tuple, evaluate its duplicate ratio
-//		for( Tuple t : store.allTuples() ){
-//			// 1) Set local dup ratios
-//			// 2) Set global dup ratios
-//			for( String tableName : t.getReferredTables() ){
-//				float localRatio = localDupRatio(tableName, t);
-////				pushInTempTable()
-//			}
-//		}
-//	}
-	
-	private float localDupRatio(String tableName, Tuple t) {
-		// TODO Auto-generated method stub
-		return 0;
+		instance = new TupleStoreFactory(dbmsConnOriginal);
 	}
 
 	public DBMSConnection getDBMSConnection(){
-		return this.dbmsConn;
+		return this.dbmsConnOriginal;
 	}
 	
 	public TupleStore getTupleStoreInstance(){

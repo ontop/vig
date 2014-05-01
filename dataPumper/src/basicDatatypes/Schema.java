@@ -22,7 +22,7 @@ import basicDatatypes.MySqlDatatypes;
 public class Schema{
 	private List<ColumnPumper> columns;
 	private final String tableName;  // Final in order to avoid the well-known "mutability" problem with the <i>equals</i> method.
-	private List<ColumnPumper> primaryKeys;
+	private List<ColumnPumper> primaryKey;
 	
 	// Fields related to the pumping
 	private boolean filledFlag; // It keeps the information whether this schema has been already pumped once
@@ -33,7 +33,7 @@ public class Schema{
 	public Schema(String tableName){
 		this.tableName = tableName;
 		columns = new ArrayList<ColumnPumper>();
-		primaryKeys = new ArrayList<ColumnPumper>();
+		primaryKey = new ArrayList<ColumnPumper>();
 		filledFlag = false;
 		maxDupsRepetition = 0;
 	}
@@ -118,16 +118,16 @@ public class Schema{
 		return this.getTableName().hashCode();
 		
 	}
-	public List<ColumnPumper> getPks(){
-		if( primaryKeys.size() == 0 ){
+	public List<ColumnPumper> getPk(){
+		if( primaryKey.size() == 0 ){
 			
 			// INIT
 			for( ColumnPumper c : columns ){
 				if( c.isPrimary() )
-					primaryKeys.add(c);
+					primaryKey.add(c);
 			}
 		}
-		return primaryKeys;
+		return primaryKey;
 	}
 	
 	public void sortColumnsAccordingToDupRatios(){
