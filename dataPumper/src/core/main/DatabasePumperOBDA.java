@@ -1,34 +1,30 @@
-package core;
+package core.main;
 
-import java.util.List;
-
-import mappings.Tuple;
-import mappings.TupleStore;
 import mappings.TupleStoreFactory;
-import mappings.TupleTemplate;
-import mappings.TupleTemplateDecorator;
-
-import org.apache.log4j.Logger;
-
 import columnTypes.ColumnPumper;
 import utils.TrivialQueue;
 import basicDatatypes.Schema;
 import configuration.Conf;
 import connection.DBMSConnection;
+import core.tableGenerator.Generator;
+import core.tableGenerator.GeneratorOBDA;
+
+import java.util.List;
+
+import org.apache.log4j.Logger;
 
 // Speed trick 
 // Connection c = DriverManager.getConnection("jdbc:mysql://host:3306/db?useServerPrepStmts=false&rewriteBatchedStatements=true", "username", "password");
 // TODO Try
 // Tried. Very Well.
-public class DatabasePumper {
+public class DatabasePumperOBDA extends DatabasePumper {
 	
 	private DBMSConnection dbOriginal;
 	private DBMSConnection dbToPump;
-	private boolean pureRandom = false;
 	
-	private static Logger logger = Logger.getLogger(DatabasePumper.class.getCanonicalName());	
+	private static Logger logger = Logger.getLogger(DatabasePumperOBDA.class.getCanonicalName());	
 	
-	public DatabasePumper(DBMSConnection dbOriginal, DBMSConnection dbToPump){
+	public DatabasePumperOBDA(DBMSConnection dbOriginal, DBMSConnection dbToPump){
 		this.dbOriginal = dbOriginal;
 		this.dbToPump = dbToPump;
 	}
@@ -39,7 +35,7 @@ public class DatabasePumper {
 		dbToPump.setForeignCheckOff();
 		dbToPump.setUniqueCheckOff();
 		
-		Generator gen = new Generator(dbToPump);
+		Generator gen = new GeneratorOBDA(dbToPump);
 		if( pureRandom ) gen.setPureRandomGeneration();
 		
 		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
@@ -108,7 +104,7 @@ public class DatabasePumper {
 		dbToPump.setForeignCheckOff();
 		dbToPump.setUniqueCheckOff();
 		
-		Generator gen = new Generator(dbToPump);
+		GeneratorOBDA gen = new GeneratorOBDA(dbToPump);
 		if( pureRandom ) gen.setPureRandomGeneration();
 		
 		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
@@ -130,17 +126,6 @@ public class DatabasePumper {
 		// Analyze the tuples
 		TupleStoreFactory.setInstance(dbOriginal, Conf.mappingsFile());
 		TupleStoreFactory mA = TupleStoreFactory.getInstance();
-		
-//		// Duplicate Templates : 54. Not many ... actually, quite a few.
-//		TupleStore store = mA.getTupleStoreInstance();
-//		
-//		for( Tuple t : store.allTuples() ){
-//			for( TupleTemplate tt : t.getTupleTemplates() ){
-//				TupleTemplateDecorator ttd = store.decorateTupleTemplate(tt);
-//			}
-//		}
-		
-//		mA.initTuples();
 		
 		// Breadth first strategy
 		// TODO I need a limit, for the moment I put an hard one.

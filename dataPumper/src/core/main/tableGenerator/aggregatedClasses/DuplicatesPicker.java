@@ -1,10 +1,11 @@
-package core;
+package core.main.tableGenerator.aggregatedClasses;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import connection.DBMSConnection;
+import core.tableGenerator.GeneratorColumnBased;
 import columnTypes.ColumnPumper;
 
 public class DuplicatesPicker {
@@ -46,16 +47,16 @@ public class DuplicatesPicker {
 				e.printStackTrace();
 			}
 		}
-		int startIndex = insertedRows - Generator.duplicatesWindowSize > 0 ? insertedRows - Generator.duplicatesWindowSize : 0;
+		int startIndex = insertedRows - GeneratorColumnBased.duplicatesWindowSize > 0 ? insertedRows - GeneratorColumnBased.duplicatesWindowSize : 0;
 		
 		String queryString = null;
 		
 		if( column.isGeometric() ){
 			queryString = "SELECT AsWKT(" + column.getName() + ") FROM " + tableName + " "
-					+ " WHERE AsWKT(" + column.getName() + ") IS NOT NULL LIMIT " + startIndex + ", " + Generator.duplicatesWindowSize;
+					+ " WHERE AsWKT(" + column.getName() + ") IS NOT NULL LIMIT " + startIndex + ", " + GeneratorColumnBased.duplicatesWindowSize;
 		}
 		else{
-			queryString = "SELECT "+column.getName()+ " FROM "+tableName+" WHERE "+column.getName()+" IS NOT NULL LIMIT "+ startIndex +", "+Generator.duplicatesWindowSize;
+			queryString = "SELECT "+column.getName()+ " FROM "+tableName+" WHERE "+column.getName()+" IS NOT NULL LIMIT "+ startIndex +", "+GeneratorColumnBased.duplicatesWindowSize;
 		}
 		try{
 			PreparedStatement stmt = dbmsConn.getPreparedStatement(queryString);

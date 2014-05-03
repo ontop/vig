@@ -35,6 +35,7 @@ public class TupleStore {
 		tuples = new ArrayList<Tuple>();
 		mId_Tuple = new HashMap<Integer, Tuple>();
 		mTableName_Tuples = new MyHashMapList<String, Tuple>();
+		mBufferized_DupRatios = new HashMap<Pair<Integer,Integer>, Float>();
 		
 		for( String functName : tuplesHash.keyset() ){
 			MyHashMapList<String, String> mTable_Columns = new MyHashMapList<String, String>();

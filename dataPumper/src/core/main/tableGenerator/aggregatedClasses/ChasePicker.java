@@ -1,4 +1,4 @@
-package core;
+package core.main.tableGenerator.aggregatedClasses;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

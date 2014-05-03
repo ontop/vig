@@ -46,6 +46,10 @@ public class Conf {
 	public static String mappingsFile(){
 		return searchTag("obdaFile");
 	}
+	/** Returns the configuration scheme for the data generation **/
+	public static String pumperType(){
+		return searchTag("pumperType");
+	}
 	
 	private static String searchTag(String tag){
 		try{

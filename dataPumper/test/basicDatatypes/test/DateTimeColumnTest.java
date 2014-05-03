@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import basicDatatypes.Template;
 import connection.DBMSConnection;
-import core.test.GeneratorTest;
+import core.test.GeneratorDBTest;
 
 public class DateTimeColumnTest {
 	

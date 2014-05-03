@@ -18,7 +18,9 @@ import columnTypes.ColumnPumper;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import connection.DBMSConnection;
-import core.DatabasePumper;
+import core.main.DatabasePumper;
+import core.main.DatabasePumperDB;
+import core.main.DatabasePumperOBDA;
 
 public class MainTest {
 	
@@ -153,7 +155,34 @@ public class MainTest {
 //	//
 	@Test
 	public void testPumpNPDPercentage() {
-		DatabasePumper main = new DatabasePumper(db1Original, db1);		
+		DatabasePumperDB main = new DatabasePumperDB(db1Original, db1);		
+		
+		db1.setForeignCheckOff();
+		db1.setUniqueCheckOff();
+		
+		for( String tableName : db1.getAllTableNames() ){
+			Schema s = db1.getSchema(tableName);
+			for( ColumnPumper c : s.getColumns() ){
+				if( !c.referencesTo().isEmpty() ){
+					c.setMaximumChaseCycles(4);
+				}
+			}
+		}
+		
+		long start = System.currentTimeMillis();
+	
+		main.pumpDatabase((float)2);
+		long end = System.currentTimeMillis();
+
+		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
+//		logger.info(Statistics.printStats());
+		db1.setUniqueCheckOn();
+		db1.setForeignCheckOn();
+	}
+	
+	@Test
+	public void testPumpNPDPercentageOBDAStyle() {
+		DatabasePumper main = new DatabasePumperOBDA(db1Original, db1);		
 		
 		db1.setForeignCheckOff();
 		db1.setUniqueCheckOff();

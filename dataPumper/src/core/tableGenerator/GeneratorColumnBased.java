@@ -1,24 +1,12 @@
-package core;
+package core.tableGenerator;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
-import mappings.Tuple;
-import mappings.TupleStore;
-import mappings.TupleStoreFactory;
-import mappings.TupleTemplate;
-import mappings.TupleTemplateDecorator;
-import mappings.TuplesPicker;
-
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import utils.Statistics;
@@ -26,12 +14,13 @@ import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
 import columnTypes.ColumnPumper;
 import connection.DBMSConnection;
+import core.main.tableGenerator.aggregatedClasses.Distribution;
 
-public class Generator{
-	
+public abstract class GeneratorColumnBased extends Generator {
+
 	protected Distribution distribution;
 	protected DBMSConnection dbmsConn;
-	private Random random;
+	protected Random random;
 	
 	protected Map<String, Integer> mNumDupsRepetition;
 	protected int maxNumDupsRepetition;
@@ -40,198 +29,12 @@ public class Generator{
 	public static int duplicatesWindowSize = 30000;
 	public static int maxRepeatDuplicateWindowReads = 5;
 	public static int freshDuplicatesSize = 1000;
-	private static int maxPrimaryDuplicateValuesBufferSize = 5;
-	private boolean pureRandom = false;
+	protected static int maxPrimaryDuplicateValuesBufferSize = 5;
+	protected boolean pureRandom = false;
 	
-	private static Logger logger = Logger.getLogger(Generator.class.getCanonicalName());
-
-	public Generator(DBMSConnection dbmsConn) {
-		this.dbmsConn = dbmsConn;
-		this.distribution = new Distribution(dbmsConn);
-		this.random = new Random();
-				
-		mNumDupsRepetition = new HashMap<String, Integer>();
-		maxNumDupsRepetition = 0;
-
-		logger.setLevel(Level.INFO);
-	}
+	protected static Logger logger = Logger.getLogger(GeneratorDB.class.getCanonicalName());
 	
-	public List<Schema> pumpTable(int nRows, Schema schema){
-				
-		PreparedStatement stmt = null;
-		List<Schema> tablesToChase = new LinkedList<Schema>(); // Return value
-		
-		/** mapping (vn -> v_1, ..., v_n-1) where (v1, ..., vn) is a pk **/
-		Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks = new HashMap<String, List<List<String>>>(); 
-		                                                                                                  
-		List<String> freshDuplicates = new LinkedList<String>(); // Freshly generated strings from which duplicates can be chosen
-		Map<String, List<String>> uncommittedFresh = new HashMap<String, List<String>>(); // Keeps track of uncommitted fresh values
-		
-		initNullRatios(schema);
-		initDuplicateValues(schema, 0);
-		initDuplicateRatios(schema);		
-		initNumDupsRepetitionCounters();
-		increaseChaseCycles(schema);
-		
-		for( ColumnPumper c : schema.getColumns() ){
-			if( c.isPrimary() && c.referencedBy().size() > 0 ){
-				uncommittedFresh.put(c.getName(), new ArrayList<String>());
-			}
-		}
-		
-		// TODO Something about the tuples ...
-//		TupleTemplateDecorator candidate = searchForCandidate(schema.getTableName());
-		
-//		if( candidate != null ){
-//			logger.debug("CANDIDATE N. OF REFERRED TABLES: ");
-//			logger.debug(candidate.getReferredTables().size());
-//		}
-		// templateInsert to be called AFTER the ratios initialization
-		// because of the reordering of the columns
-		String templateInsert = dbmsConn.createInsertTemplate(schema);
-		
-		stmt = dbmsConn.getPreparedStatement(templateInsert);
-		logger.debug(templateInsert);
-
-		// Disable auto-commit
-		dbmsConn.setAutoCommit(false);
-		
-		for( int j = 1; j <= nRows; ++j ){
-
-			/** Keeps track of the DUPLICATE values chosen ---for the current row---
-			 *  for columns part of a primary key  **/
-			List<String> primaryDuplicateValues = new ArrayList<String>();
-			
-//			tryToPickATuple(dbmsConn, schema.getTableName(), candidate); //TODO Test
-
-			for( ColumnPumper column : schema.getColumns() ){
-				boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
-						mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
-				if( terminate )	return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
-			}
-			try{
-				stmt.addBatch();
-			}catch(SQLException e){
-				e.printStackTrace();
-			}
-			if( (j % 350000 == 0) ){ // Let's put a limit to the dimension of the stmt 
-				try{
-					stmt.executeBatch();	
-					dbmsConn.commit();
-				}catch(SQLException e){
-					e.printStackTrace();
-				}
-				initUncommittedFresh(schema, uncommittedFresh);					
-			}
-			if( maxNumDupsRepetition > Generator.maxRepeatDuplicateWindowReads ){
-				logger.info("Advancing the set of candidate duplicates");
-
-				try{
-					stmt.executeBatch();	
-					dbmsConn.commit();
-				}catch(SQLException e){
-					e.printStackTrace();
-				}
-
-				initUncommittedFresh(schema, uncommittedFresh);
-				initDuplicateValues(schema, j);
-				initNumDupsRepetitionCounters();
-				mFreshDuplicatesToDuplicatePks.clear();
-				freshDuplicates.clear();
-				System.gc();
-			}
-		}
-		try{
-			stmt.executeBatch();	
-			dbmsConn.commit();
-			stmt.close();
-		} catch (SQLException e) {
-			logger.error(e.getMessage());
-			e.printStackTrace();
-		}
-		dbmsConn.setAutoCommit(true);	
-		resetState(schema); // Frees memory
-		logger.info("Table '"+ schema.getTableName() + "' pumped with " + nRows +" rows.");
-		
-		return tablesToChase; 
-	}
-	
-	private Map<String, String> tryToPickATuple(DBMSConnection dbConn, String tableName, TupleTemplateDecorator candidate) {
-		if( allOtherTablesUnfilled(candidate.getReferredTables()) ) return null;
-		
-		// TODO
-		// I will update the probability
-		// of picking a dup each time I miss the chance of putting one
-		// -- so, even when you fail picking a fresh tuple ...
-		
-		float toss = random.nextFloat();
-		
-		List<String> tuple = null;
-		
-		if( candidate.getDupR() > toss ){
-			TuplesPicker tP = TupleStoreFactory.getInstance().getTuplesPickerInstance();
-			tuple = tP.pickTuple(dbConn, tableName, candidate);
-		}
-		
-		if( tuple == null ) return null;
-		
-		Map<String, String> result = new HashMap<String, String>();
-		
-		for( int i = 0; i < tuple.size(); ++i ){
-			result.put(candidate.getColumnsInTable(tableName).get(i), tuple.get(i));
-		}
-		
-		return result;
-	}
-
-	private boolean allOtherTablesUnfilled(Set<String> referredTables) {
-		
-		for( String tableName : referredTables ){
-			if( dbmsConn.getSchema(tableName).isFilled() ) return false;
-		}
-		return true;
-	}
-
-	/**
-	 * 
-	 * @return A <b>TupleTemplate</b> spreading over several tables AND 
-	 *         whose columns set subsumes <b>this.primary_key</b>
-	 */
-	private TupleTemplateDecorator searchForCandidate(String tableName) {
-		
-		TupleStore ts = TupleStoreFactory.getInstance().getTupleStoreInstance();
-		
-		// Find, among the tuples related to this table,
-		// those whose templates fall in more than one table 
-		// TODO This is only temporary, the complete algorithm would require different
-		List<Tuple> referringTuples = ts.getAllTuplesOfTable(tableName);
-		if( referringTuples == null ) return null;
-		
-		int max = 0;
-		TupleTemplate maxTemplate = null;
-		for( Tuple t : referringTuples ){
-			for( TupleTemplate tt : t.getTupleTemplates() ){
-				if(!tt.getReferredTables().contains(tableName)) continue;
-				
-				// Check if the columns subsume the pk
-				List<ColumnPumper> pk = this.dbmsConn.getSchema(tableName).getPk();
-				Set<String> names = new HashSet<String>();
-				for( ColumnPumper cP : pk ){
-					if( !names.contains(cP.getName())) names.add( cP.getName() );
-				}
-				
-				if( tt.getColumnsInTable(tableName).containsAll(names) ){					
-					if( max < tt.getReferredTables().size() ){
-						max = tt.getReferredTables().size(); maxTemplate = tt; 
-					}  
-				}
-			}
-		}
-		
-		return maxTemplate == null ? null : ts.decorateTupleTemplate(maxTemplate);
-	}
-
-	private boolean pumpColumn(Schema schema, ColumnPumper column,
+	protected boolean pumpColumn(Schema schema, ColumnPumper column,
 			PreparedStatement stmt, int nRows,
 			int j,
 			List<String> primaryDuplicateValues,
@@ -291,7 +94,7 @@ public class Generator{
 		return false;
 	}
 
-	private String putFreshRandom(ColumnPumper column, PreparedStatement stmt, Map<String, List<String>> uncommittedFresh) {
+	protected String putFreshRandom(ColumnPumper column, PreparedStatement stmt, Map<String, List<String>> uncommittedFresh) {
 
 		String generatedRandom = column.getNextFreshValue();
 								
@@ -306,7 +109,7 @@ public class Generator{
 		return generatedRandom;
 	}
 
-	private void updateFreshDuplicates(Schema schema, ColumnPumper column,
+	protected void updateFreshDuplicates(Schema schema, ColumnPumper column,
 			String generatedRandom, List<String> primaryDuplicateValues,
 			List<String> freshDuplicates,
 			Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks) {
@@ -316,7 +119,7 @@ public class Generator{
 		// from_dup(c_i), where 1 <= i <= n, THEN keep track
 		// of column -> (c_1, ..., c_n)
 		if( column.isPrimary() && (primaryDuplicateValues.size() == schema.getPk().size() - 1 ) ){
-			if( freshDuplicates.size() < Generator.freshDuplicatesSize ){
+			if( freshDuplicates.size() < GeneratorDB.freshDuplicatesSize ){
 				List<List<String>> listOfPrimaryDuplicateValues = new ArrayList<List<String>>();
 				listOfPrimaryDuplicateValues.add(primaryDuplicateValues);
 				mFreshDuplicatesToDuplicatePks.put(generatedRandom, listOfPrimaryDuplicateValues);
@@ -326,7 +129,7 @@ public class Generator{
 		}
 		
 		if( schema.getPk().size() > 0 && column.getIndex() == schema.getPk().get(schema.getPk().size()-1).getIndex() ){
-			if( freshDuplicates.size() < Generator.freshDuplicatesSize ){
+			if( freshDuplicates.size() < GeneratorDB.freshDuplicatesSize ){
 				freshDuplicates.add(generatedRandom);
 				
 				Statistics.addInt(schema.getTableName()+"."+column.getName()+"___adds_to_freshDuplicates", 1);
@@ -335,7 +138,7 @@ public class Generator{
 		
 	}
 
-	private void initUncommittedFresh(Schema schema,
+	protected void initUncommittedFresh(Schema schema,
 			Map<String, List<String>> uncommittedFresh) {
 		
 		for( String key : uncommittedFresh.keySet() ){
@@ -347,7 +150,7 @@ public class Generator{
 		
 	}
 
-	private void addToUncommittedFresh(
+	protected void addToUncommittedFresh(
 			Map<String, List<String>> uncommittedFresh, ColumnPumper column,
 			String generatedRandom) {
 		
@@ -405,7 +208,7 @@ public class Generator{
 		//schema.sortColumnsAccordingToDupRatios();
 	}
 	
-	public float findNullRatio(Schema s, ColumnPumper column){
+	protected float findNullRatio(Schema s, ColumnPumper column){
 		float ratio = 0;
 		ratio = distribution.nullRatioNaive(column.getName(), s.getTableName());
 		return ratio;
@@ -429,7 +232,7 @@ public class Generator{
 		}
 	}
 	
-	public float findDuplicateRatio(Schema s, ColumnPumper column){
+	protected float findDuplicateRatio(Schema s, ColumnPumper column){
 		float ratio = 0; // Ratio of the duplicates
 		// If generating fresh values will lead to a chase, and the maximum number of chases is reached
 		if( (column.referencesTo().size() > 0) && column.getMaximumChaseCycles() < column.getCurrentChaseCycle() ){
@@ -454,7 +257,7 @@ public class Generator{
 		dbmsConn.setter(stmt, column.getIndex(), column.getType(), toAdd);
 	}
 
-	private String pickNextDupFromOldValues(Schema schema, ColumnPumper column) {
+	protected String pickNextDupFromOldValues(Schema schema, ColumnPumper column) {
 		
 		String result = column.pickNextDupFromDuplicatesToInsert();
 		
@@ -523,7 +326,7 @@ public class Generator{
 						mFreshDuplicatesToDuplicatePks.get(suitableDup).add(primaryDuplicateValues);
 						
 						// Size check
-						if( mFreshDuplicatesToDuplicatePks.get(suitableDup).size() > Generator.maxPrimaryDuplicateValuesBufferSize ){
+						if( mFreshDuplicatesToDuplicatePks.get(suitableDup).size() > GeneratorDB.maxPrimaryDuplicateValuesBufferSize ){
 							freshDuplicates.remove(i);
 							mFreshDuplicatesToDuplicatePks.remove(suitableDup);
 //							System.gc(); // TODO How expensive is this?
@@ -571,13 +374,14 @@ public class Generator{
 			}
 		}
 	}
-	private void increaseChaseCycles(Schema schema) {
+	protected void increaseChaseCycles(Schema schema) {
 		for( ColumnPumper column : schema.getColumns() ){
 			column.incrementCurrentChaseCycle();
 		}
 	}
-
+	
 	public void setPureRandomGeneration() {
 		pureRandom = true;
 	}
+	
 }

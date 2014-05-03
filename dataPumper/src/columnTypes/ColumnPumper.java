@@ -1,9 +1,8 @@
 package columnTypes;
 
-import mappings.TuplesPicker;
 import connection.DBMSConnection;
-import core.ChasePicker;
-import core.DuplicatesPicker;
+import core.main.tableGenerator.aggregatedClasses.ChasePicker;
+import core.main.tableGenerator.aggregatedClasses.DuplicatesPicker;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 
@@ -11,19 +10,27 @@ public abstract class ColumnPumper extends Column implements FreshValuesGenerato
 	
 	protected ChasePicker cP;
 	private DuplicatesPicker dP;
-	
-	private TuplesPicker tP;
+	protected boolean ignore;
 	
 	public ColumnPumper(String name, MySqlDatatypes type, int index){
 		super(name, type, index);
 		cP = new ChasePicker(this);
 		dP = new DuplicatesPicker(this);
+		ignore = false;
 	}
-	
-	public void attachTuplesPicker(TuplesPicker tP){
-		this.tP = tP;
+	/**
+	 * Do NOT fill this column
+	 */
+	public void setIgnore(){
+		ignore = true;
 	}
-	
+	/**
+	 * Filling of this column is enabled again
+	 */
+	public void unsetIgnore(){
+		ignore = false;
+	}
+		
 	public void setDuplicateRatio(float ratio){
 		dP.setDuplicateRatio(ratio);
 	}
@@ -92,25 +99,6 @@ public abstract class ColumnPumper extends Column implements FreshValuesGenerato
 	public void reset(){
 		cP.reset();
 		dP.reset();
-		tP = null; // Detach tP.
 		System.gc();
-	}
-	
-	/**
-	 * TODO
-	 * @return
-	 */
-	public boolean partOfTuple() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
-	/**
-	 * TODO
-	 * @return
-	 */
-	public boolean takeValue() {
-		// TODO Auto-generated method stub
-		return false;
 	}
 };

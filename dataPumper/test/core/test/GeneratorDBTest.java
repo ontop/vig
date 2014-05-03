@@ -25,13 +25,13 @@ import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import utils.Statistics;
 import connection.DBMSConnection;
-import core.Generator;
+import core.tableGenerator.GeneratorDB;
 
 /**
  * @author tir
  *
  */
-public class GeneratorTest {
+public class GeneratorDBTest {
 	
 	
 	private static String jdbcConnector = "jdbc:mysql";
@@ -53,7 +53,7 @@ public class GeneratorTest {
 	private static int nRowsToInsert = 1000;
 
 	
-	private static Logger logger = Logger.getLogger(GeneratorTest.class.getCanonicalName());
+	private static Logger logger = Logger.getLogger(GeneratorDBTest.class.getCanonicalName());
 	
 	@BeforeClass
 	public static void setUpBeforeClass(){
@@ -119,7 +119,7 @@ public class GeneratorTest {
 	@Test
 	public void testPumpTable(){
 		
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		for( ColumnPumper c : db.getSchema("trivial").getColumns() ){
 			c.fillDomain(db.getSchema("trivial"), db);
@@ -164,7 +164,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 		
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("trivial"));
@@ -187,7 +187,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("pkeyTest"));
@@ -228,7 +228,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert*1000, db.getSchema("testBinaryKey"));
@@ -251,7 +251,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 		
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("pointTest"));
@@ -273,7 +273,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 		
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testLinestring"));
@@ -295,7 +295,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 		
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testPolygon"));
@@ -317,7 +317,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testMultilinestring"));
@@ -339,7 +339,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testMultipolygon"));
@@ -361,7 +361,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("testAutoincrement"));
@@ -394,7 +394,7 @@ public class GeneratorTest {
 			c.fillDomainBoundaries(schema, db);
 		}
 		
-		Generator gen = new Generator(db);
+		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
 		gen.pumpTable(nRowsToInsert, db.getSchema("dateTest"));

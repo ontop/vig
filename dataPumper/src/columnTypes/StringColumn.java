@@ -9,7 +9,7 @@ import java.util.List;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 import connection.DBMSConnection;
-import core.ChasePicker;
+import core.main.tableGenerator.aggregatedClasses.ChasePicker;
 
 public class StringColumn extends IncrementableColumn<String> {
 	
