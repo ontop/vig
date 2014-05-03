@@ -16,6 +16,7 @@ import mappings.TupleStore;
 import mappings.TupleStoreFactory;
 import mappings.TupleTemplate;
 import mappings.TupleTemplateDecorator;
+import mappings.TuplesPicker;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -79,16 +80,15 @@ public class Generator{
 		}
 		
 		// TODO Something about the tuples ...
-		TupleTemplateDecorator candidate = searchForCandidate(schema.getTableName());		
+//		TupleTemplateDecorator candidate = searchForCandidate(schema.getTableName());
 		
-		if( candidate != null ){
-			System.out.println("CANDIDATE N. OF REFERRED TABLES: ");
-			System.out.println(candidate.getReferredTables().size());
-		}
+//		if( candidate != null ){
+//			logger.debug("CANDIDATE N. OF REFERRED TABLES: ");
+//			logger.debug(candidate.getReferredTables().size());
+//		}
 		// templateInsert to be called AFTER the ratios initialization
 		// because of the reordering of the columns
 		String templateInsert = dbmsConn.createInsertTemplate(schema);
-		
 		
 		stmt = dbmsConn.getPreparedStatement(templateInsert);
 		logger.debug(templateInsert);
@@ -96,13 +96,13 @@ public class Generator{
 		// Disable auto-commit
 		dbmsConn.setAutoCommit(false);
 		
-		
-		
 		for( int j = 1; j <= nRows; ++j ){
 
 			/** Keeps track of the DUPLICATE values chosen ---for the current row---
 			 *  for columns part of a primary key  **/
 			List<String> primaryDuplicateValues = new ArrayList<String>();
+			
+//			tryToPickATuple(dbmsConn, schema.getTableName(), candidate); //TODO Test
 
 			for( ColumnPumper column : schema.getColumns() ){
 				boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
@@ -156,6 +156,42 @@ public class Generator{
 		return tablesToChase; 
 	}
 	
+	private Map<String, String> tryToPickATuple(DBMSConnection dbConn, String tableName, TupleTemplateDecorator candidate) {
+		if( allOtherTablesUnfilled(candidate.getReferredTables()) ) return null;
+		
+		// TODO
+		// I will update the probability
+		// of picking a dup each time I miss the chance of putting one
+		// -- so, even when you fail picking a fresh tuple ...
+		
+		float toss = random.nextFloat();
+		
+		List<String> tuple = null;
+		
+		if( candidate.getDupR() > toss ){
+			TuplesPicker tP = TupleStoreFactory.getInstance().getTuplesPickerInstance();
+			tuple = tP.pickTuple(dbConn, tableName, candidate);
+		}
+		
+		if( tuple == null ) return null;
+		
+		Map<String, String> result = new HashMap<String, String>();
+		
+		for( int i = 0; i < tuple.size(); ++i ){
+			result.put(candidate.getColumnsInTable(tableName).get(i), tuple.get(i));
+		}
+		
+		return result;
+	}
+
+	private boolean allOtherTablesUnfilled(Set<String> referredTables) {
+		
+		for( String tableName : referredTables ){
+			if( dbmsConn.getSchema(tableName).isFilled() ) return false;
+		}
+		return true;
+	}
+
 	/**
 	 * 
 	 * @return A <b>TupleTemplate</b> spreading over several tables AND 
@@ -221,9 +257,9 @@ public class Generator{
 			putDuplicate(schema, column, primaryDuplicateValues, 
 					mFreshDuplicatesToDuplicatePks, freshDuplicates, stmt, uncommittedFresh, tablesToChase);	
 		}
-//		else if( column.getNullRatio() > (dupOrNullToss - column.getDuplicateRatio()) ){
-//			putNull(schema, column, stmt);
-//		}
+		else if( column.getNullRatio() > (dupOrNullToss - column.getDuplicateRatio()) ){
+			putNull(schema, column, stmt);
+		}
 		else if( ( 0.8 > random.nextFloat() ) && 
 				(toInsert = column.getNextChased(dbmsConn, schema) ) != null && 
 				(!column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)) 

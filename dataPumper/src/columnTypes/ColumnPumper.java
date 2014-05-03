@@ -1,9 +1,9 @@
 package columnTypes;
 
+import mappings.TuplesPicker;
 import connection.DBMSConnection;
 import core.ChasePicker;
 import core.DuplicatesPicker;
-import core.TuplesPicker;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 

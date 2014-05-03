@@ -149,6 +149,7 @@ public class DatabasePumper {
 			Schema schema = schemas.dequeue();
 			
 			fillDomain(schema, dbOriginal);
+			fillOriginalTableSize(schema, dbOriginal);
 			
 			List<Schema> toChase = null;
 			if(schema.isFilled()){ // 
@@ -174,6 +175,10 @@ public class DatabasePumper {
 		long endTime = System.currentTimeMillis();
 		
 		logger.info("Database pumped in " + (endTime - startTime) + " msec.");
+	}
+
+	private void fillOriginalTableSize(Schema schema, DBMSConnection dbOriginal) {
+		if( schema.getOriginalSize() == 0 ) schema.setOriginalSize(dbOriginal.getNRows(schema.getTableName()));
 	}
 
 	private void fillDomain(Schema schema, DBMSConnection originalDb) {

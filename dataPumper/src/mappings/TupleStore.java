@@ -29,7 +29,8 @@ public class TupleStore {
 	private ArrayList<Tuple> tuples;
 	private Map<Integer, Tuple> mId_Tuple; // id -> tuple
 	private MyHashMapList<String, Tuple> mTableName_Tuples; // tableName -> tuple_1, tuple_2, ..., tuple_n
-		
+	private Map<Pair<Integer, Integer>, Float> mBufferized_DupRatios;
+	
 	private TupleStore(MyHashMapList<String, String> tuplesHash) {
 		tuples = new ArrayList<Tuple>();
 		mId_Tuple = new HashMap<Integer, Tuple>();
@@ -77,6 +78,10 @@ public class TupleStore {
 	public List<Tuple> allTuples(){
 		return Collections.unmodifiableList(tuples);
 	}
+
+	public Tuple getTupleOfID(int id){
+		return mId_Tuple.get(id);
+	}
 	
 	/**
 	 * The duplicate ratios for each template are evaluated w.r.t. the UNION
@@ -87,17 +92,52 @@ public class TupleStore {
 	 * TODO
 	 */
 	public TupleTemplateDecorator decorateTupleTemplate(TupleTemplate tt){
-		// (select wlbName, wlbCoreNumber from wellbore_core) union all (select wlbName, wlbCoreNumber from wellbore_core);
-		// (select wlbName, wlbCoreNumber from wellbore_core) union (select wlbName, wlbCoreNumber from wellbore_core);
-		
 		
 		TupleTemplateDecorator ttD = new TupleTemplateDecorator(tt);
-		DuplicateRatiosFinder dF = new DuplicateRatiosFinder();
 		
-		dF.fillDupRatio(ttD);
+		if( isDupRatioBufferized(ttD) ){
+			ttD.setDupR(getBufferizedDupRatio(ttD));
+		}
+		else{
+			DuplicateRatiosFinder dF = new DuplicateRatiosFinder();
+			dF.fillDupRatio(ttD);
+			bufferizeDupRatio(ttD);
+		}
 		
 		return ttD;
 	}
+	
+	private void bufferizeDupRatio(TupleTemplateDecorator ttD) {
+		int tupleID = ttD.belongsToTuple();
+		int ttID = ttD.getID();
+		
+		Pair<Integer, Integer> key = new Pair<Integer, Integer>(tupleID, ttID);
+		
+		mBufferized_DupRatios.put(key, ttD.getDupR());
+	}
+
+	private float getBufferizedDupRatio(TupleTemplateDecorator ttD){
+		int tupleID = ttD.belongsToTuple();
+		int ttID = ttD.getID();
+		
+		Pair<Integer,Integer> key = new Pair<Integer, Integer>(tupleID, ttID);
+		
+		return mBufferized_DupRatios.get(key);
+	}
+	
+	private boolean isDupRatioBufferized(TupleTemplateDecorator ttD){
+		
+		int tupleID = ttD.belongsToTuple();
+		int ttID = ttD.getID();
+		
+		Pair<Integer,Integer> key = new Pair<Integer, Integer>(tupleID, ttID);
+		
+		if( mBufferized_DupRatios.containsKey(key) ){
+			return true;
+		}
+		return false;
+	}
+	
 	
 	public String toString(){
 		return allTuples().toString();
@@ -107,6 +147,8 @@ public class TupleStore {
 class DuplicateRatiosFinder{
 	
 	private float findDuplicateRatio(TupleTemplateDecorator ttD){
+		// (select wlbName, wlbCoreNumber from wellbore_core) union all (select wlbName, wlbCoreNumber from wellbore_core);
+		// (select wlbName, wlbCoreNumber from wellbore_core) union (select wlbName, wlbCoreNumber from wellbore_core);
 		
 		DBMSConnection dbOriginal = TupleStoreFactory.getInstance().getDBMSConnection();
 		
@@ -207,5 +249,7 @@ class DuplicateRatiosFinder{
 	
 	void fillDupRatio(TupleTemplateDecorator ttD) {
 		
+		float dupRatio = findDuplicateRatio(ttD);
+		ttD.setDupR(dupRatio);
 	}
 };

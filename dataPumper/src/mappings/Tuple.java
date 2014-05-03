@@ -29,12 +29,13 @@ public class Tuple {
 		this.functName = functName;
 		this.id = id;
 		
+		
 		for( String ttString : mTupleTemplate_Tables.keyset() ){
 			MyHashMapList<String, String> mTableName_Columns = new MyHashMapList<String, String>();
 			for( String tableName : mTupleTemplate_Tables.get(ttString) ){
 				mTableName_Columns.putAll(tableName, mTableName_ColumnsGLOBAL.get(tableName));
 			}
-			TupleTemplate tt = new TupleTemplate(ttString, mTableName_Columns);
+			TupleTemplate tt = new TupleTemplateImpl(ttString, mTableName_Columns, this, tupleTemplates.size());
 			tupleTemplates.add(tt);
 		}
 	}

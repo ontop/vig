@@ -14,6 +14,7 @@ import core.TuplesToCSV;
 public class TupleStoreFactory {
 	private final String obdaFile;
 	private final TupleStore store;
+	private final TuplesPicker picker;
 	private final DBMSConnection dbmsConnOriginal;
 	
 	private static String outCSVFile = "resources/mappingsCSV.csv";
@@ -23,6 +24,7 @@ public class TupleStoreFactory {
 		
 		this.obdaFile = Conf.mappingsFile();
 		this.dbmsConnOriginal = dbmsConnOriginal;
+		this.picker = TuplesPicker.getInstance();
 		
 		TuplesToCSV tuplesExtractor = new TuplesToCSV(obdaFile, outCSVFile);
 		try {
@@ -53,6 +55,10 @@ public class TupleStoreFactory {
 	
 	public TupleStore getTupleStoreInstance(){
 		return store;
+	}
+	
+	public TuplesPicker getTuplesPickerInstance(){
+		return picker;
 	}
 	
 }

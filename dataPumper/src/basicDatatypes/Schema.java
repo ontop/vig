@@ -28,6 +28,8 @@ public class Schema{
 	private boolean filledFlag; // It keeps the information whether this schema has been already pumped once
 	private int maxDupsRepetition;
 	
+	private int originalSize;
+		
 	private static Logger logger = Logger.getLogger(Schema.class.getCanonicalName());
 	
 	public Schema(String tableName){
@@ -36,6 +38,15 @@ public class Schema{
 		primaryKey = new ArrayList<ColumnPumper>();
 		filledFlag = false;
 		maxDupsRepetition = 0;
+		originalSize = 0;
+	}
+	
+	public int getOriginalSize(){
+		return originalSize;
+	}
+	
+	public void setOriginalSize(int size){
+		this.originalSize = size;
 	}
 	
 	public int getMaxDupsRepetition(){

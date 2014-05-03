@@ -1,5 +1,6 @@
 package mappings;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ public class TupleTemplateDecorator extends TupleTemplate{
 	
 	TupleTemplateDecorator(TupleTemplate tt){
 		decorated = tt;
+		mTableName_inDupR = new HashMap<String, Float>();
 	}
 	
 	/**
@@ -70,5 +72,25 @@ public class TupleTemplateDecorator extends TupleTemplate{
 	@Override
 	public String toString() {
 		return decorated.toString();
+	}
+
+	@Override
+	public int belongsToTuple() {
+		return decorated.belongsToTuple();
+	}
+
+	@Override
+	public int getID() {
+		return decorated.getID();
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		return decorated.equals(other);
+	}
+
+	@Override
+	public int hashCode() {
+		return decorated.hashCode();
 	}
 }
