@@ -145,12 +145,16 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 		}
 		dbmsConn.setAutoCommit(true);	
 		resetState(schema); // Frees memory
+		resetTuplesPicker();
 		logger.info("Table '"+ schema.getTableName() + "' pumped with " + nRows +" rows.");
 		
 		return tablesToChase; 
 	}
 	
-	
+	private void resetTuplesPicker() {
+		TupleStoreFactory.getInstance().getTuplesPickerInstance().reset();
+	}
+
 	/**
 	 * If the call of <b>tryToPickATuple</b> successfully retrieved a tuple, <b>attachTuple</b>
 	 * puts it in the PreparedStatement <b>stmt</b> and informs all the involved columns
@@ -188,7 +192,6 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 		if( allOtherTablesUnfilled(candidate.getReferredTables()) ){
 			
 			// Raise the probability, to catch up ... tot - setTot \ tot
-			
 			
 			
 			return null;

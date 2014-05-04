@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import ch.qos.logback.classic.Logger;
 import utils.MyHashMapList;
 
 public class TupleTemplateImpl extends TupleTemplate{
@@ -23,6 +24,14 @@ public class TupleTemplateImpl extends TupleTemplate{
 		this.mTableName_Columns = mTableName_Columns;
 		this.belongsTo = belongsTo;
 		this.id = id;
+		
+		int first = 0;
+		
+		for( String tableName : mTableName_Columns.keyset() ){
+			if( first == 0 ) first = mTableName_Columns.get(tableName).size();
+
+			assert first == mTableName_Columns.get(tableName).size();
+		}
 	}
 	
 	public int belongsToTuple(){
@@ -57,9 +66,10 @@ public class TupleTemplateImpl extends TupleTemplate{
 	@Override 
 	public boolean equals(Object other) {
 		boolean result = false;
-		if( other == null || !(other instanceof TupleTemplateImpl) || 
-				!(other instanceof TupleTemplateDecorator)
-				) return false;
+		if( other == null ) return false;
+		if ( !(other instanceof TupleTemplateImpl) && !(other instanceof TupleTemplateDecorator) ){
+			return false;
+		}
 	
 		TupleTemplate that = (TupleTemplate) other;
 		result = (this.belongsToTuple() == that.belongsToTuple() && this.getID() == that.getID());

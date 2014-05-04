@@ -40,6 +40,12 @@ public class Tuple {
 		}
 	}
 	
+	Tuple(int id, String functName, List<TupleTemplate> tupleTemplates){
+		this.id = id;
+		this.functName = functName;
+		this.tupleTemplates = tupleTemplates;
+	}
+	
 	public String getFunctName(){
 		return functName;
 	}

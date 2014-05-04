@@ -6,9 +6,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 import basicDatatypes.Template;
 import connection.DBMSConnection;
@@ -31,6 +34,8 @@ public class TupleStore {
 	private MyHashMapList<String, Tuple> mTableName_Tuples; // tableName -> tuple_1, tuple_2, ..., tuple_n
 	private Map<Pair<Integer, Integer>, Float> mBufferized_DupRatios;
 	
+	private static Logger logger = Logger.getLogger(TupleStore.class.getCanonicalName());
+	
 	private TupleStore(MyHashMapList<String, String> tuplesHash) {
 		tuples = new ArrayList<Tuple>();
 		mId_Tuple = new HashMap<Integer, Tuple>();
@@ -45,10 +50,37 @@ public class TupleStore {
 			for( String csvProj : tuplesHash.get(functName) ){
 				List<String> temp = CSVPlayer.parseRow(csvProj, " ");
 				String tableName = temp.get(0);
+								
 				String tupleTemplate = temp.get(1) + temp.get(2);
+				
 				List<String> columns = temp.subList(3, temp.size());
-				mTable_Columns.putAll(tableName, columns);
-				mTupleTemplate_Tables.put(tupleTemplate, tableName);
+				
+				List<Integer> toRemove = new ArrayList<Integer>();
+								
+				// Duplicates check
+				for( int i = 0; i < columns.size(); ++i ){
+					for( int j = i+1; j < columns.size(); ++j ){
+						if( columns.get(i).equals(columns.get(j)) ){
+							toRemove.add(j);
+						}
+					}
+				}
+				
+				for( Integer index : toRemove ){
+					columns.remove(index);
+				}
+				
+				if(!mTable_Columns.containsKey(tableName)){
+					mTable_Columns.putAll(tableName, columns); // TODO At the moment I do not recognize different columns giving 
+					                                           //      birth to the same template
+				}
+				if(mTupleTemplate_Tables.containsKey(tupleTemplate)){
+					if( !mTupleTemplate_Tables.get(tupleTemplate).equals(tableName) )
+						mTupleTemplate_Tables.put(tupleTemplate, tableName);
+				}
+				else{
+					mTupleTemplate_Tables.put(tupleTemplate, tableName);
+				}
 			}
 			Tuple newT = new Tuple(++tupleCnt, functName, mTable_Columns, mTupleTemplate_Tables);
 			tuples.add(newT);
@@ -151,6 +183,10 @@ class DuplicateRatiosFinder{
 		// (select wlbName, wlbCoreNumber from wellbore_core) union all (select wlbName, wlbCoreNumber from wellbore_core);
 		// (select wlbName, wlbCoreNumber from wellbore_core) union (select wlbName, wlbCoreNumber from wellbore_core);
 		
+		if( ttD.getReferredTables().size() < 2 ) return 0; // TODO Anyways, I have a bug giving duplicate columns in the projection
+		                                                    //      evaluated in fillTemplate(), for table licence_task (funct npdv:name).
+		                                                    //      DEBUG
+		
 		DBMSConnection dbOriginal = TupleStoreFactory.getInstance().getDBMSConnection();
 		
 		// Find duplicates ratios
@@ -212,6 +248,7 @@ class DuplicateRatiosFinder{
 		for( String tableName : referredTables ){
 			StringBuilder builder = new StringBuilder();	
 			builder.append("SELECT ");
+			System.out.println(tt.toString());
 			builder.append(projList(tableName, tt));
 			builder.append(" FROM " + tableName);
 			
@@ -220,16 +257,23 @@ class DuplicateRatiosFinder{
 		}
 	}
 
-	private Object projList(String tableName, TupleTemplate tt) {
+	private String projList(String tableName, TupleTemplate tt) {
 		
 		StringBuilder builder = new StringBuilder();
 		List<String> colNames = tt.getColumnsInTable(tableName);
 		
+		List<String> dups = new ArrayList<String>();
+		
 		for( int i = 0; i < colNames.size(); ++i ){
+			
 			String colName = colNames.get(i);
+			
 			builder.append(colName);
 			if( i < colNames.size() - 1 ) builder.append(", ");
 		}
+		
+		System.out.println("PROJECTION LIST: " + builder.toString()); //TODO ReMOVE THIS
+		
 		return builder.toString();
 	}
 

@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import basicDatatypes.Template;
 import connection.DBMSConnection;
-import core.main.Main;
 
 /**
  * Singleton class
@@ -26,6 +25,8 @@ public class TuplesPicker {
 	private List<String> tableNames;
 	private static final String renamePostfix = "_1";
 	
+	private List<Integer> tabuIndexes;
+	
 	private static Logger logger = Logger.getLogger(TuplesPicker.class.getCanonicalName());
 	
 	private TuplesPicker(){
@@ -33,6 +34,7 @@ public class TuplesPicker {
 		pickIndex = 0;
 		lastTT = null;
 		tableNames = null;
+		tabuIndexes = null;
 	};
 	
 	static TuplesPicker getInstance(){
@@ -62,9 +64,6 @@ public class TuplesPicker {
 					tuple.add(rs.getString(i));
 				}
 			}
-			else{
-				assert false; // The setValidPickIndex HAS TO ensure the existence of rs.next()
-			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -78,6 +77,7 @@ public class TuplesPicker {
 		lastTT = tt;
 		tableNames = new ArrayList<String>(tt.getReferredTables());
 		pickFrom = new ArrayList<ResultSet>();
+		tabuIndexes = new ArrayList<Integer>();
 		for( int i = 0; i < tableNames.size(); ++ i ) pickFrom.add(null);
 	}
 	
@@ -85,10 +85,18 @@ public class TuplesPicker {
 	 * To be called each time I end filling a schema
 	 */
 	public void reset(){
+		for( ResultSet rs : pickFrom ){
+			try {
+				if( rs != null ) rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 		this.pickFrom.clear();
 		pickIndex = 0;
 		lastTT = null;
 		tableNames = null;
+		tabuIndexes = null;
 	}
 
 	private boolean needsInit(TupleTemplate tt) {
@@ -114,6 +122,14 @@ public class TuplesPicker {
 			}
 			int avoidInfLoop = 0;
 			while( pickFrom.get(pickIndex).isAfterLast() ){
+				if(!tabuIndexes.contains(pickIndex)){
+					if( createNewResultSet(dbToPump, curTable, tt) ){
+						break;  // The index is good
+					}
+					else{
+						tabuIndexes.add(pickIndex);
+					}
+				}
 				pickIndex = pickIndex + 1 % tableNames.size();
 				if( ++avoidInfLoop > tableNames.size() ) break;
 			}
@@ -125,7 +141,7 @@ public class TuplesPicker {
 		}
 	}
 
-	private void createNewResultSet(DBMSConnection dbToPump, String curTable, TupleTemplate tt) {
+	private boolean createNewResultSet(DBMSConnection dbToPump, String curTable, TupleTemplate tt) {
 		
 		String referredTable = tableNames.get(pickIndex);
 		
@@ -142,6 +158,16 @@ public class TuplesPicker {
 			e.printStackTrace();
 		}
 		pickFrom.set(pickIndex, rs);
+		
+		boolean result = false;
+		try {
+			result = !rs.isAfterLast();
+			logger.debug("isAfterLast????" + !result);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return result;
 	}
 	/**
 	 *   <i>table_a SetMinus table_b</i><br/>
@@ -162,7 +188,7 @@ public class TuplesPicker {
 	private String createTakeTuplesQueryString(String curTable,
 			String referredTable, TupleTemplate tt) {
 		
-		Template templ = new Template("SELECT ? FROM ? ? LEFT JOIN ? ? ON ? WHERE ? IS NULL");
+		Template templ = new Template("SELECT ? FROM ? ? LEFT JOIN ? ? ON ? WHERE ? IS NULL LIMIT 300000");
 		
 		templ.setNthPlaceholder(1, projectionList(referredTable, tt));
 		templ.setNthPlaceholder(2, referredTable);
