@@ -193,7 +193,10 @@ class DuplicateRatiosFinder{
 		
 		try {
 			ResultSet rs = stmt.executeQuery();
-			result = rs.getInt(1);
+			if( rs.next() ){
+				result = rs.getInt(1);
+			}
+			else throw new SQLException("The COUNT did not went smoothly");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -243,8 +246,9 @@ class DuplicateRatiosFinder{
 				builderSet.append(" union ");
 			}
 		}
-		builderDiff.append(")");
-		builderSet.append(")");
+		builderDiff.append(") alias");
+		builderSet.append(") alias");
+				
 		return new Pair<String, String>(builderDiff.toString(), builderSet.toString());
 	}
 	

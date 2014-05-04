@@ -47,6 +47,7 @@ public class TupleTemplateImpl extends TupleTemplate{
 	public String toString(){
 		StringBuilder builder = new StringBuilder();
 		
+		builder.append("Tuple: " + this.belongsTo.getFunctName() + "\n");
 		builder.append("Template: " + templatesString + "\n");
 		builder.append("Tables: " + mTableName_Columns.keyset().toString() + "\n");
 		

@@ -21,7 +21,9 @@
       <configuration>
         <archive>
           <manifest>
-            <mainClass>core.Main</mainClass>
+          <addClasspath>true</addClasspath>
+      	   <classpathPrefix>lib/</classpathPrefix>
+            <mainClass>core.main.Main</mainClass>
           </manifest>
         </archive>
         <descriptorRefs>
@@ -39,6 +41,20 @@
       </systemPropertyVariables>
     </configuration>
   </plugin>
+  <plugin>
+    <!-- Build an executable JAR -->
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <configuration>
+    <archive>
+      <manifest>
+      <addClasspath>true</addClasspath>
+      <classpathPrefix>lib/</classpathPrefix>
+          <mainClass>core.main.Main</mainClass>
+      </manifest>
+    </archive>
+     </configuration>
+    </plugin>
     </plugins>
   </build>
   <dependencies>

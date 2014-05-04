@@ -18,6 +18,11 @@ public abstract class ColumnPumper extends Column implements FreshValuesGenerato
 		dP = new DuplicatesPicker(this);
 		ignore = false;
 	}
+	
+	public boolean ignore(){
+		return ignore;
+	}
+	
 	/**
 	 * Do NOT fill this column
 	 */

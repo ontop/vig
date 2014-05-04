@@ -6,8 +6,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import basicDatatypes.Template;
 import connection.DBMSConnection;
+import core.main.Main;
 
 /**
  * Singleton class
@@ -22,6 +25,8 @@ public class TuplesPicker {
 	private TupleTemplate lastTT;
 	private List<String> tableNames;
 	private static final String renamePostfix = "_1";
+	
+	private static Logger logger = Logger.getLogger(TuplesPicker.class.getCanonicalName());
 	
 	private TuplesPicker(){
 		pickFrom = new ArrayList<ResultSet>();
@@ -107,12 +112,11 @@ public class TuplesPicker {
 				assert !tableNames.get(pickIndex).equals(curTable);
 				createNewResultSet(dbToPump, curTable, tt);
 			}
-			int avoidInfLoop = tableNames.size();
-			do{
+			int avoidInfLoop = 0;
+			while( pickFrom.get(pickIndex).isAfterLast() ){
 				pickIndex = pickIndex + 1 % tableNames.size();
 				if( ++avoidInfLoop > tableNames.size() ) break;
 			}
-			while( pickFrom.get(pickIndex).isAfterLast() );
 			
 			assert avoidInfLoop <= tableNames.size(); // No more available dups to insert ??!
 		
@@ -123,7 +127,9 @@ public class TuplesPicker {
 
 	private void createNewResultSet(DBMSConnection dbToPump, String curTable, TupleTemplate tt) {
 		
-		String referredTable = tableNames.get(pickIndex+1);
+		String referredTable = tableNames.get(pickIndex);
+		
+		logger.debug(tt);
 		
 		PreparedStatement stmt = 
 				dbToPump.getPreparedStatement(createTakeTuplesQueryString(curTable, referredTable, tt));
@@ -166,6 +172,8 @@ public class TuplesPicker {
 		templ.setNthPlaceholder(6, onCondition(curTable, referredTable, tt));
 		templ.setNthPlaceholder(7, lastInOnCondition(curTable, tt));
 		
+		logger.debug(templ.getFilled());
+		
 		return templ.getFilled();
 	}
 
@@ -207,10 +215,12 @@ public class TuplesPicker {
 			if( !(i == 0) ){
 				builder.append(" AND ");
 			}
-			builder.append(colsRef.get(i) + "." + rename(referredTable));
+			builder.append(rename(referredTable) + "." + colsCur.get(i));
 			builder.append("=");
-			builder.append(colsCur.get(i) + "." + rename(curTable));
+			builder.append( rename(curTable) + "." + colsCur.get(i) );
 		}
+		
+		logger.debug("ON CLAUSE: " + builder.toString());
 		
 		return builder.toString();
 	}
@@ -233,8 +243,10 @@ public class TuplesPicker {
 			if( !(builder.length() == 0) ){
 				builder.append(", ");
 			}
-			builder.append(referredTable + "." + col);
+			builder.append(rename(referredTable) + "." + col);
 		}
+		
+		logger.debug("PROJ:" + builder.toString());
 		
 		return builder.toString();
 	}

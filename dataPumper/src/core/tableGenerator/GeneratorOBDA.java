@@ -88,9 +88,14 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 			}
 			
 			for( ColumnPumper column : schema.getColumns() ){
+				if( column.ignore() ){ 
+					column.unsetIgnore(); 
+					continue; 
+				} // If the TuplesPicker already decided a value
+				                                                         // for the column
+				
 				boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
 						mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
-				column.unsetIgnore();
 				if( terminate ){
 					for( ColumnPumper cP : schema.getColumns() ){
 						cP.unsetIgnore();
@@ -179,12 +184,16 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 	}
 
 	private Map<String, String> tryToPickATuple(DBMSConnection dbConn, String tableName, TupleTemplateDecorator candidate) {
-		if( allOtherTablesUnfilled(candidate.getReferredTables()) ) return null;
 		
-		// TODO
-		// I will update the probability
-		// of picking a dup each time I miss the chance of putting one
-		// -- so, even when you fail picking a fresh tuple ...
+		if( allOtherTablesUnfilled(candidate.getReferredTables()) ){
+			
+			// Raise the probability, to catch up ... tot - setTot \ tot
+			
+			
+			
+			return null;
+		}
+		
 		
 		float toss = random.nextFloat();
 		

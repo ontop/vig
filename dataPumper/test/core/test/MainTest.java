@@ -29,11 +29,6 @@ public class MainTest {
 	private static String username = "test";
 	private static String password = "ontop2014";
 	
-//	private static String jdbcConnector1 = "jdbc:mysql";
-//	private static String databaseUrl1 = "10.7.20.39:3306/pumperNpd";
-//	private static String username1 = "test";
-//	private static String password1 = "ontop2014";
-	
 	private static String jdbcConnector1 = "jdbc:mysql";
 	private static String databaseUrl1 = "10.7.20.39:3306/pumperNpd";
 	private static String username1 = "test";
@@ -44,6 +39,18 @@ public class MainTest {
 	private static String usernameOriginal = "test";
 	private static String passwordOriginal = "ontop2014";
 	
+	private static String jdbcDbOriginalLocal = "jdbc:mysql";
+	private static String databaseUrlDbOriginalLocal = "localhost/provaNpdOriginal";
+	private static String usernameDbOriginalLocal = "tir";
+	private static String passwordDbOriginalLocal = "";
+
+	private static String jdbcDbLocal = "jdbc:mysql";
+	private static String databaseUrlDbLocal = "localhost/provaNpd";
+	private static String usernameDbLocal = "tir";
+	private static String passwordDbLocal = "";
+	
+	private static DBMSConnection dbOriginalLocal;
+	private static DBMSConnection dbLocal;
 	private static DBMSConnection db;
 	private static DBMSConnection db1;
 	private static DBMSConnection db1Original;
@@ -52,58 +59,61 @@ public class MainTest {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		PropertyConfigurator.configure("log4j.properties");
 		
-		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
+//		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
 		db1Original = new DBMSConnection(jdbcConnectorOriginal, databaseUrlOriginal, usernameOriginal, passwordOriginal);
+		dbLocal = new DBMSConnection(jdbcDbLocal, databaseUrlDbLocal, usernameDbLocal, passwordDbLocal);
+		dbOriginalLocal = new DBMSConnection(jdbcDbOriginalLocal, databaseUrlDbOriginalLocal, usernameDbOriginalLocal, passwordDbOriginalLocal);
 	}
 	
-	@Before
-	public void setUp(){
-		// INIT
-		db.setForeignCheckOff();
-		for( String sName : db.getAllTableNames() ){
-			
-			Template temp = new Template("delete from ?");
-			temp.setNthPlaceholder(1, sName);
-			
-			PreparedStatement init = db.getPreparedStatement(temp);
-			
-			try {
-				init.execute();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		db.setForeignCheckOn();
-		PropertyConfigurator.configure("log4j.properties");
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	
-		db.close();
-	}
-	
-	@After
-	public void tearDown(){
-		// INIT
-		db.setForeignCheckOff();
-		for( String sName : db.getAllTableNames() ){
-			
-			Template temp = new Template("delete from ?");
-			temp.setNthPlaceholder(1, sName);
-			
-			PreparedStatement init = db.getPreparedStatement(temp);
-			
-			try {
-				init.execute();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		db.setForeignCheckOn();	
-	}
+//	@Before
+//	public void setUp(){
+//		// INIT
+//		db.setForeignCheckOff();
+//		for( String sName : db.getAllTableNames() ){
+//			
+//			Template temp = new Template("delete from ?");
+//			temp.setNthPlaceholder(1, sName);
+//			
+//			PreparedStatement init = db.getPreparedStatement(temp);
+//			
+//			try {
+//				init.execute();
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		db.setForeignCheckOn();
+//		PropertyConfigurator.configure("log4j.properties");
+//	}
+//
+//	@AfterClass
+//	public static void tearDownAfterClass() throws Exception {
+//	
+//		db.close();
+//	}
+//	
+//	@After
+//	public void tearDown(){
+//		// INIT
+//		db.setForeignCheckOff();
+//		for( String sName : db.getAllTableNames() ){
+//			
+//			Template temp = new Template("delete from ?");
+//			temp.setNthPlaceholder(1, sName);
+//			
+//			PreparedStatement init = db.getPreparedStatement(temp);
+//			
+//			try {
+//				init.execute();
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		db.setForeignCheckOn();	
+//	}
 	
 //	@Test
 //	public void testPumpDatabase() {
@@ -178,6 +188,33 @@ public class MainTest {
 //		logger.info(Statistics.printStats());
 		db1.setUniqueCheckOn();
 		db1.setForeignCheckOn();
+	}
+	
+	@Test
+	public void testPumpNPDPercentageOBDAStyleLOCAL() {
+		DatabasePumper main = new DatabasePumperOBDA(dbOriginalLocal, dbLocal);		
+		
+		dbLocal.setForeignCheckOff();
+		dbLocal.setUniqueCheckOff();
+		
+		for( String tableName : dbLocal.getAllTableNames() ){
+			Schema s = dbLocal.getSchema(tableName);
+			for( ColumnPumper c : s.getColumns() ){
+				if( !c.referencesTo().isEmpty() ){
+					c.setMaximumChaseCycles(4);
+				}
+			}
+		}
+		
+		long start = System.currentTimeMillis();
+	
+		main.pumpDatabase((float)2);
+		long end = System.currentTimeMillis();
+
+		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
+//		logger.info(Statistics.printStats());
+		dbLocal.setUniqueCheckOn();
+		dbLocal.setForeignCheckOn();
 	}
 	
 	@Test
