@@ -59,6 +59,8 @@ public class TuplesPicker {
 		
 		setValidPickIndex(dbToPump, curTable, tt);
 		
+		if( !(pickIndex < pickFrom.size()) ) return null;
+		
 		// Now, according to the tuple cardinality, pick results from the resultSet
 		ResultSet rs = pickFrom.get(pickIndex);
 		assert rs != null;

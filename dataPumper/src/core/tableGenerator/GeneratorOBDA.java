@@ -386,9 +386,13 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 						}
 					}
 					if(forall){
+						System.err.println("FORALL!! NO PK TOUCHED");
 						if( max < tt.getReferredTables().size() ){
 							max = tt.getReferredTables().size(); maxTemplate = tt; 
 						} 
+					}
+					else{
+						System.err.println("NOT!!! TOUCH SOME!!!!!");
 					}
 				}
 			}
