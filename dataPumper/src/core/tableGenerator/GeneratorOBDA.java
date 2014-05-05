@@ -88,6 +88,9 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 			if( candidate != null ){
 				logger.debug("CANDIDATE N. OF REFERRED TABLES: ");
 				logger.debug(candidate.getReferredTables().size());
+				if(schema.getTableName().equals("wellbore_exploration_all")){
+					logger.debug("Debug!!");
+				}
 				
 				if( duplicatesTuplesToPick(dbmsConn, schema.getTableName(), nRows, candidate) ){
 					Map<String, String> m_ColName_Value = tryToPickATuple(dbmsConn, schema.getTableName(), candidate);
@@ -96,8 +99,10 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 						attachTuple(m_ColName_Value, stmt, schema);
 					}	
 					else{
+						logger.debug("Flushing Tuples");
 						if(!tuplesFlushed){
 							try{
+								tuplesFlushed = true;
 								stmt.executeBatch();	
 								dbmsConn.commit();
 							}catch(SQLException e){

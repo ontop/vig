@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import columnTypes.ColumnPumper;
 import basicDatatypes.Template;
 import connection.DBMSConnection;
 
@@ -120,33 +121,28 @@ public class TuplesPicker {
 	 */
 	private void setValidPickIndex(DBMSConnection dbToPump, String curTable, TupleTemplate tt) {
 		
-		try{
-			if( tableNames.get(pickIndex).equals(curTable) ) {
-				tabuIndexes.add(pickIndex);
-				pickIndex = pickIndex + 1 % tableNames.size();
-			}	
-			if( pickFrom.get(pickIndex) == null ){ 
-				assert !tableNames.get(pickIndex).equals(curTable);
-				createNewResultSet(dbToPump, curTable, tt);
-			}
-			int avoidInfLoop = 0;
-			while( pickFrom.get(pickIndex).isAfterLast() ){
-				if(!tabuIndexes.contains(pickIndex)){
-					if( createNewResultSet(dbToPump, curTable, tt) ){
-						break;  // The index is good
-					}
-					else{
-						tabuIndexes.add(pickIndex);
-					}
-				}
-				pickIndex = pickIndex + 1 % tableNames.size();
-				if( ++avoidInfLoop > tableNames.size() ) break;
-			}
-			
-			assert avoidInfLoop <= tableNames.size(); // No more available dups to insert ??!
+		if( !(pickIndex < pickFrom.size()) ) return;
 		
+		try{
+			if( pickFrom.get(pickIndex) != null && !pickFrom.get(pickIndex).isAfterLast()){
+				// You can pick from here
+				return;
+			}
 		}catch(SQLException e){
 			e.printStackTrace();
+		}
+		
+		if( pickFrom.get(pickIndex) == null ){
+			if( createNewResultSet(dbToPump, curTable, tt) )
+				setValidPickIndex(dbToPump, curTable, tt);
+			else{
+				++pickIndex;
+				setValidPickIndex(dbToPump, curTable, tt);
+			}
+		}
+		else{
+			++pickIndex;
+			setValidPickIndex(dbToPump, curTable, tt);
 		}
 	}
 
@@ -154,10 +150,12 @@ public class TuplesPicker {
 		
 		String referredTable = tableNames.get(pickIndex);
 		
+		if( referredTable.equals(curTable) ) return false;
+		
 		logger.debug(tt);
 		
 		PreparedStatement stmt = 
-				dbToPump.getPreparedStatement(createTakeTuplesQueryString(curTable, referredTable, tt));
+				dbToPump.getPreparedStatement(createTakeTuplesQueryString(dbToPump, curTable, referredTable, tt));
 		
 		ResultSet rs = null;
 		
@@ -194,7 +192,7 @@ public class TuplesPicker {
 	 * @param referredTable
 	 * @param tt
 	 */
-	private String createTakeTuplesQueryString(String curTable,
+	private String createTakeTuplesQueryString(DBMSConnection dbToPump, String curTable,
 			String referredTable, TupleTemplate tt) {
 		
 		Template templ = new Template("SELECT ? FROM ? ? LEFT JOIN ? ? ON ? WHERE ? IS NULL LIMIT 300000");
@@ -204,7 +202,7 @@ public class TuplesPicker {
 		templ.setNthPlaceholder(3, rename(referredTable));
 		templ.setNthPlaceholder(4, curTable);
 		templ.setNthPlaceholder(5, rename(curTable));
-		templ.setNthPlaceholder(6, onCondition(curTable, referredTable, tt));
+		templ.setNthPlaceholder(6, onCondition(dbToPump, curTable, referredTable, tt));
 		templ.setNthPlaceholder(7, lastInOnCondition(curTable, tt));
 		
 		logger.debug(templ.getFilled());
@@ -231,12 +229,13 @@ public class TuplesPicker {
 
 	/**
 	 * ON refRn.x = curRn.x AND refRn.y = curRn.y
+	 * @param dbToPump 
 	 * @param curTable
 	 * @param referredTable
 	 * @param tt
 	 * @return
 	 */
-	private String onCondition(String curTable, String referredTable,
+	private String onCondition(DBMSConnection dbToPump, String curTable, String referredTable,
 			TupleTemplate tt) {
 		
 		List<String> colsCur = tt.getColumnsInTable(curTable);
@@ -244,9 +243,16 @@ public class TuplesPicker {
 		
 		assert colsCur.size() == colsRef.size();
 		
+		List<String> pkNames = new ArrayList<String>();
+		// If the tuple strictly subsumes a pk, then the join ON clause 
+		// has to involve columns in that pk ONLY
+		for( ColumnPumper cP : dbToPump.getSchema(curTable).getPk() ){
+			pkNames.add(cP.getName());
+		}
+				
 		StringBuilder builder = new StringBuilder();
 		
-		for( int i = 0; i < colsCur.size(); ++i ){
+		for( int i = 0; i < pkNames.size(); ++i ){
 			if( !(i == 0) ){
 				builder.append(" AND ");
 			}
