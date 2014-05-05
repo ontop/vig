@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -179,6 +178,8 @@ public class TupleStore {
 
 class DuplicateRatiosFinder{
 	
+	private static Logger logger = Logger.getLogger(DuplicateRatiosFinder.class.getCanonicalName());
+	
 	private float findDuplicateRatio(TupleTemplateDecorator ttD){
 		// (select wlbName, wlbCoreNumber from wellbore_core) union all (select wlbName, wlbCoreNumber from wellbore_core);
 		// (select wlbName, wlbCoreNumber from wellbore_core) union (select wlbName, wlbCoreNumber from wellbore_core);
@@ -209,7 +210,9 @@ class DuplicateRatiosFinder{
 		float dupRatio = (float)(numDiff - numUnion) / (float)numDiff;
 		
 		closeStatements(stmtDiff, stmtUnion);
-	
+		
+		logger.debug("THE DUP RATIO IS" + dupRatio);
+		
 		return dupRatio; 
 	}
 	

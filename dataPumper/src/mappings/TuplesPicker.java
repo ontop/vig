@@ -56,10 +56,11 @@ public class TuplesPicker {
 		ResultSet rs = pickFrom.get(pickIndex);
 		assert rs != null;
 		
-		List<String> tuple = new ArrayList<String>();
+		List<String> tuple = null;
 		
 		try {
 			if( rs.next() ){
+				tuple = new ArrayList<String>();
 				for( int i = 1; i <= tt.getColumnsInTable(curTable).size(); ++i ){
 					tuple.add(rs.getString(i));
 				}

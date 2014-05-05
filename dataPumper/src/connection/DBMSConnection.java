@@ -158,7 +158,7 @@ public class DBMSConnection {
 	 */
 	public String createInsertTemplate(Schema s){
 		StringBuilder insertQuery = new StringBuilder();
-		insertQuery.append("INSERT IGNORE into "+s.getTableName()+" ("); // TODO Note: I use IGNORE because, from tests, I know that 
+		insertQuery.append("INSERT into "+s.getTableName()+" ("); // TODO Note: I use IGNORE because, from tests, I know that 
 		                                                                 //      primary key duplication is extremely rare --some hard bug
 		int i = 0;
 		
