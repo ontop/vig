@@ -62,8 +62,12 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 			}
 		}
 		
-		// TODO Something about the tuples ...
+		// Something about the tuples ...
 		TupleTemplateDecorator candidate = searchForCandidate(schema.getTableName());
+		
+		// Count how many dups need to be inserted
+		if(candidate != null)
+			cntNumDupTuplesToInsert(nRows, this.dbmsConn, schema.getTableName(), candidate);
 		
 		// templateInsert to be called AFTER the ratios initialization
 		// because of the reordering of the columns
@@ -74,7 +78,7 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 
 		// Disable auto-commit
 		dbmsConn.setAutoCommit(false);
-		
+		boolean tuplesFlushed = false;
 		for( int j = 1; j <= nRows; ++j ){
 
 			/** Keeps track of the DUPLICATE values chosen ---for the current row---
@@ -85,8 +89,24 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 				logger.debug("CANDIDATE N. OF REFERRED TABLES: ");
 				logger.debug(candidate.getReferredTables().size());
 				
-				Map<String, String> m_ColName_Value = tryToPickATuple(dbmsConn, schema.getTableName(), candidate); //TODO Test
-				attachTuple(m_ColName_Value, stmt, schema);
+				if( duplicatesTuplesToPick(dbmsConn, schema.getTableName(), nRows, candidate) ){
+					Map<String, String> m_ColName_Value = tryToPickATuple(dbmsConn, schema.getTableName(), candidate);
+					if( m_ColName_Value != null ){ 
+						decreaseNumTuplesToInsert(candidate);
+						attachTuple(m_ColName_Value, stmt, schema);
+					}	
+					else{
+						if(!tuplesFlushed){
+							try{
+								stmt.executeBatch();	
+								dbmsConn.commit();
+							}catch(SQLException e){
+								e.printStackTrace();
+							}
+							initUncommittedFresh(schema, uncommittedFresh);	
+						}
+					}
+				}
 			}
 			
 			for( ColumnPumper column : schema.getColumns() ){
@@ -94,7 +114,7 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 					column.unsetIgnore(); 
 					continue; 
 				} // If the TuplesPicker already decided a value
-				                                                         // for the column
+				  // for the column
 				
 				boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
 						mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
@@ -153,6 +173,36 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 		return tablesToChase; 
 	}
 	
+	private void decreaseNumTuplesToInsert(TupleTemplateDecorator candidate) {
+		candidate.decreaseToInsert();
+	}
+
+	private void cntNumDupTuplesToInsert(int nRows, DBMSConnection dbmsConn,
+			String tableName, TupleTemplateDecorator candidate) {
+		
+		candidate.addToInsert(((int)Math.ceil(nRows * candidate.getDupR())));		
+	}
+
+	private boolean duplicatesTuplesToPick(DBMSConnection dbmsConn,
+			String tableName, int nRows, TupleTemplateDecorator candidate) {
+		
+		if( allOtherTablesUnfilled(candidate.getReferredTables()) ){
+			return false;
+		}
+		
+		if( candidate.leftToInsert() > 0 ){
+			return true;
+		}
+		else return false;
+	}
+
+	/**
+	 * TOO SLOW.
+	 * @param m_ColName_Value
+	 * @param schema
+	 * @return
+	 */
+	@Deprecated 
 	private boolean isDupTuple(Map<String, String> m_ColName_Value, Schema schema) {
 		
 		StringBuilder builder = new StringBuilder();
@@ -216,6 +266,8 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 	private void attachTuple(Map<String, String> m_ColName_Value,
 			PreparedStatement stmt, Schema schema) {
 		
+		
+		
 		if( m_ColName_Value == null ) return;
 		
 		try{
@@ -223,6 +275,9 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 			for( String colName : m_ColName_Value.keySet() ){
 				ColumnPumper cP = schema.getColumn(colName);
 				int index = cP.getIndex();
+				
+				// TODO TEST Update last inserted
+				cP.proposeLastFreshInserted(m_ColName_Value.get(colName));
 				
 				// Fill stmt
 				stmt.setString(index, m_ColName_Value.get(colName));
@@ -239,20 +294,10 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 
 	private Map<String, String> tryToPickATuple(DBMSConnection dbConn, String tableName, TupleTemplateDecorator candidate) {
 		
-		if( allOtherTablesUnfilled(candidate.getReferredTables()) ){
-			// Raise the probability, to catch up ... tot - setTot \ tot
-			return null;
-		}
-		
-		
-		float toss = random.nextFloat();
-		
 		List<String> tuple = null;
 		
-		if( candidate.getDupR() > toss ){
-			TuplesPicker tP = TupleStoreFactory.getInstance().getTuplesPickerInstance();
-			tuple = tP.pickTuple(dbConn, tableName, candidate);
-		}
+		TuplesPicker tP = TupleStoreFactory.getInstance().getTuplesPickerInstance();
+		tuple = tP.pickTuple(dbConn, tableName, candidate);
 		
 		if( tuple == null ) return null;
 		
@@ -305,13 +350,23 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 				if(!tt.getReferredTables().contains(tableName)) continue;
 				if(tt.getReferredTables().size() < 2) continue; // TODO Well, if we want to extend in one future
 				
+				// Check against Geometrics
+				// TODO Fully support geometrics
+				boolean geometricFound = false;
+				for( String columnName : tt.getColumnsInTable(tableName) ){
+					ColumnPumper cP = this.dbmsConn.getSchema(tableName).getColumn(columnName);
+					if( cP.isGeometric() )
+						geometricFound = true;
+				}
+				
+				if( geometricFound ) continue;
+				
 				// Check if the columns subsume the pk
 				List<ColumnPumper> pk = this.dbmsConn.getSchema(tableName).getPk();
 				Set<String> names = new HashSet<String>();
 				for( ColumnPumper cP : pk ){
 					if( !names.contains(cP.getName())) names.add( cP.getName() );
 				}
-				
 				if( tt.getColumnsInTable(tableName).containsAll(names) ){					
 					if( max < tt.getReferredTables().size() ){
 						max = tt.getReferredTables().size(); maxTemplate = tt; 

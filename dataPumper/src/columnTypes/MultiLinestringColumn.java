@@ -144,4 +144,10 @@ public class MultiLinestringColumn extends IncrementableColumn<MultiLinestring>{
 		return cP.pickChase(db, schema);
 	}
 
+	@Override
+	public void proposeLastFreshInserted(String inserted) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

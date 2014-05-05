@@ -164,4 +164,10 @@ public class MultiPolygonColumn extends IncrementableColumn<MultiPolygon>{
 		return chased;
 	}
 
+	@Override
+	public void proposeLastFreshInserted(String inserted) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

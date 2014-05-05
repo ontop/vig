@@ -128,4 +128,12 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 		
 		return result;
 	}
+
+	@Override
+	public void proposeLastFreshInserted(String inserted) {
+		Timestamp chased = new Timestamp(Long.parseLong(inserted));
+		
+		if( chased.compareTo(lastFreshInserted) > 0 )
+			lastFreshInserted = chased;
+	}
 };

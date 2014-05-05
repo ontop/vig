@@ -42,7 +42,6 @@ public abstract class GeneratorColumnBased extends Generator {
 			Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks,
 			List<String> freshDuplicates, List<Schema> tablesToChase) {
 		
-		
 		String toInsert = null;
 		float dupOrNullToss = random.nextFloat();
 		
@@ -61,6 +60,18 @@ public abstract class GeneratorColumnBased extends Generator {
 					mFreshDuplicatesToDuplicatePks, freshDuplicates, stmt, uncommittedFresh, tablesToChase);	
 		}
 		else if( column.getNullRatio() > (dupOrNullToss - column.getDuplicateRatio()) ){
+			// TODO Remove this expensive check
+			List<String> names = new ArrayList<String>();
+			for( int i = 0; i < schema.getPk().size(); ++i ){
+				names.add(schema.getPk().get(i).getName());
+			}
+			if( names.contains(column.getName()) ){ 
+				try{
+					throw new Exception("Trying to insert a null in a primary key field");
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
 			putNull(schema, column, stmt);
 		}
 		else if( ( 0.8 > random.nextFloat() ) && 

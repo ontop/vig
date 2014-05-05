@@ -148,5 +148,11 @@ public class StringColumn extends IncrementableColumn<String> {
 		
 		return builder.toString();
 	}
+
+	@Override
+	public void proposeLastFreshInserted(String inserted) {
+		if( inserted.compareTo(lastFreshInserted) > 0 )
+			lastFreshInserted = inserted;		
+	}
 	
 }

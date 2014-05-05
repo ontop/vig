@@ -154,4 +154,17 @@ public class IntColumn extends IncrementableColumn<Long> {
 		
 		return result;
 	}
+
+	@Override
+	public void proposeLastFreshInserted(String inserted) {
+		
+		String inserted1 = inserted;
+		
+		inserted1 = inserted.substring(0, inserted.indexOf("."));
+			
+		long resultI = Long.parseLong(inserted1);
+		
+		if( resultI > lastFreshInserted )
+			lastFreshInserted = resultI;
+	}
 }

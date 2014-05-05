@@ -19,6 +19,8 @@ public abstract class ColumnPumper extends Column implements FreshValuesGenerato
 		ignore = false;
 	}
 	
+	public abstract void proposeLastFreshInserted(String inserted);
+	
 	public boolean ignore(){
 		return ignore;
 	}

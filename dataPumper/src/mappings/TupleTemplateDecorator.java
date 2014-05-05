@@ -14,12 +14,14 @@ import java.util.Set;
 public class TupleTemplateDecorator extends TupleTemplate{
 	private Map<String, Float> mTableName_inDupR;
 	private float dupR;
+	private int numToInsert;
 	
 	private final TupleTemplate decorated;
 	
 	TupleTemplateDecorator(TupleTemplate tt){
 		decorated = tt;
 		mTableName_inDupR = new HashMap<String, Float>();
+		numToInsert = 0;
 	}
 	
 	/**
@@ -48,6 +50,20 @@ public class TupleTemplateDecorator extends TupleTemplate{
 	 */
 	public float getDupR() {
 		return dupR;
+	}
+
+	public void addToInsert(int increment) {
+		numToInsert += increment;
+		TupleStoreFactory.getInstance().getTupleStoreInstance().bufferizeNToInsert(this, numToInsert);
+	}
+
+	public int leftToInsert() {
+		return numToInsert;
+	}
+	
+	public void decreaseToInsert(){
+		--numToInsert;
+		TupleStoreFactory.getInstance().getTupleStoreInstance().bufferizeNToInsert(this, numToInsert);
 	}
 
 	public void setDupR(float dupR) {
@@ -93,4 +109,6 @@ public class TupleTemplateDecorator extends TupleTemplate{
 	public int hashCode() {
 		return decorated.hashCode();
 	}
+
+
 }

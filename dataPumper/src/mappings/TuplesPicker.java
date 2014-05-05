@@ -4,7 +4,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -25,6 +27,8 @@ public class TuplesPicker {
 	private List<String> tableNames;
 	private static final String renamePostfix = "_1";
 	
+	private Map<String, Integer> missedInserts; 
+	
 	private List<Integer> tabuIndexes;
 	
 	private static Logger logger = Logger.getLogger(TuplesPicker.class.getCanonicalName());
@@ -35,6 +39,7 @@ public class TuplesPicker {
 		lastTT = null;
 		tableNames = null;
 		tabuIndexes = null;
+		missedInserts = new HashMap<String, Integer>();
 	};
 	
 	static TuplesPicker getInstance(){
@@ -47,6 +52,7 @@ public class TuplesPicker {
 	public List<String> pickTuple(DBMSConnection dbToPump, String curTable, TupleTemplate tt){
 		
 		if( this.needsInit(tt) ){
+			
 			this.init(tt);
 		}
 		
@@ -62,6 +68,7 @@ public class TuplesPicker {
 			if( rs.next() ){
 				tuple = new ArrayList<String>();
 				for( int i = 1; i <= tt.getColumnsInTable(curTable).size(); ++i ){
+					if( rs.getString(i) == null ) return null;
 					tuple.add(rs.getString(i));
 				}
 			}
@@ -73,7 +80,7 @@ public class TuplesPicker {
 		//      Because, otherwise, this tuple might be duplicate
 		return tuple;
 	}
-	
+
 	private void init(TupleTemplate tt) {
 		lastTT = tt;
 		tableNames = new ArrayList<String>(tt.getReferredTables());
@@ -115,6 +122,7 @@ public class TuplesPicker {
 		
 		try{
 			if( tableNames.get(pickIndex).equals(curTable) ) {
+				tabuIndexes.add(pickIndex);
 				pickIndex = pickIndex + 1 % tableNames.size();
 			}	
 			if( pickFrom.get(pickIndex) == null ){ 
@@ -276,6 +284,11 @@ public class TuplesPicker {
 		logger.debug("PROJ:" + builder.toString());
 		
 		return builder.toString();
+	}
+
+	public void setMissedInserts(TupleTemplateDecorator candidate, int nMissed) {
+		TupleStore tS = TupleStoreFactory.getInstance().getTupleStoreInstance();
+		missedInserts.put(tS.getTupleOfID(candidate.belongsToTuple()) + "_" + candidate.getTemplatesString(), nMissed);
 	}
 	
 };

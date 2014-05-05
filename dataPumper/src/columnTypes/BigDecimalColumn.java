@@ -106,4 +106,12 @@ public class BigDecimalColumn extends IncrementableColumn<BigDecimal>{
 		
 		return result;
 	}
+
+	@Override
+	public void proposeLastFreshInserted(String inserted) {
+		BigDecimal resultBD = new BigDecimal(inserted);
+		if( resultBD.compareTo(lastFreshInserted) > 0 ){
+			lastFreshInserted = resultBD;
+		}
+	}
 }

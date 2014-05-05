@@ -144,4 +144,10 @@ public class PolygonColumn extends IncrementableColumn<Polygon>{
 	public String getNextChased(DBMSConnection db, Schema schema) {
 		return cP.pickChase(db, schema);
 	}
+
+	@Override
+	public void proposeLastFreshInserted(String inserted) {
+		// TODO Auto-generated method stub
+		
+	}
 }

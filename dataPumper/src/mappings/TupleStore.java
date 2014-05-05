@@ -32,6 +32,7 @@ public class TupleStore {
 	private Map<Integer, Tuple> mId_Tuple; // id -> tuple
 	private MyHashMapList<String, Tuple> mTableName_Tuples; // tableName -> tuple_1, tuple_2, ..., tuple_n
 	private Map<Pair<Integer, Integer>, Float> mBufferized_DupRatios;
+	private Map<Pair<Integer, Integer>, Integer> mBufferized_nToInsert;
 	
 	private static Logger logger = Logger.getLogger(TupleStore.class.getCanonicalName());
 	
@@ -40,6 +41,7 @@ public class TupleStore {
 		mId_Tuple = new HashMap<Integer, Tuple>();
 		mTableName_Tuples = new MyHashMapList<String, Tuple>();
 		mBufferized_DupRatios = new HashMap<Pair<Integer,Integer>, Float>();
+		mBufferized_nToInsert = new HashMap<Pair<Integer,Integer>, Integer>();
 		
 		for( String functName : tuplesHash.keyset() ){
 			MyHashMapList<String, String> mTable_Columns = new MyHashMapList<String, String>();
@@ -129,6 +131,7 @@ public class TupleStore {
 		
 		if( isDupRatioBufferized(ttD) ){
 			ttD.setDupR(getBufferizedDupRatio(ttD));
+			ttD.addToInsert(getBufferizedNToInsert(ttD));
 		}
 		else{
 			DuplicateRatiosFinder dF = new DuplicateRatiosFinder();
@@ -146,6 +149,24 @@ public class TupleStore {
 		Pair<Integer, Integer> key = new Pair<Integer, Integer>(tupleID, ttID);
 		
 		mBufferized_DupRatios.put(key, ttD.getDupR());
+	}
+	
+	public void bufferizeNToInsert(TupleTemplateDecorator ttD, int nToInsert){
+		int tupleID = ttD.belongsToTuple();
+		int ttID = ttD.getID();
+		
+		Pair<Integer,Integer> key = new Pair<Integer, Integer>(tupleID, ttID);
+		
+		mBufferized_nToInsert.put(key, nToInsert);
+	}
+	
+	private int getBufferizedNToInsert(TupleTemplateDecorator ttD){
+		int tupleID = ttD.belongsToTuple();
+		int ttID = ttD.getID();
+		
+		Pair<Integer,Integer> key = new Pair<Integer, Integer>(tupleID, ttID);
+		
+		return mBufferized_nToInsert.get(key);
 	}
 
 	private float getBufferizedDupRatio(TupleTemplateDecorator ttD){
@@ -264,8 +285,6 @@ class DuplicateRatiosFinder{
 		
 		StringBuilder builder = new StringBuilder();
 		List<String> colNames = tt.getColumnsInTable(tableName);
-		
-		List<String> dups = new ArrayList<String>();
 		
 		for( int i = 0; i < colNames.size(); ++i ){
 			
