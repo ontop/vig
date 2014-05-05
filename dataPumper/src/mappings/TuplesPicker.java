@@ -30,7 +30,6 @@ public class TuplesPicker {
 	
 	private Map<String, Integer> missedInserts; 
 	
-	private List<Integer> tabuIndexes;
 	
 	private static Logger logger = Logger.getLogger(TuplesPicker.class.getCanonicalName());
 	
@@ -39,7 +38,6 @@ public class TuplesPicker {
 		pickIndex = 0;
 		lastTT = null;
 		tableNames = null;
-		tabuIndexes = null;
 		missedInserts = new HashMap<String, Integer>();
 	};
 	
@@ -88,7 +86,6 @@ public class TuplesPicker {
 		lastTT = tt;
 		tableNames = new ArrayList<String>(tt.getReferredTables());
 		pickFrom = new ArrayList<ResultSet>();
-		tabuIndexes = new ArrayList<Integer>();
 		for( int i = 0; i < tableNames.size(); ++ i ) pickFrom.add(null);
 	}
 	
@@ -107,7 +104,6 @@ public class TuplesPicker {
 		pickIndex = 0;
 		lastTT = null;
 		tableNames = null;
-		tabuIndexes = null;
 	}
 
 	private boolean needsInit(TupleTemplate tt) {

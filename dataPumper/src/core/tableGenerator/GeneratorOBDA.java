@@ -36,11 +36,11 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 		mNumDupsRepetition = new HashMap<String, Integer>();
 		maxNumDupsRepetition = 0;
 
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.DEBUG);
 	}
 	
 	public List<Schema> pumpTable(int nRows, Schema schema){
-				
+		
 		PreparedStatement stmt = null;
 		List<Schema> tablesToChase = new LinkedList<Schema>(); // Return value
 		
@@ -65,6 +65,8 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 		// Something about the tuples ...
 		TupleTemplateDecorator candidate = searchForCandidate(schema.getTableName());
 		
+		if( schema.isFilled() ) candidate = null;
+		
 		// Count how many dups need to be inserted
 		if(candidate != null)
 			cntNumDupTuplesToInsert(nRows, this.dbmsConn, schema.getTableName(), candidate);
@@ -86,11 +88,6 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 			List<String> primaryDuplicateValues = new ArrayList<String>();
 			
 			if( candidate != null ){
-				logger.debug("CANDIDATE N. OF REFERRED TABLES: ");
-				logger.debug(candidate.getReferredTables().size());
-				if(schema.getTableName().equals("wellbore_exploration_all")){
-					logger.debug("Debug!!");
-				}
 				
 				if( duplicatesTuplesToPick(dbmsConn, schema.getTableName(), nRows, candidate) ){
 					Map<String, String> m_ColName_Value = tryToPickATuple(dbmsConn, schema.getTableName(), candidate);

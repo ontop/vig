@@ -222,6 +222,9 @@ class DuplicateRatiosFinder{
 		fillTemplate(tDiff, ttD);
 		fillTemplate(tUnion, ttD);
 		
+		logger.debug("tDiff: "+tDiff.getFilled());
+		logger.debug("tUnion: "+tUnion.getFilled());
+		
 		PreparedStatement stmtDiff = dbOriginal.getPreparedStatement(tDiff);
 		int numDiff = countNumResults(stmtDiff);
 		
@@ -265,17 +268,15 @@ class DuplicateRatiosFinder{
 
 	private void fillTemplate(Template template, TupleTemplate tt) {
 		
-		
 		Set<String> referredTables = tt.getReferredTables();
 		
 		int i = 1;
 		for( String tableName : referredTables ){
 			StringBuilder builder = new StringBuilder();	
 			builder.append("SELECT ");
-			System.out.println(tt.toString());
 			builder.append(projList(tableName, tt));
 			builder.append(" FROM " + tableName);
-			
+						
 			template.setNthPlaceholder(i, builder.toString());
 			++i;
 		}
@@ -293,9 +294,7 @@ class DuplicateRatiosFinder{
 			builder.append(colName);
 			if( i < colNames.size() - 1 ) builder.append(", ");
 		}
-		
-		System.out.println("PROJECTION LIST: " + builder.toString()); //TODO ReMOVE THIS
-		
+				
 		return builder.toString();
 	}
 

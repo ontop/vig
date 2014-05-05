@@ -110,7 +110,7 @@ public abstract class GeneratorColumnBased extends Generator {
 		String generatedRandom = column.getNextFreshValue();
 								
 		if( generatedRandom == null ) logger.error("NULL fresh"); 
-		logger.debug("Adding Fresh");
+//		logger.debug("Adding Fresh");
 		dbmsConn.setter(stmt, column.getIndex(), column.getType(), generatedRandom);
 		
 		if( column.isPrimary() && column.referencedBy().size() > 0){ // Chased values might be duplicate
@@ -304,7 +304,7 @@ public abstract class GeneratorColumnBased extends Generator {
 		
 		String toInsert = null;
 		
-		logger.debug("Put a duplicate into "+schema.getTableName() + "." + column.getName());
+//		logger.debug("Put a duplicate into "+schema.getTableName() + "." + column.getName());
 		
 		// If, in all columns but one of the primary key I've put duplicates, 
 		// pay attention to how you pick the last column. You might generate
@@ -370,7 +370,7 @@ public abstract class GeneratorColumnBased extends Generator {
 			
 			Statistics.addTime("Time_spent_picking_a_problematic_duplicate_for_a_primary_key", end - start);
 		}else{
-			logger.debug("Adding a duplicate for "+ (new QualifiedName(schema.getTableName(), column.getName())).toString());
+//			logger.debug("Adding a duplicate for "+ (new QualifiedName(schema.getTableName(), column.getName())).toString());
 			Statistics.addInt(schema.getTableName()+"."+column.getName()+" Adding a duplicate from initial database values", 1);
 			
 			String nextDuplicate = pickNextDupFromOldValues(schema, column);
