@@ -376,6 +376,20 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 					if( max < tt.getReferredTables().size() ){
 						max = tt.getReferredTables().size(); maxTemplate = tt; 
 					}  
+				}else{
+					// If NO pk is touched at all
+					boolean forall = true;
+					for( String col : tt.getColumnsInTable(tableName) ){
+						if( names.contains(col) ){
+							forall = false;
+							break;
+						}
+					}
+					if(forall){
+						if( max < tt.getReferredTables().size() ){
+							max = tt.getReferredTables().size(); maxTemplate = tt; 
+						} 
+					}
 				}
 			}
 		}

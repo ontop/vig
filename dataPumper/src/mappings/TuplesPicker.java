@@ -244,21 +244,34 @@ public class TuplesPicker {
 		assert colsCur.size() == colsRef.size();
 		
 		List<String> pkNames = new ArrayList<String>();
+		
 		// If the tuple strictly subsumes a pk, then the join ON clause 
 		// has to involve columns in that pk ONLY
 		for( ColumnPumper cP : dbToPump.getSchema(curTable).getPk() ){
 			pkNames.add(cP.getName());
 		}
-				
-		StringBuilder builder = new StringBuilder();
 		
-		for( int i = 0; i < pkNames.size(); ++i ){
-			if( !(i == 0) ){
-				builder.append(" AND ");
+		StringBuilder builder = new StringBuilder();
+		if( colsCur.containsAll(pkNames) ){
+			
+			for( int i = 0; i < pkNames.size(); ++i ){
+				if( !(i == 0) ){
+					builder.append(" AND ");
+				}
+				builder.append(rename(referredTable) + "." + pkNames.get(i));
+				builder.append("=");
+				builder.append( rename(curTable) + "." + pkNames.get(i) );
 			}
-			builder.append(rename(referredTable) + "." + colsCur.get(i));
-			builder.append("=");
-			builder.append( rename(curTable) + "." + colsCur.get(i) );
+		}
+		else{
+			for( int i = 0; i < colsCur.size(); ++i ){
+				if( !(i == 0) ){
+					builder.append(" AND ");
+				}
+				builder.append(rename(referredTable) + "." + colsCur.get(i));
+				builder.append("=");
+				builder.append( rename(curTable) + "." + colsCur.get(i) );
+			}
 		}
 		
 		logger.debug("ON CLAUSE: " + builder.toString());
