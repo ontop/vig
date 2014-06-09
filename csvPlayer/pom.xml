@@ -16,4 +16,10 @@
       </plugin>
     </plugins>
   </build>
+  <parent>
+  	<groupId>it.unibz.inf.vig</groupId>
+  	<artifactId>vig</artifactId>
+  	<version>0.1.0-SNAPSHOT</version>
+  	<relativePath>../</relativePath>
+  </parent>
 </project>
