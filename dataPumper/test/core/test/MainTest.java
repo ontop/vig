@@ -228,7 +228,7 @@ public class MainTest {
 			Schema s = db1.getSchema(tableName);
 			for( ColumnPumper c : s.getColumns() ){
 				if( !c.referencesTo().isEmpty() ){
-					c.setMaximumChaseCycles(4);
+					c.setMaximumChaseCycles(1);
 				}
 			}
 		}

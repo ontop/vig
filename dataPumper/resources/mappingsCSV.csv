@@ -37,7 +37,6 @@ http://sws.ifi.uio.no/vocab/npd-v2#utmZone wellbore_development_all http://sws.i
 http://sws.ifi.uio.no/vocab/npd-v2#utmZone wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#integer() wlbNpdidWellbore wlbUtmZone
 http://sws.ifi.uio.no/vocab/npd-v2#utmZone wellbore_coordinates http://sws.ifi.uio.no/data/npd-v2/wellbore/{}/point http://www.w3.org/2001/XMLSchema#integer() wlbNpdidWellbore wlbUtmZone
 http://sws.ifi.uio.no/vocab/npd-v2#utmZone wellbore_shallow_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#integer() wlbNpdidWellbore wlbUtmZone
-http://sws.ifi.uio.no/vocab/npd-v2#resourcesIncludedInDiscovery dscArea http://sws.ifi.uio.no/data/npd-v2/discovery/{}/area/hctype/{} http://sws.ifi.uio.no/data/npd-v2/discovery/{} dscNpdidDiscovery dscNpdidResInclInDiscovery dscHcType
 http://sws.ifi.uio.no/vocab/npd-v2#wellborePlannedPurpose wellbore_development_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#string() wlbNpdidWellbore wlbPurposePlanned
 http://sws.ifi.uio.no/vocab/npd-v2#wellborePlannedPurpose wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#string() wlbNpdidWellbore wlbPurposePlanned
 http://sws.ifi.uio.no/vocab/npd-v2#documentFormat wellbore_document http://sws.ifi.uio.no/data/npd-v2/wellbore/{}/document/{}/{} http://www.w3.org/2001/XMLSchema#string() wlbNpdidWellbore wlbDocumentName wlbDocumentFormat wellbore_document_id
@@ -176,7 +175,6 @@ http://sws.ifi.uio.no/vocab/npd-v2#remainingOilEquivalents field_reserves http:/
 http://sws.ifi.uio.no/vocab/npd-v2#wellboreBottomHoleTemperature wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#integer() wlbNpdidWellbore wlbBottomHoleTemperature
 http://sws.ifi.uio.no/vocab/npd-v2#areaSize3DKm2 seis_acquisition http://sws.ifi.uio.no/data/npd-v2/survey/{} http://www.w3.org/2001/XMLSchema#decimal() sea3DKm2 seaName
 http://sws.ifi.uio.no/vocab/npd-v2#areaSize3DKm2 seaArea http://sws.ifi.uio.no/data/npd-v2/survey/{}/area http://www.w3.org/2001/XMLSchema#decimal() sea3DKm2 seaSurveyName
-http://sws.ifi.uio.no/vocab/npd-v2#currentResponsibleCompany facility_moveable http://sws.ifi.uio.no/data/npd-v2/facility/{} http://sws.ifi.uio.no/data/npd-v2/company/{} fclNpdidCurrentRespCompany fclNpdidFacility
 http://sws.ifi.uio.no/vocab/npd-v2#waterDepth facility_fixed http://sws.ifi.uio.no/data/npd-v2/facility/{} http://www.w3.org/2001/XMLSchema#decimal() fclNpdidFacility fclWaterDepth
 http://sws.ifi.uio.no/vocab/npd-v2#recoverableCondensate company_reserves http://sws.ifi.uio.no/data/npd-v2/company/{}/reserve/{} http://www.w3.org/2001/XMLSchema#decimal() fldNpdidField cmpRecoverableCondensate cmpNpdidCompany
 http://sws.ifi.uio.no/vocab/npd-v2#recoverableCondensate discovery_reserves http://sws.ifi.uio.no/data/npd-v2/discovery/{}/{} http://www.w3.org/2001/XMLSchema#decimal() dscNpdidDiscovery dscReservesRC dscRecoverableCondensate
@@ -276,7 +274,6 @@ http://sws.ifi.uio.no/vocab/npd-v2#productionMonth field_production_monthly http
 http://sws.ifi.uio.no/vocab/npd-v2#drillPermit wellbore_shallow_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#string() wlbNpdidWellbore wlbDrillPermit
 http://sws.ifi.uio.no/vocab/npd-v2#drillPermit wellbore_development_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#string() wlbNpdidWellbore wlbDrillPermit
 http://sws.ifi.uio.no/vocab/npd-v2#drillPermit wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#string() wlbNpdidWellbore wlbDrillPermit
-http://sws.ifi.uio.no/vocab/npd-v2#coreIntervalBottom wellbore_core http://sws.ifi.uio.no/data/npd-v2/wellbore/{}/core/{} http://www.w3.org/2001/XMLSchema#decimal() wlbNpdidWellbore wlbCoreIntervalBottom wlbCoreNumber
 http://sws.ifi.uio.no/vocab/npd-v2#wellboreMaxInclation wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#decimal() wlbNpdidWellbore wlbMaxInclation
 http://sws.ifi.uio.no/vocab/npd-v2#recoverableNGL discovery_reserves http://sws.ifi.uio.no/data/npd-v2/discovery/{}/{} http://www.w3.org/2001/XMLSchema#decimal() dscNpdidDiscovery dscRecoverableNGL dscReservesRC
 http://sws.ifi.uio.no/vocab/npd-v2#recoverableNGL company_reserves http://sws.ifi.uio.no/data/npd-v2/company/{}/reserve/{} http://www.w3.org/2001/XMLSchema#decimal() cmpRecoverableNGL fldNpdidField cmpNpdidCompany
@@ -374,8 +371,6 @@ http://sws.ifi.uio.no/vocab/npd-v2#sourcePressure seaArea http://sws.ifi.uio.no/
 http://sws.ifi.uio.no/vocab/npd-v2#wellborePlotSymbol wellbore_development_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#integer() wlbNpdidWellbore wlbPlotSymbol
 http://sws.ifi.uio.no/vocab/npd-v2#wellborePlotSymbol wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#integer() wlbNpdidWellbore wlbPlotSymbol
 http://sws.ifi.uio.no/vocab/npd-v2#lengthCdpTotalKm seis_acquisition http://sws.ifi.uio.no/data/npd-v2/survey/{} http://www.w3.org/2001/XMLSchema#integer() seaName seaCdpTotalKm
-http://sws.ifi.uio.no/vocab/npd-v2#reclassedFromWellbore wellbore_development_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://sws.ifi.uio.no/data/npd-v2/wellbore/{} wlbNpdidWellbore wlbNpdidWellboreReclass
-http://sws.ifi.uio.no/vocab/npd-v2#reclassedFromWellbore wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://sws.ifi.uio.no/data/npd-v2/wellbore/{} wlbNpdidWellbore wlbNpdidWellboreReclass
 http://sws.ifi.uio.no/vocab/npd-v2#wellborePurpose wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#string() wlbNpdidWellbore wlbPurpose
 http://sws.ifi.uio.no/vocab/npd-v2#wellboreDrillingDays wellbore_exploration_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#integer() wlbNpdidWellbore wlbDrillingDays
 http://sws.ifi.uio.no/vocab/npd-v2#utmEW wellbore_development_all http://sws.ifi.uio.no/data/npd-v2/wellbore/{} http://www.w3.org/2001/XMLSchema#decimal() wlbNpdidWellbore wlbEwUtm
@@ -393,7 +388,6 @@ http://sws.ifi.uio.no/vocab/npd-v2#producedWater field_production_yearly http://
 http://sws.ifi.uio.no/vocab/npd-v2#producedWater field_production_totalt_NCS_month http://sws.ifi.uio.no/data/npd-v2/ncs/production/{}/{} http://www.w3.org/2001/XMLSchema#decimal() prfPrdProducedWaterInFieldMillSm3 prfYear prfMonth
 http://sws.ifi.uio.no/vocab/npd-v2#producedWater field_production_monthly http://sws.ifi.uio.no/data/npd-v2/field/{}/production/{}/{} http://www.w3.org/2001/XMLSchema#decimal() prfPrdProducedWaterInFieldMillSm3 prfYear prfMonth prfNpdidInformationCarrier
 http://sws.ifi.uio.no/vocab/npd-v2#producedWater field_production_totalt_NCS_year http://sws.ifi.uio.no/data/npd-v2/ncs/production/{} http://www.w3.org/2001/XMLSchema#decimal() prfPrdProducedWaterInFieldMillSm3 prfYear
-http://sws.ifi.uio.no/vocab/npd-v2#coreIntervalTop wellbore_core http://sws.ifi.uio.no/data/npd-v2/wellbore/{}/core/{} http://www.w3.org/2001/XMLSchema#decimal() wlbNpdidWellbore wlbCoreIntervalTop wlbCoreNumber
 http://sws.ifi.uio.no/vocab/npd-v2#producedOilEquivalents field_production_yearly http://sws.ifi.uio.no/data/npd-v2/field/{}/production/{} http://www.w3.org/2001/XMLSchema#decimal() prfPrdOeNetMillSm3 prfYear prfNpdidInformationCarrier
 http://sws.ifi.uio.no/vocab/npd-v2#producedOilEquivalents field_production_totalt_NCS_year http://sws.ifi.uio.no/data/npd-v2/ncs/production/{} http://www.w3.org/2001/XMLSchema#decimal() prfPrdOeNetMillSm3 prfYear
 http://sws.ifi.uio.no/vocab/npd-v2#producedOilEquivalents field_production_monthly http://sws.ifi.uio.no/data/npd-v2/field/{}/production/{}/{} http://www.w3.org/2001/XMLSchema#decimal() prfPrdOeNetMillSm3 prfYear prfMonth prfNpdidInformationCarrier
