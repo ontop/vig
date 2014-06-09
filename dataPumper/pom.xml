@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>dataPumper</groupId>
+  <groupId>it.unibz.inf.vig</groupId>
   <artifactId>dataPumper</artifactId>
-  <version>0.0.1-SNAPSHOT</version>    
+  <version>0.1.0-SNAPSHOT</version>    
   <build>
     <sourceDirectory>src</sourceDirectory>
     <testSourceDirectory>test</testSourceDirectory>
@@ -69,9 +69,9 @@
 	<version>5.1.29</version>
   </dependency>
   <dependency>
-		<groupId>tupleSchemasExtractor</groupId>
+		<groupId>it.unibz.inf.vig</groupId>
   		<artifactId>tupleSchemasExtractor</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
+  		<version>0.1.0-SNAPSHOT</version>
 	  	<scope>compile</scope>
   </dependency>
   </dependencies>
