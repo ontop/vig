@@ -20,10 +20,10 @@ package mappings;
  * #L%
  */
 
+import utils.MyHashMapList;
 import configuration.Conf;
 import connection.DBMSConnection;
-import utils.MyHashMapList;
-import main.java.csvPlayer.core.CSVPlayer;
+import core.CSVPlayer;
 import core.TuplesToCSV;
 
 /**

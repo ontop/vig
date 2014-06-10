@@ -1,14 +1,12 @@
-package main.java.csvPlayer.core.test;
-
-import static org.junit.Assert.*;
+package core.test;
 
 import java.util.List;
 
-import main.java.csvPlayer.core.CSVPlayer;
-import main.java.csvPlayer.exceptions.InvalidColumnIndexException;
-
-import org.junit.BeforeClass;
 import org.junit.Test;
+
+import core.CSVPlayer;
+import exceptions.InvalidColumnIndexException;
+
 
 public class CSVPlayerTest {
 	

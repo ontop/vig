@@ -1,4 +1,4 @@
-package main.java.csvPlayer.exceptions;
+package exceptions;
 
 /*
  * #%L

@@ -1,4 +1,4 @@
-package main.java.csvPlayer.core;
+package core;
 
 /*
  * #%L
@@ -20,11 +20,14 @@ package main.java.csvPlayer.core;
  * #L%
  */
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import main.java.csvPlayer.exceptions.InvalidColumnIndexException;
+import exceptions.InvalidColumnIndexException;
+
 
 /**
  * Utilities to work on csv files

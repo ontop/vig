@@ -32,11 +32,11 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import basicDatatypes.Template;
-import connection.DBMSConnection;
-import main.java.csvPlayer.core.CSVPlayer;
 import utils.MyHashMapList;
 import utils.Pair;
+import basicDatatypes.Template;
+import connection.DBMSConnection;
+import core.CSVPlayer;
 
 /**
  * 

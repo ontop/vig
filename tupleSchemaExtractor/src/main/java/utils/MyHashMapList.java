@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import main.java.csvPlayer.core.CSVPlayer;
+import core.CSVPlayer;
 
 public class MyHashMapList<Key,Value> {
 	private HashMap<Key, List<Value>> map;
