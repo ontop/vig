@@ -25,12 +25,15 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cyclesFinder.CyclesFinder;
 
 public class CyclesFinderTest {
+	
+	private static Logger logger = Logger.getLogger(CyclesFinderTest.class.getCanonicalName());
 	
 	@Test
 	public void testLengthsOfChaseSteps(){
@@ -44,7 +47,9 @@ public class CyclesFinderTest {
 		
 		List<List<String>> results = c.chasePaths(v, w);
 		
-		System.out.println(results);
+		assertEquals("[[1, 2], [2], [3, 4, 2], [4, 2], [5, 6], [6]]", results.toString());
+		
+		logger.debug(results.toString());
 	}
 
 }
