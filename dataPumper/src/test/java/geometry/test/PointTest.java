@@ -41,7 +41,7 @@ public class PointTest {
 		
 		logger.info(p.toString());
 		
-//		assertEquals("Point(-2.28888388309114854e+18 1.0)", p.toString());
+		assertEquals("Point(-2.28888388309114854e+18 1.0)", p.toString());
 	}
 
 	

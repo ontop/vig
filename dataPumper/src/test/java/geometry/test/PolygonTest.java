@@ -42,8 +42,10 @@ public class PolygonTest {
 		Polygon p = new Polygon(rectanglesWKT);
 		logger.info(p);
 		
+		String expected = 
+				"Polygon((0.0 0.0,1.0 -2.28888388309114854e+18,1.0 1.0,0.0 1.0,0.0 0.0),(0.0 0.0,1.0 0.0,9.0 8.0,0.0 0.0))";
 		
-//		assertEquals(rectanglesWKT,p.toString());
+		assertEquals(expected,p.toString());
 	}
 
 }
