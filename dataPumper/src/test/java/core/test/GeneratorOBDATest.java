@@ -45,6 +45,7 @@ import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import utils.Statistics;
 import configuration.Conf;
+import configuration.UnitConf;
 import connection.DBMSConnection;
 import core.tableGenerator.GeneratorOBDA;
 
@@ -55,24 +56,18 @@ import core.tableGenerator.GeneratorOBDA;
 public class GeneratorOBDATest {
 	
 	
-	private static String jdbcConnector = "jdbc:mysql";
-	private static String databaseUrl = "10.7.20.39:3306/pumperTest";
-	private static String username = "test";
-	private static String password = "ontop2014";
-	
-//	private static String jdbcConnector1 = "jdbc:mysql";
-//	private static String databaseUrl1 = "localhost/provaNpd";
-//	private static String username1 = "tir";
-//	private static String password1 = "";
+	// For changing these parameters, please
+	// modify the file src/main/resources/unitTests.conf
+	private static String jdbcConnector = UnitConf.jdbcConnector();
+	private static String databaseUrl = UnitConf.dbSingleTests();
+	private static String username = UnitConf.dbUsernameSingleTests();
+	private static String password = UnitConf.dbPasswordSingleTests();
 	
 	private static DBMSConnection db;
-//	private static DBMSConnection db1;
 	private static Connection conn;
-//	private static Connection conn1;
 	
 	// Parameters
 	private static int nRowsToInsert = 1000;
-
 	
 	private static Logger logger = Logger.getLogger(GeneratorOBDATest.class.getCanonicalName());
 	
@@ -112,9 +107,6 @@ public class GeneratorOBDATest {
 			}
 		}
 		db.setForeignCheckOn();
-		//PropertiesConfigurator is used to configure logger from properties file
-		PropertyConfigurator.configure("log4j.properties");
-//		BasicConfigurator.configure();
 	}
 	
 	@After
@@ -256,10 +248,10 @@ public class GeneratorOBDATest {
 		GeneratorOBDA gen = new GeneratorOBDA(db);
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(nRowsToInsert*1000, db.getSchema("testBinaryKey"));
+		gen.pumpTable(nRowsToInsert, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		assertEquals(nRowsToInsert*1000, Statistics.getIntStat("testBinaryKey.id1 Adding a duplicate from initial database values") + 
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testBinaryKey.id1 Adding a duplicate from initial database values") + 
 				Statistics.getIntStat("testBinaryKey.id1 fresh values"));
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");

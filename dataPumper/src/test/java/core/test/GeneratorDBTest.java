@@ -25,9 +25,7 @@ package core.test;
 
 import static org.junit.Assert.*;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,6 +42,7 @@ import columnTypes.ColumnPumper;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import utils.Statistics;
+import configuration.UnitConf;
 import connection.DBMSConnection;
 import core.tableGenerator.GeneratorDB;
 
@@ -53,11 +52,12 @@ import core.tableGenerator.GeneratorDB;
  */
 public class GeneratorDBTest {
 	
-	
-	private static String jdbcConnector = "jdbc:mysql";
-	private static String databaseUrl = "10.7.20.39:3306/pumperTest";
-	private static String username = "test";
-	private static String password = "ontop2014";
+	// For changing these parameters, please
+	// modify the file src/main/resources/unitTests.conf
+	private static String jdbcConnector = UnitConf.jdbcConnector();
+	private static String databaseUrl = UnitConf.dbSingleTests();
+	private static String username = UnitConf.dbUsernameSingleTests();
+	private static String password = UnitConf.dbPasswordSingleTests();
 
 	
 	private static DBMSConnection db;

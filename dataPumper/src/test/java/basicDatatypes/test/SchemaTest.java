@@ -25,20 +25,22 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 //import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import basicDatatypes.Schema;
+import configuration.UnitConf;
 import connection.DBMSConnection;
 
 public class SchemaTest {
 	
-	private static String jdbcConnector = "jdbc:mysql";
-	private static String databaseUrl = "10.7.20.39:3306/npd";
-	private static String username = "fish";
-	private static String password = "fish";
+	private static String jdbcConnector = UnitConf.jdbcConnector();
+	private static String databaseUrl = UnitConf.dbUrlToPump();
+	private static String username = UnitConf.dbUsernameToPump();
+	private static String password = UnitConf.dbPasswordToPump();
 		
 	private static DBMSConnection db;
 	

@@ -24,11 +24,11 @@ import java.io.*;
 
 /**
  * Reads the configuration info from a configuration file.
- * @author tir
+ * @author Davide Lanti
  *
  */
 public class Conf {
-		
+	
 	/** Returns the name of the database driver **/
 	public static String jdbcConnector(){
 		return searchTag("JdbcConnector");
