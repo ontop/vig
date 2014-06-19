@@ -25,6 +25,10 @@ import org.apache.log4j.Logger;
 
 import configuration.Conf;
 import connection.DBMSConnection;
+import core.DoubleOption;
+import core.Option;
+import core.StringOption;
+import ranges.DoubleRange;
 
 enum PumperType{
 	DB, OBDA
@@ -39,21 +43,19 @@ public class Main {
 	
 	private static Logger logger = Logger.getLogger(Main.class.getCanonicalName());
 	
+	// Options
+	private static DoubleOption optIncrement = new DoubleOption("--inc", "It specifies the increment ratio", "PUMPER", 2, new DoubleRange(0, Double.MAX_VALUE, false, true));	
+	private static StringOption optFromTable = new StringOption("--from-table", "It starts the pumping process from the specified table", "PUMPER", null);
+	
 	public static void main(String[] args) {
 		
-		if( args.length < 2 ){
-			
-			System.err.println("Usage: program -f percentage [--from tableName]");
-			System.exit(1);
-		}
-		
-		
-		BasicConfigurator.configure();
-		
-		float percentage = Float.parseFloat(args[1]);
+		// --- configuration -- //
+		BasicConfigurator.configure();		
+		Option.parseOptions(args);
+		double percentage = optIncrement.getValue();
+		String fromTable = optFromTable.getValue();
 		
 		pumperType = PumperType.valueOf(Conf.pumperType());
-		
 		dbOriginal = new DBMSConnection(Conf.jdbcConnector(), Conf.dbUrlOriginal(), Conf.dbUsernameOriginal(), Conf.dbPasswordOriginal());
 		dbToPump = new DBMSConnection(Conf.jdbcConnector(), Conf.dbUrlToPump(), Conf.dbUsernameToPump(), Conf.dbPasswordToPump());
 		
@@ -72,8 +74,8 @@ public class Main {
 			pumper.setPureRandomGeneration();
 		}
 		
-		if( args.length == 4 && args[2].equals("--from") ){
-			pumper.pumpDatabase(percentage, args[3]);
+		if( fromTable != null ){
+			pumper.pumpDatabase(percentage, fromTable);
 		}
 		else{
 			pumper.pumpDatabase(percentage);

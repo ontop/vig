@@ -39,9 +39,7 @@ public class SchemaTest {
 	private static String databaseUrl = "10.7.20.39:3306/npd";
 	private static String username = "fish";
 	private static String password = "fish";
-	
-//	private static Logger logger = Logger.getLogger(SchemaTest.class.getCanonicalName());
-	
+		
 	private static DBMSConnection db;
 	
 	@BeforeClass
@@ -53,7 +51,8 @@ public class SchemaTest {
 	public static void tearDown() throws Exception {
 		db.close();
 	}
-
+	
+	// It tests the equality for schemas
 	@Test
 	public void testEqualsTo() {
 		

@@ -32,6 +32,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import columnTypes.ColumnPumper;
@@ -184,6 +185,7 @@ public class MainTest {
 //	}
 //	//
 	@Test
+	@Ignore
 	public void testPumpNPDPercentage() {
 		DatabasePumperDB main = new DatabasePumperDB(db1Original, db1);		
 		
@@ -201,7 +203,7 @@ public class MainTest {
 		
 		long start = System.currentTimeMillis();
 	
-		main.pumpDatabase((float)2);
+		main.pumpDatabase((float)1);
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
@@ -211,33 +213,7 @@ public class MainTest {
 	}
 	
 	@Test
-	public void testPumpNPDPercentageOBDAStyleLOCAL() {
-		DatabasePumper main = new DatabasePumperOBDA(dbOriginalLocal, dbLocal);		
-		
-		dbLocal.setForeignCheckOff();
-		dbLocal.setUniqueCheckOff();
-		
-		for( String tableName : dbLocal.getAllTableNames() ){
-			Schema s = dbLocal.getSchema(tableName);
-			for( ColumnPumper c : s.getColumns() ){
-				if( !c.referencesTo().isEmpty() ){
-					c.setMaximumChaseCycles(4);
-				}
-			}
-		}
-		
-		long start = System.currentTimeMillis();
-	
-		main.pumpDatabase((float)2);
-		long end = System.currentTimeMillis();
-
-		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
-//		logger.info(Statistics.printStats());
-		dbLocal.setUniqueCheckOn();
-		dbLocal.setForeignCheckOn();
-	}
-	
-	@Test
+	@Ignore
 	public void testPumpNPDPercentageOBDAStyle() {
 		DatabasePumper main = new DatabasePumperOBDA(db1Original, db1);		
 		
@@ -255,7 +231,7 @@ public class MainTest {
 		
 		long start = System.currentTimeMillis();
 	
-		main.pumpDatabase((float)2);
+		main.pumpDatabase((float)1);
 		long end = System.currentTimeMillis();
 
 		logger.info("Time elapsed to pump rows: " + (end - start) + " msec.");
@@ -264,15 +240,6 @@ public class MainTest {
 		db1.setForeignCheckOn();
 	}
 	
-	@Test
-	public void takeReferredFrom(){
-		
-		Schema s = db1Original.getSchema("licence_area_poly_hst");
-		
-		ColumnPumper c = s.getColumn("prlAreaPolyDateValidFrom");
-		
-		System.err.println(c.referencedBy().size());
-	}
 }
 
 
