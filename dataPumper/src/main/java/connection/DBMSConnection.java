@@ -56,9 +56,7 @@ public class DBMSConnection {
 	private static Logger logger = Logger.getLogger(DBMSConnection.class.getCanonicalName());
 	
 	public DBMSConnection(String jdbcConnector, String database, String username, String password){
-		
-		logger.setLevel(Level.INFO);
-		
+				
 		this.jdbcConnector = jdbcConnector;
 		this.databaseUrl = database;
 		this.username = username;

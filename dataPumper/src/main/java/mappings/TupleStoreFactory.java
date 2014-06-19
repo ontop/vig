@@ -20,6 +20,8 @@ package mappings;
  * #L%
  */
 
+import org.apache.log4j.Logger;
+
 import utils.MyHashMapList;
 import configuration.Conf;
 import connection.DBMSConnection;
@@ -40,6 +42,8 @@ public class TupleStoreFactory {
 	private static String outCSVFile = "resources/mappingsCSV.csv";
 	private static TupleStoreFactory instance = null;
 	
+	private static Logger logger = Logger.getLogger(TupleStoreFactory.class.getCanonicalName());
+	
 	private TupleStoreFactory(DBMSConnection dbmsConnOriginal){
 		
 		this.obdaFile = Conf.mappingsFile();
@@ -53,7 +57,7 @@ public class TupleStoreFactory {
 			e.printStackTrace();
 		}
 		CSVPlayer csvParser = new CSVPlayer(outCSVFile);
-		System.err.println(csvParser.printCSVFile());
+		logger.debug(csvParser.printCSVFile());
 		MyHashMapList<String, String> tuplesHash = 
 				MyHashMapList.parse(csvParser.printCSVFile());
 		

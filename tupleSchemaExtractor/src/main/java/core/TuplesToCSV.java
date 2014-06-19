@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import utils.MyHashMapList;
 
 public class TuplesToCSV {
@@ -53,6 +55,8 @@ public class TuplesToCSV {
 	private SQLQueryTranslator translator;
 	private MyHashMapList<String, String> mFunct_Tuples;
 
+	private static Logger logger = Logger.getLogger(TuplesToCSV.class.getCanonicalName());
+	
 	public TuplesToCSV(){}
 
 	public TuplesToCSV(String obdaFile, String outCSVFile){
@@ -99,7 +103,7 @@ public class TuplesToCSV {
 
 		// Y shall do something similar for each dataproperty, and object property
 		for( URI uri: obdaModel.getMappings().keySet() ){
-			System.out.println(uri);
+			logger.info(uri);
 			int greaterTwoCnt = 0;
 			int twoCnt = 0;
 			int cntNaryRules = 0;
@@ -112,7 +116,7 @@ public class TuplesToCSV {
 				OBDASQLQuery sourceQuery = (OBDASQLQuery) a.getSourceQuery();
 
 				// Construct the SQL query tree from the source query
-				System.out.println(sourceQuery.toString());
+				logger.info(sourceQuery.toString());
 				VisitedQuery queryParsed = translator.constructParser(sourceQuery.toString());
 
 				if( queryParsed.getJoinCondition().size() == 0 ){ // No joins
@@ -140,10 +144,10 @@ public class TuplesToCSV {
 					joinAlso.add(f.getFunctionSymbol().toString());
 				}
 			}
-			System.out.println("greater than two: "+ greaterTwoCnt); // 1028/
-			System.out.println("two: "+twoCnt); // 0 ;)
-			System.out.println("cntNaryRules "+cntNaryRules);
-			System.out.println("cntNoJoinsNoWhere " + cntNoJoinsNoWhere);
+			logger.debug("greater than two: "+ greaterTwoCnt); // 1028/
+			logger.debug("two: "+twoCnt); // 0 ;)
+			logger.debug("cntNaryRules "+cntNaryRules);
+			logger.debug("cntNoJoinsNoWhere " + cntNoJoinsNoWhere);
 			
 			noWhereNoJoin.removeAll(whereOnlyNoJoin);
 			noWhereNoJoin.removeAll(joinOnly);
@@ -152,25 +156,25 @@ public class TuplesToCSV {
 			joinOnly.removeAll(noWhereNoJoin);
 			joinOnly.removeAll(whereOnlyNoJoin);
 			
-			System.out.println("noWhereNoJoin");
+			logger.debug("noWhereNoJoin");
 			for( String s : noWhereNoJoin ){
-				System.out.println(s);
+				logger.debug(s);
 			}
-			System.out.println("whereOnlyNoJoin");
+			logger.debug("whereOnlyNoJoin");
 			for( String s : whereOnlyNoJoin ){
-				System.out.println(s);
+				logger.debug(s);
 			}
-			System.out.println("joinAlso");
+			logger.debug("joinAlso");
 			for( String s : joinAlso ){
-				System.out.println(s);
+				logger.debug(s);
 			}
-			System.out.println("joinOnly");
+			logger.debug("joinOnly");
 			for( String s : joinOnly ){
-				System.out.println(s);
+				logger.debug(s);
 			}
-			System.out.println("whereNoJoin");
+			logger.debug("whereNoJoin");
 			for( String s : whereNoJoin ){
-				System.out.println(s);
+				logger.debug(s);
 			}
 			// Write the HashMap to CSV
 			outCSV.print(mFunct_Tuples.toCSV());
@@ -214,7 +218,7 @@ public class TuplesToCSV {
 		
 		// Y shall do something similar for each dataproperty, and object property
 		for( URI uri: obdaModel.getMappings().keySet() ){
-			System.out.println(uri);
+			logger.debug(uri);
 			int greaterTwoCnt = 0;
 			int twoCnt = 0;
 			int cntNaryRules = 0;
@@ -230,7 +234,7 @@ public class TuplesToCSV {
 				boolean isRoleOrData = false;
 				// For each atom in the body, get the arity
 				for( Function f : targetQuery.getBody() ){
-					System.out.println(f.getFunctionSymbol());
+					logger.debug(f.getFunctionSymbol());
 					if( f.getArity() == 2 ){ // role or data property
 						++twoCnt;
 						isRoleOrData = true;
@@ -244,7 +248,7 @@ public class TuplesToCSV {
 				OBDASQLQuery sourceQuery = (OBDASQLQuery) a.getSourceQuery();
 				
 				// Construct the SQL query tree from the source query
-				System.out.println(sourceQuery.toString());
+				logger.debug(sourceQuery.toString());
 				VisitedQuery queryParsed = translator.constructParser(sourceQuery.toString());
 				
 				if( isRoleOrData && queryParsed.getJoinCondition().size() == 0 ){ // No explicit join 
@@ -259,7 +263,7 @@ public class TuplesToCSV {
 								// tableName projectionList
 								// If the tableSet is greater than one, then there is some problem
 								if( queryParsed.getTableSet().size() > 1 ){
-								System.err.println("Table Set for the query > 1");
+								logger.debug("Table Set for the query > 1");
 								System.exit(1);
 								}
 								StringBuilder builder = new StringBuilder();
@@ -283,14 +287,14 @@ public class TuplesToCSV {
 				}
 				else whereOrJoin.add(f.getFunctionSymbol().toString());
 			}
-			System.out.println("greater than two: "+ greaterTwoCnt); // 0
-			System.out.println("two: "+twoCnt); // 1028 ;)
-			System.out.println("cntNaryRules "+cntNaryRules);
-			System.out.println("cntMaybeNoJoinsNoWhere " + cntNoJoinsNoWhere);
+			logger.debug("greater than two: "+ greaterTwoCnt); // 0
+			logger.debug("two: "+twoCnt); // 1028 ;)
+			logger.debug("cntNaryRules "+cntNaryRules);
+			logger.debug("cntMaybeNoJoinsNoWhere " + cntNoJoinsNoWhere);
 			
 			mFunct_Tuples.removeAll(whereOrJoin);
 			
-			System.out.println("cntNoJoinsNoWhere " + mFunct_Tuples.keyset().size());
+			logger.debug("cntNoJoinsNoWhere " + mFunct_Tuples.keyset().size());
 			
 			// Write the HashMap to CSV
 			outCSV.print(mFunct_Tuples.toCSV());
@@ -323,7 +327,7 @@ public class TuplesToCSV {
 			}
 			else{
 				String v = f.getTerm(i).getReferencedVariables().iterator().next().toString();
-				System.err.println(f);
+				logger.debug(f);
 				uriTemplates[i] = cleanURIFromVariable(v, f.getTerm(i).toString());
 				vars.add(v);
 			}

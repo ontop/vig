@@ -100,7 +100,7 @@ public class MainTest {
 	}
 	
 	@Test
-	@Ignore
+//	@Ignore
 	public void testPumpNPDPercentageOBDAStyle() {
 		DatabasePumper main = new DatabasePumperOBDA(dbOriginal, db);		
 		

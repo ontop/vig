@@ -56,7 +56,6 @@ public class GeneratorOBDA extends GeneratorColumnBased {
 		mNumDupsRepetition = new HashMap<String, Integer>();
 		maxNumDupsRepetition = 0;
 
-		logger.setLevel(Level.DEBUG);
 	}
 	
 	public List<Schema> pumpTable(int nRows, Schema schema){
