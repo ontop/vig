@@ -47,7 +47,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		this.dbToPump = dbToPump;
 	}
 	
-	public void pumpDatabase(float percentage, String fromTable){
+	public void pumpDatabase(double percentage, String fromTable){
 		long startTime = System.currentTimeMillis();
 		
 		dbToPump.setForeignCheckOff();
@@ -115,7 +115,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	 * @param db
 	 * @param nRows
 	 */
-	public void pumpDatabase(float percentage){
+	public void pumpDatabase(double percentage){
 		
 		long startTime = System.currentTimeMillis();
 		

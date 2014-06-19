@@ -24,11 +24,11 @@ import java.io.*;
 
 /**
  * Reads the configuration info from a configuration file.
- * @author tir
+ * @author Davide Lanti
  *
  */
 public class Conf {
-		
+	
 	/** Returns the name of the database driver **/
 	public static String jdbcConnector(){
 		return searchTag("JdbcConnector");
@@ -74,11 +74,11 @@ public class Conf {
 	private static String searchTag(String tag){
 		try{
 			BufferedReader in = new BufferedReader(
-					new FileReader("configuration.conf"));
+					new FileReader("src/main/resources/configuration.conf"));
 			String s;
 			String[] s2 = new String[2];
 			while ((s = in.readLine()) != null){
-				s2 = s.split(" ");
+				s2 = s.split("\\s+");
 				if (s2[0].equals(tag)){ in.close(); return s2[1]; }
 			}
 			in.close();

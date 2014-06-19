@@ -64,8 +64,6 @@ public abstract class Column {
 		this.geometric = false;
 		this.datatypeLength = 15; // A default value
 		
-		logger.setLevel(Level.INFO);
-		
 	}
 	
 //	public Column(Schema schema, String name, MySqlDatatypes type, int index){

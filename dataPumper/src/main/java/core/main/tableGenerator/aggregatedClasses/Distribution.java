@@ -83,8 +83,6 @@ public class Distribution {
 	
 	public float naiveStrategy(String columnName, String tableName){
 		
-		logger.setLevel(Level.INFO);
-		
 		int nRows = nRows(columnName, tableName);
 		if( nRows == 0 ) return 0; // No rows in the table
 		int sizeProjection = sizeProjection(columnName, tableName);

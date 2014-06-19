@@ -25,9 +25,7 @@ package core.test;
 
 import static org.junit.Assert.*;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,6 +42,7 @@ import columnTypes.ColumnPumper;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import utils.Statistics;
+import configuration.UnitConf;
 import connection.DBMSConnection;
 import core.tableGenerator.GeneratorDB;
 
@@ -53,21 +52,16 @@ import core.tableGenerator.GeneratorDB;
  */
 public class GeneratorDBTest {
 	
-	
-	private static String jdbcConnector = "jdbc:mysql";
-	private static String databaseUrl = "10.7.20.39:3306/pumperTest";
-	private static String username = "test";
-	private static String password = "ontop2014";
-	
-//	private static String jdbcConnector1 = "jdbc:mysql";
-//	private static String databaseUrl1 = "localhost/provaNpd";
-//	private static String username1 = "tir";
-//	private static String password1 = "";
+	// For changing these parameters, please
+	// modify the file src/main/resources/unitTests.conf
+	private static String jdbcConnector = UnitConf.jdbcConnector();
+	private static String databaseUrl = UnitConf.dbSingleTests();
+	private static String username = UnitConf.dbUsernameSingleTests();
+	private static String password = UnitConf.dbPasswordSingleTests();
+
 	
 	private static DBMSConnection db;
-//	private static DBMSConnection db1;
 	private static Connection conn;
-//	private static Connection conn1;
 	
 	// Parameters
 	private static int nRowsToInsert = 1000;
@@ -79,15 +73,12 @@ public class GeneratorDBTest {
 	public static void setUpBeforeClass(){
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		conn = db.getConnection();
-//		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
-//		conn1 = db1.getConnection();
 	}
 	
 	@AfterClass
 	public static void tearDownAfterClass(){
 		try {
 			conn.close();
-//			conn1.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -111,9 +102,6 @@ public class GeneratorDBTest {
 			}
 		}
 		db.setForeignCheckOn();
-		//PropertiesConfigurator is used to configure logger from properties file
-		PropertyConfigurator.configure("log4j.properties");
-//		BasicConfigurator.configure();
 	}
 	
 	@After
@@ -136,6 +124,9 @@ public class GeneratorDBTest {
 		db.setForeignCheckOn();	
 	}
 	
+	/**
+	 * Tries to pump an empty table
+	 */
 	@Test
 	public void testPumpTable(){
 		
@@ -159,7 +150,8 @@ public class GeneratorDBTest {
 		try {
 			result = stmt.executeQuery();
 		
-			if(result.next()) assertTrue(result.getInt(1) == nRowsToInsert); // Careful, it is the ''next'' which moves the cursor (how awful)
+			if(result.next()) assertTrue(result.getInt(1) == nRowsToInsert); 
+			else assertTrue(false);
 		
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -251,10 +243,10 @@ public class GeneratorDBTest {
 		GeneratorDB gen = new GeneratorDB(db);
 		
 		long start = System.currentTimeMillis();
-		gen.pumpTable(nRowsToInsert*1000, db.getSchema("testBinaryKey"));
+		gen.pumpTable(nRowsToInsert, db.getSchema("testBinaryKey"));
 		long end = System.currentTimeMillis();
 		
-		assertEquals(nRowsToInsert*1000, Statistics.getIntStat("testBinaryKey.id1 Adding a duplicate from initial database values") + 
+		assertEquals(nRowsToInsert, Statistics.getIntStat("testBinaryKey.id1 Adding a duplicate from initial database values") + 
 				Statistics.getIntStat("testBinaryKey.id1 fresh values"));
 		
 		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
