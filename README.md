@@ -10,9 +10,7 @@ The generator is bundled as a multi-module maven (http://maven.apache.org/) proj
 Build
 ----
 
-Please skip the unit tests, since at the moment they access a database that cannot be accessed from the outside.
-
-mvn -Dmaven.test.skip=true install
+$ ./build.sh
 
 Contacts
 ----------
