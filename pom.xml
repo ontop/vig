@@ -41,6 +41,7 @@
 		<module>csvPlayer</module>
 		<module>tupleSchemaExtractor</module>
 		<module>vig-options</module>
+		<module>vig-distribution</module>
 	</modules>
 
 

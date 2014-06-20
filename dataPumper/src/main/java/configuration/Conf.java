@@ -22,6 +22,8 @@ package configuration;
 
 import java.io.*;
 
+import core.main.Main;
+
 /**
  * Reads the configuration info from a configuration file.
  * @author Davide Lanti
@@ -29,52 +31,67 @@ import java.io.*;
  */
 public class Conf {
 	
+	protected String confFile;
+	private static Conf instance = null;
+	
+	protected Conf(String resourcesDir){
+		this.confFile = resourcesDir + "/configuration.conf";
+	};
+	
+	public static Conf getInstance(){
+		if( instance == null ){
+			instance = new Conf(Main.optResources.getValue());
+		}
+		return instance;
+	}
+	
+	
 	/** Returns the name of the database driver **/
-	public static String jdbcConnector(){
+	public String jdbcConnector(){
 		return searchTag("JdbcConnector");
 	}
 	/** Returns the url of the original database (this will not be pumped. A copy of it will) **/
-	public static String dbUrlOriginal(){
+	public  String dbUrlOriginal(){
 		return searchTag("DbUrlOriginal");
 	}
 	/** Returns the username for the original database (this will not be pumped. A copy of it will) **/
-	public static String dbUsernameOriginal(){
+	public  String dbUsernameOriginal(){
 		return searchTag("DbUsernameOriginal");
 	}
 	/** Returns the password for the original database (this will not be pumped. A copy of it will) **/
-	public static String dbPasswordOriginal(){
+	public  String dbPasswordOriginal(){
 		return searchTag("DbPasswordOriginal");
 	}
 	
 	/** Returns the url of the database to be pumped **/
-	public static String dbUrlToPump(){
+	public  String dbUrlToPump(){
 		return searchTag("DbUrlToPump");
 	}
 	/** Returns the username of the database to be pumped **/
-	public static String dbUsernameToPump(){
+	public  String dbUsernameToPump(){
 		return searchTag("DbUsernameToPump");
 	}
 	/** Returns the password of the database to be pumped **/
-	public static String dbPasswordToPump(){
+	public  String dbPasswordToPump(){
 		return searchTag("DbPasswordToPump");
 	}
-	public static boolean pureRandomGeneration(){
+	public  boolean pureRandomGeneration(){
 		String randomValue = searchTag("randomGen");
 		return randomValue.equals("true");
 	}
 	/** Returns the obda file containing the mappings **/
-	public static String mappingsFile(){
+	public  String mappingsFile(){
 		return searchTag("obdaFile");
 	}
 	/** Returns the configuration scheme for the data generation **/
-	public static String pumperType(){
+	public  String pumperType(){
 		return searchTag("pumperType");
 	}
 	
-	private static String searchTag(String tag){
+	protected  String searchTag(String tag){
 		try{
 			BufferedReader in = new BufferedReader(
-					new FileReader("src/main/resources/configuration.conf"));
+					new FileReader(confFile));
 			String s;
 			String[] s2 = new String[2];
 			while ((s = in.readLine()) != null){

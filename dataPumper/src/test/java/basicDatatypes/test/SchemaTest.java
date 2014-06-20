@@ -37,10 +37,10 @@ import connection.DBMSConnection;
 
 public class SchemaTest {
 	
-	private static String jdbcConnector = UnitConf.jdbcConnector();
-	private static String databaseUrl = UnitConf.dbUrlToPump();
-	private static String username = UnitConf.dbUsernameToPump();
-	private static String password = UnitConf.dbPasswordToPump();
+	private static String jdbcConnector = UnitConf.getInstance().jdbcConnector();
+	private static String databaseUrl = UnitConf.getInstance().dbUrlToPump();
+	private static String username = UnitConf.getInstance().dbUsernameToPump();
+	private static String password = UnitConf.getInstance().dbPasswordToPump();
 		
 	private static DBMSConnection db;
 	

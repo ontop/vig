@@ -144,7 +144,7 @@ public class DatabasePumperOBDA extends DatabasePumper {
 		}
 		
 		// Analyze the tuples
-		TupleStoreFactory.setInstance(dbOriginal, Conf.mappingsFile());
+		TupleStoreFactory.setInstance(dbOriginal, Conf.getInstance().mappingsFile());
 		TupleStoreFactory mA = TupleStoreFactory.getInstance();
 		
 		// Breadth first strategy

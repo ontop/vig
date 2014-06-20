@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 import mappings.TupleStoreFactory;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,7 +43,6 @@ import columnTypes.ColumnPumper;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import utils.Statistics;
-import configuration.Conf;
 import configuration.UnitConf;
 import connection.DBMSConnection;
 import core.tableGenerator.GeneratorOBDA;
@@ -58,10 +56,10 @@ public class GeneratorOBDATest {
 	
 	// For changing these parameters, please
 	// modify the file src/main/resources/unitTests.conf
-	private static String jdbcConnector = UnitConf.jdbcConnector();
-	private static String databaseUrl = UnitConf.dbSingleTests();
-	private static String username = UnitConf.dbUsernameSingleTests();
-	private static String password = UnitConf.dbPasswordSingleTests();
+	private static String jdbcConnector = UnitConf.getInstance().jdbcConnector();
+	private static String databaseUrl = UnitConf.getInstance().dbSingleTests();
+	private static String username = UnitConf.getInstance().dbUsernameSingleTests();
+	private static String password = UnitConf.getInstance().dbPasswordSingleTests();
 	
 	private static DBMSConnection db;
 	private static Connection conn;
@@ -133,7 +131,7 @@ public class GeneratorOBDATest {
 	public void testPumpTable(){
 		
 		// Analyze the tuples
-		TupleStoreFactory.setInstance(db, Conf.mappingsFile());
+		TupleStoreFactory.setInstance(db, UnitConf.getInstance().mappingsFile());
 		TupleStoreFactory mA = TupleStoreFactory.getInstance();
 		
 		GeneratorOBDA gen = new GeneratorOBDA(db);

@@ -54,10 +54,10 @@ public class GeneratorDBTest {
 	
 	// For changing these parameters, please
 	// modify the file src/main/resources/unitTests.conf
-	private static String jdbcConnector = UnitConf.jdbcConnector();
-	private static String databaseUrl = UnitConf.dbSingleTests();
-	private static String username = UnitConf.dbUsernameSingleTests();
-	private static String password = UnitConf.dbPasswordSingleTests();
+	private static String jdbcConnector = UnitConf.getInstance().jdbcConnector();
+	private static String databaseUrl = UnitConf.getInstance().dbSingleTests();
+	private static String username = UnitConf.getInstance().dbUsernameSingleTests();
+	private static String password = UnitConf.getInstance().dbPasswordSingleTests();
 
 	
 	private static DBMSConnection db;

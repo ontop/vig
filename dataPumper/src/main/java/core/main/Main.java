@@ -20,6 +20,7 @@ package core.main;
  * #L%
  */
 
+//import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
@@ -43,10 +44,14 @@ public class Main {
 	
 	private static Logger logger = Logger.getLogger(Main.class.getCanonicalName());
 	
+	// configuration file
+	private static Conf conf;
+	
 	// Options
 	private static DoubleOption optIncrement = new DoubleOption("--inc", "It specifies the increment ratio", "PUMPER", 2, new DoubleRange(0, Double.MAX_VALUE, false, true));	
 	private static StringOption optFromTable = new StringOption("--from-table", "It starts the pumping process from the specified table", "PUMPER", null);
-	
+	public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
+
 	public static void main(String[] args) {
 		
 		// --- configuration -- //
@@ -54,10 +59,11 @@ public class Main {
 		Option.parseOptions(args);
 		double percentage = optIncrement.getValue();
 		String fromTable = optFromTable.getValue();
+		conf = Conf.getInstance();
 		
-		pumperType = PumperType.valueOf(Conf.pumperType());
-		dbOriginal = new DBMSConnection(Conf.jdbcConnector(), Conf.dbUrlOriginal(), Conf.dbUsernameOriginal(), Conf.dbPasswordOriginal());
-		dbToPump = new DBMSConnection(Conf.jdbcConnector(), Conf.dbUrlToPump(), Conf.dbUsernameToPump(), Conf.dbPasswordToPump());
+		pumperType = PumperType.valueOf(conf.pumperType());
+		dbOriginal = new DBMSConnection(conf.jdbcConnector(), conf.dbUrlOriginal(), conf.dbUsernameOriginal(), conf.dbPasswordOriginal());
+		dbToPump = new DBMSConnection(conf.jdbcConnector(), conf.dbUrlToPump(), conf.dbUsernameToPump(), conf.dbPasswordToPump());
 		
 		DatabasePumper pumper = null;
 		
@@ -70,7 +76,7 @@ public class Main {
 			break;
 		}
 		
-		if( Conf.pureRandomGeneration() ){
+		if( conf.pureRandomGeneration() ){
 			pumper.setPureRandomGeneration();
 		}
 		

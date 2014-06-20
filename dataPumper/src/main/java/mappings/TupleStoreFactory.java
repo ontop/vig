@@ -27,6 +27,7 @@ import configuration.Conf;
 import connection.DBMSConnection;
 import core.CSVPlayer;
 import core.TuplesToCSV;
+import core.main.Main;
 
 /**
  * 
@@ -39,14 +40,14 @@ public class TupleStoreFactory {
 	private final TuplesPicker picker;
 	private final DBMSConnection dbmsConnOriginal;
 	
-	private static String outCSVFile = "resources/mappingsCSV.csv";
+	private static String outCSVFile = Main.optResources.getValue() + "/mappingsCSV.csv";
 	private static TupleStoreFactory instance = null;
 	
 	private static Logger logger = Logger.getLogger(TupleStoreFactory.class.getCanonicalName());
 	
 	private TupleStoreFactory(DBMSConnection dbmsConnOriginal){
 		
-		this.obdaFile = Conf.mappingsFile();
+		this.obdaFile = Conf.getInstance().mappingsFile();
 		this.dbmsConnOriginal = dbmsConnOriginal;
 		this.picker = TuplesPicker.getInstance();
 		

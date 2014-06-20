@@ -36,15 +36,15 @@ import core.main.DatabasePumperOBDA;
 
 public class MainTest {
 	
-	private static String jdbcConnector = UnitConf.jdbcConnector();
-	private static String databaseUrl = UnitConf.dbUrlToPump();
-	private static String username = UnitConf.dbUsernameToPump();
-	private static String password = UnitConf.dbPasswordToPump();
+	private static String jdbcConnector = UnitConf.getInstance().jdbcConnector();
+	private static String databaseUrl = UnitConf.getInstance().dbUrlToPump();
+	private static String username = UnitConf.getInstance().dbUsernameToPump();
+	private static String password = UnitConf.getInstance().dbPasswordToPump();
 	
-	private static String jdbcConnectorOriginal = UnitConf.jdbcConnector();
-	private static String databaseUrlOriginal = UnitConf.dbUrlOriginal();
-	private static String usernameOriginal = UnitConf.dbUsernameOriginal();
-	private static String passwordOriginal = UnitConf.dbPasswordOriginal();
+	private static String jdbcConnectorOriginal = UnitConf.getInstance().jdbcConnector();
+	private static String databaseUrlOriginal = UnitConf.getInstance().dbUrlOriginal();
+	private static String usernameOriginal = UnitConf.getInstance().dbUsernameOriginal();
+	private static String passwordOriginal = UnitConf.getInstance().dbPasswordOriginal();
 	
 	private static DBMSConnection db;
 	private static DBMSConnection dbOriginal;
