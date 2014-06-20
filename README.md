@@ -13,6 +13,8 @@ VIG is bundled as a maven project, therefore it can be built using the standard 
 
 $ ./build.sh
 
+The jar (with dependencies) can then be found under the vig-distribution/target folder.
+
 Contacts
 ----------
 
