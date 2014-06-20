@@ -39,8 +39,6 @@ import mappings.TupleTemplate;
 import mappings.TupleTemplateDecorator;
 import mappings.TuplesPicker;
 
-import org.apache.log4j.Level;
-
 import basicDatatypes.Schema;
 import columnTypes.ColumnPumper;
 import connection.DBMSConnection;

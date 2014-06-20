@@ -24,6 +24,7 @@ package core.test;
 
 
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import mappings.TupleStoreFactory;
 
 import org.apache.log4j.Logger;
@@ -73,15 +74,15 @@ public class GeneratorOBDATest {
 	public static void setUpBeforeClass(){
 		db = new DBMSConnection(jdbcConnector, databaseUrl, username, password);
 		conn = db.getConnection();
-//		db1 = new DBMSConnection(jdbcConnector1, databaseUrl1, username1, password1);
-//		conn1 = db1.getConnection();
+		
+		// Analyze the tuples
+		TupleStoreFactory.setInstance(db, UnitConf.getInstance().mappingsFile());
 	}
 	
 	@AfterClass
 	public static void tearDownAfterClass(){
 		try {
 			conn.close();
-//			conn1.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -127,12 +128,8 @@ public class GeneratorOBDATest {
 		db.setForeignCheckOn();	
 	}
 	
-	@Test
+	@Test@Ignore
 	public void testPumpTable(){
-		
-		// Analyze the tuples
-		TupleStoreFactory.setInstance(db, UnitConf.getInstance().mappingsFile());
-		TupleStoreFactory mA = TupleStoreFactory.getInstance();
 		
 		GeneratorOBDA gen = new GeneratorOBDA(db);
 		
@@ -161,7 +158,7 @@ public class GeneratorOBDATest {
 		}
 	}
 
-	@Test
+	@Test@Ignore
 	public void testRatioDupsPumpTable(){
 		
 		PreparedStatement insertions = db.getPreparedStatement("INSERT INTO trivial VALUES (1,'ciao'), (2,'ciriciao'), (1,'ciriciriciao')");
@@ -192,7 +189,7 @@ public class GeneratorOBDATest {
 					
 	}
 	
-	@Test
+	@Test@Ignore
 	public void testUnaryPkey(){
 		
 		Schema schema = db.getSchema("pkeyTest");
@@ -225,6 +222,7 @@ public class GeneratorOBDATest {
 		}
 	}
 	
+	@Ignore
 	@Test
 	public void testBinaryPkey(){
 		
@@ -256,6 +254,7 @@ public class GeneratorOBDATest {
 		logger.info(Statistics.printStats());
 	}
 	
+	@Ignore
 	@Test
 	public void testGeneratePoint(){
 		
@@ -278,7 +277,7 @@ public class GeneratorOBDATest {
 		logger.info(Statistics.printStats());
 	}
 	
-	@Test
+	@Test@Ignore
 	public void testGenerateLinestring(){
 		
 		Schema schema = db.getSchema("testLinestring");
@@ -300,7 +299,7 @@ public class GeneratorOBDATest {
 		logger.info(Statistics.printStats());
 	}	
 	
-	@Test
+	@Test@Ignore
 	public void testGeneratePolygon(){
 		
 		Schema schema = db.getSchema("testPolygon");
@@ -322,7 +321,7 @@ public class GeneratorOBDATest {
 		logger.info(Statistics.printStats());
 	}	
 	
-	@Test
+	@Test@Ignore
 	public void testGenerateMultiLinestring(){
 		
 		Schema schema = db.getSchema("testMultilinestring");
@@ -344,7 +343,7 @@ public class GeneratorOBDATest {
 		logger.info(Statistics.printStats());
 	}
 	
-	@Test
+	@Test@Ignore
 	public void testGenerateMultiPolygon(){
 		
 		Schema schema = db.getSchema("testMultipolygon");
@@ -366,7 +365,7 @@ public class GeneratorOBDATest {
 		logger.info(Statistics.printStats());
 	}
 	
-	@Test
+	@Test@Ignore
 	public void testAutoincrement(){
 		
 		Schema schema = db.getSchema("testAutoincrement");
@@ -389,7 +388,7 @@ public class GeneratorOBDATest {
 		assertEquals(nRowsToInsert, Statistics.getIntStat("testAutoincrement.id fresh values"));
 	}
 	
-	@Test
+	@Test@Ignore
 	public void testGenerateDate(){
 		
 		// Init
