@@ -15,6 +15,10 @@ $ ./build.sh
 
 The jar (with dependencies) can then be found under the vig-distribution/target folder.
 
+Configure and Run
+----
+Before running, a few things need to be configured. Please refer to the wiki page (https://github.com/ontop/vig/wiki) for more information. 
+
 Contacts
 ----------
 
