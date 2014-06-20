@@ -3,6 +3,13 @@
 # Build and skip the unit tests
 mvn -Dmaven.test.skip=true install
 
+if [ -d vig-distribution/target/resources ]
+then
+echo
+else
+cp -r dataPumper/src/main/resources vig-distribution/target/
+fi
+
 cd vig-distribution/
 
 mvn assembly:single
