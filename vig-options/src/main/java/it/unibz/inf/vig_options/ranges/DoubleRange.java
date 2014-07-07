@@ -1,4 +1,4 @@
-package ranges;
+package it.unibz.inf.vig_options.ranges;
 
 /************************************************************************************************
 Copyright (c) 2008-2010, Niklas Sorensson

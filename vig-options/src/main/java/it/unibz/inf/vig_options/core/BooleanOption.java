@@ -1,4 +1,4 @@
-package core;
+package it.unibz.inf.vig_options.core;
 
 /************************************************************************************************
 Copyright (c) 2008-2010, Niklas Sorensson
@@ -19,23 +19,39 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
 
-public class StringOption extends Option {
+public class BooleanOption extends Option {
 
-	private String value;
+	protected boolean value;
 	
-	public StringOption(String name, String description, String category, String value) {
-		super(name, description, category, "<string>");
-		
+	protected BooleanOption(String name, String description, String category,
+			String typeName, boolean value) {
+		super(name, description, category, typeName);
+	
 		this.value = value;
 	}
-
+	
+	/**
+	 *  Does it match with <i>optName<\i> ? 
+	 */
 	@Override
 	public boolean parse(String toParse) {
+		
 		String temp = toParse.trim(); // Eliminate whitespaces
 		
 		if( temp.startsWith(name+"=") ){
-			this.value = temp.substring(name.length()+1);			
-			return true;
+			
+			String tmpValue = temp.substring(name.length()+1);
+			
+			if( tmpValue.equalsIgnoreCase("on") ){
+				this.value = true; return true;
+			}
+			else if( tmpValue.equalsIgnoreCase("off") ){
+				this.value = false; return true;
+			}
+
+			System.err.println("ERROR! Value out of range for the option "+ this.name);
+			System.exit(1);
+			
 		}
 		
 		return false;
@@ -43,27 +59,28 @@ public class StringOption extends Option {
 
 	@Override
 	public String help(boolean verbose) {
+		
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(this.name);
 		builder.append(printSpace(this.name));
 		builder.append(this.typeName);
 		builder.append(printSpace(this.typeName));
-		builder.append(printHugeColSpace(""));
+		builder.append("[on -- off]");
+		builder.append(printHugeColSpace("[on -- off]"));
 		builder.append("(default: ");
-		builder.append(value == null ? "NULL" : value);
+		builder.append(value);
 		builder.append(")");
 		
 		if( verbose ){
-			builder.append(printSpace("(default: "+ (value == null ? "NULL" : value) + ")"));
+			builder.append(printSpace("(default: "+value+")"));
 			builder.append(this.description);
 		}
 		
 		return builder.toString();
 	}
 	
-	public String getValue(){
+	public boolean getValue(){
 		return value;
 	}
-
 }

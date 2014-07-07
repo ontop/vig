@@ -21,15 +21,16 @@ package core.main;
  */
 
 //import org.apache.log4j.BasicConfigurator;
+import it.unibz.inf.vig_options.core.DoubleOption;
+import it.unibz.inf.vig_options.core.Option;
+import it.unibz.inf.vig_options.core.StringOption;
+import it.unibz.inf.vig_options.ranges.DoubleRange;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import configuration.Conf;
 import connection.DBMSConnection;
-import core.DoubleOption;
-import core.Option;
-import core.StringOption;
-import ranges.DoubleRange;
 
 enum PumperType{
 	DB, OBDA

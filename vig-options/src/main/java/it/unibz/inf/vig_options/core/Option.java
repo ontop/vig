@@ -1,4 +1,4 @@
-package core;
+package it.unibz.inf.vig_options.core;
 
 /************************************************************************************************
 Copyright (c) 2008-2010, Niklas Sorensson

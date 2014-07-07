@@ -1,4 +1,4 @@
-package core;
+package it.unibz.inf.vig_options.core;
 
 /************************************************************************************************
 Copyright (c) 2008-2010, Niklas Sorensson
@@ -19,9 +19,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
 
-import java.io.PrintStream;
-
-import ranges.DoubleRange;
+import it.unibz.inf.vig_options.ranges.DoubleRange;
 
 public class DoubleOption extends Option {
 
