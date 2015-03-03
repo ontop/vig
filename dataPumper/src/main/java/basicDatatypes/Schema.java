@@ -90,7 +90,8 @@ public class Schema{
 		if( typeString.startsWith("int") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index));
 		else if( typeString.startsWith("smallint") ) columns.add(new IntColumn(colName, MySqlDatatypes.DOUBLE, index));
 		else if( typeString.startsWith("decimal") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, index, TypeStringParser.getFirstBinaryDatatypeSize(typeString), TypeStringParser.getSecondBinaryDatatypeSize(typeString)));
-//		else if( typeString.startsWith("decimal") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, columns.size(), TypeStringParser.getFirstBinaryDatatypeSize(typeString) - TypeStringParser.getSecondBinaryDatatypeSize(typeString)));
+		else if( typeString.startsWith("double") )
+			columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index));
 		else if( typeString.startsWith("bigint") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index));
 		else if( typeString.startsWith("char") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString)));
 		else if( typeString.startsWith("varchar") )	columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString)));

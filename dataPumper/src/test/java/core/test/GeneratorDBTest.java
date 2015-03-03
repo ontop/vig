@@ -418,4 +418,26 @@ public class GeneratorDBTest {
 		logger.info(Statistics.printStats());
 	}
 	
+	@Test
+	public void testGenerateDouble(){
+		
+		Schema schema = db.getSchema("doubleTest");
+		
+		for( ColumnPumper c : schema.getColumns() ){
+			c.fillDomain(schema, db);
+			c.fillDomainBoundaries(schema, db);
+		}
+		
+		GeneratorDB gen = new GeneratorDB(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("doubleTest"));
+		long end = System.currentTimeMillis();
+		
+		assertEquals(nRowsToInsert, Statistics.getIntStat("doubleTest.col1 fresh values"));
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}	
+	
 }
