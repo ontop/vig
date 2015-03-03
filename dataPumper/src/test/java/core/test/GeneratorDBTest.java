@@ -440,4 +440,36 @@ public class GeneratorDBTest {
 		logger.info(Statistics.printStats());
 	}	
 	
+	@Test
+	public void testGenerateTimestamp(){
+		
+		// Init
+//		PreparedStatement init = db.getPreparedStatement("insert into timestampTest values (1, NULL), (2, '2005-06-06')");
+		
+//		try{
+//			init.execute();
+//		}
+//		catch(SQLException e){
+//			e.printStackTrace();
+//		}
+		
+		Schema schema = db.getSchema("timestampTest");
+		
+		for( ColumnPumper c : schema.getColumns() ){
+			c.fillDomain(schema, db);
+			c.fillDomainBoundaries(schema, db);
+		}
+		
+		GeneratorDB gen = new GeneratorDB(db);
+		
+		long start = System.currentTimeMillis();
+		gen.pumpTable(nRowsToInsert, db.getSchema("timestampTest"));
+		long end = System.currentTimeMillis();
+		
+		assertEquals(nRowsToInsert, Statistics.getIntStat("timestampTest.col1 fresh values"));
+		
+		logger.info("Time elapsed to pump "+nRowsToInsert+" rows: " + (end - start) + " msec.");
+		logger.info(Statistics.printStats());
+	}
+	
 }
