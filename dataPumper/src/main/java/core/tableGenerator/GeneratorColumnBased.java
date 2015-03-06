@@ -54,9 +54,9 @@ public abstract class GeneratorColumnBased extends Generator {
 	
 	protected static Logger logger = Logger.getLogger(GeneratorDB.class.getCanonicalName());
 	
-	protected boolean pumpColumn(Schema schema, ColumnPumper column,
-			PreparedStatement stmt, int nRows,
-			int j,
+	protected int pumpColumn(Schema schema, ColumnPumper column,
+			PreparedStatement stmt, int j,
+			int nRows,
 			List<String> primaryDuplicateValues,
 			Map<String, List<String>> uncommittedFresh,
 			Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks,
@@ -70,7 +70,8 @@ public abstract class GeneratorColumnBased extends Generator {
 			column.setDuplicateRatio(1); // DO NOT generate fresh values. Fresh values trigger new chase steps.
 		}	
 		if( j == nRows && (toInsert = column.getNextChased(dbmsConn, schema)) != null && 
-				(!column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)) ){
+				(!column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)) ){ // If you have inserted all the required rows but there's
+			                                                                                           // still some chased value
 			dbmsConn.setter(stmt, column.getIndex(), column.getType(), toInsert); 
 			addToUncommittedFresh(uncommittedFresh, column, toInsert);
 			if( column.hasNextChase() )	++nRows; // I haven't finished yet to insert chased values.
@@ -112,7 +113,7 @@ public abstract class GeneratorColumnBased extends Generator {
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-				return true;
+				return Integer.MAX_VALUE;
 			}
 			dbmsConn.setter(stmt, column.getIndex(), column.getType(), toInsert);
 		}
@@ -122,7 +123,7 @@ public abstract class GeneratorColumnBased extends Generator {
 			updateFreshDuplicates(schema, column, generatedRandom, primaryDuplicateValues, freshDuplicates, mFreshDuplicatesToDuplicatePks);
 			updateTablesToChase(column, tablesToChase);
 		}
-		return false;
+		return nRows;
 	}
 
 	protected String putFreshRandom(ColumnPumper column, PreparedStatement stmt, Map<String, List<String>> uncommittedFresh) {

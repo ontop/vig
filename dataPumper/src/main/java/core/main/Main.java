@@ -49,7 +49,7 @@ public class Main {
 	private static Conf conf;
 	
 	// Options
-	private static DoubleOption optIncrement = new DoubleOption("--inc", "It specifies the increment ratio", "PUMPER", 2, new DoubleRange(0, Double.MAX_VALUE, false, true));	
+	private static DoubleOption optIncrement = new DoubleOption("--inc", "It specifies the increment ratio", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
 	private static StringOption optFromTable = new StringOption("--from-table", "It starts the pumping process from the specified table", "PUMPER", null);
 	public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
 

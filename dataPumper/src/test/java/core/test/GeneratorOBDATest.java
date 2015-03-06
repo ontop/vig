@@ -58,7 +58,7 @@ public class GeneratorOBDATest {
 	// For changing these parameters, please
 	// modify the file src/main/resources/unitTests.conf
 	private static String jdbcConnector = UnitConf.getInstance().jdbcConnector();
-	private static String databaseUrl = UnitConf.getInstance().dbSingleTests();
+	private static String databaseUrl = UnitConf.getInstance().dbUrlSingleTests();
 	private static String username = UnitConf.getInstance().dbUsernameSingleTests();
 	private static String password = UnitConf.getInstance().dbPasswordSingleTests();
 	

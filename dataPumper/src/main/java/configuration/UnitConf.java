@@ -28,7 +28,7 @@ public class UnitConf extends Conf {
 	}
 	
 	/** Returns the configuration scheme for the data generation **/
-	public  String dbSingleTests(){
+	public  String dbUrlSingleTests(){
 		return searchTag("DbUrlSingleTests");
 	}
 	/** Returns the configuration scheme for the data generation **/

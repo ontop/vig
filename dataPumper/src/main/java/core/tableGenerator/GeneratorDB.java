@@ -83,6 +83,12 @@ public class GeneratorDB extends GeneratorColumnBased {
 		// Disable auto-commit
 		dbmsConn.setAutoCommit(false);
 		
+		if( nRows == 1 ){
+			if( schema.getTableName().equals("field") ){
+				logger.debug("FIX");
+			}
+		}
+		
 		for( int j = 1; j <= nRows; ++j ){
 
 			/** Keeps track of the DUPLICATE values chosen ---for the current row---
@@ -90,9 +96,9 @@ public class GeneratorDB extends GeneratorColumnBased {
 			List<String> primaryDuplicateValues = new ArrayList<String>();
 			
 			for( ColumnPumper column : schema.getColumns() ){
-				boolean terminate = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
+				nRows = pumpColumn(schema, column, stmt, j, nRows, primaryDuplicateValues, uncommittedFresh, 
 						mFreshDuplicatesToDuplicatePks, freshDuplicates, tablesToChase);
-				if( terminate )	return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
+				if( nRows == Integer.MAX_VALUE ) return new ArrayList<Schema>(); // Stop immediately. Not possible to pump rows (foreign key violations)
 			}
 			try{
 				stmt.addBatch();
