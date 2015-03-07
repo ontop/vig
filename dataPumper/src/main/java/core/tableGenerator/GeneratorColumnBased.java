@@ -54,6 +54,24 @@ public abstract class GeneratorColumnBased extends Generator {
 	
 	protected static Logger logger = Logger.getLogger(GeneratorDB.class.getCanonicalName());
 	
+	private String getChased(Schema schema, ColumnPumper column, 
+			PreparedStatement stmt, 
+			int nRows,
+			Map<String, List<String>> uncommittedFresh){
+		if(column.getName().equals("prlNpdidLicence") && schema.getTableName().equals("licence")){
+			System.err.println("FIX");
+		}
+		String toInsert = column.getNextChased(dbmsConn, schema);
+		
+		if( !column.isPrimary() || toInsert == null ) return toInsert;
+		
+		if(uncommittedFresh.get(column.getName()).contains(toInsert)){
+			toInsert = column.getNextChased(dbmsConn, schema, uncommittedFresh.get(column.getName()));
+		}
+		
+		return toInsert;
+	}
+	
 	protected int pumpColumn(Schema schema, ColumnPumper column,
 			PreparedStatement stmt, int j,
 			int nRows,
@@ -69,12 +87,87 @@ public abstract class GeneratorColumnBased extends Generator {
 		if( stopChase && (column.getDuplicateRatio() > 0 || !column.isPrimary()) ){
 			column.setDuplicateRatio(1); // DO NOT generate fresh values. Fresh values trigger new chase steps.
 		}	
-		if( j == nRows && (toInsert = column.getNextChased(dbmsConn, schema)) != null && 
-				(!column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)) ){ // If you have inserted all the required rows but there's
-			                                                                                           // still some chased value
+		if( j == nRows && (toInsert = getChased(schema, column, stmt, nRows, uncommittedFresh)) != null ){ // I am inserting the last row
 			dbmsConn.setter(stmt, column.getIndex(), column.getType(), toInsert); 
 			addToUncommittedFresh(uncommittedFresh, column, toInsert);
 			if( column.hasNextChase() )	++nRows; // I haven't finished yet to insert chased values.
+			else --nRows; // Stop computation here
+		}
+		else if( column.getDuplicateRatio() > dupOrNullToss){
+			putDuplicate(schema, column, primaryDuplicateValues, 
+					mFreshDuplicatesToDuplicatePks, freshDuplicates, stmt, uncommittedFresh, tablesToChase);	
+		}
+		else if( column.getNullRatio() > (dupOrNullToss - column.getDuplicateRatio()) ){
+			// TODO Remove this expensive check
+			List<String> names = new ArrayList<String>();
+			for( int i = 0; i < schema.getPk().size(); ++i ){
+				names.add(schema.getPk().get(i).getName());
+			}
+			if( names.contains(column.getName()) ){ 
+				try{
+					throw new Exception("Trying to insert a null in a primary key field");
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+			putNull(schema, column, stmt);
+		}
+		else if( ( 0.4 > random.nextFloat() ) && 
+				(toInsert = column.getNextChased(dbmsConn, schema) ) != null && 
+				(!column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)) 
+				){
+			dbmsConn.setter(stmt, column.getIndex(), column.getType(), toInsert); 
+			addToUncommittedFresh(uncommittedFresh, column, toInsert);
+		}
+		else if( stopChase ){
+			// We cannot take a chase value, neither we can pick a duplicate. The only way out is 
+			// to take the necessary number of elements (non-duplicate with this column) from the referenced column(s)
+			toInsert = column.getFromReferenced(dbmsConn, schema);
+			
+			if( toInsert == null ){
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				return Integer.MAX_VALUE;
+			}
+			dbmsConn.setter(stmt, column.getIndex(), column.getType(), toInsert);
+		}
+		else{ // Add a random value						
+			Statistics.addInt(schema.getTableName()+"."+column.getName()+" fresh values", 1);
+			String generatedRandom = putFreshRandom(column, stmt, uncommittedFresh);
+			updateFreshDuplicates(schema, column, generatedRandom, primaryDuplicateValues, freshDuplicates, mFreshDuplicatesToDuplicatePks);
+			updateTablesToChase(column, tablesToChase);
+		}
+		return nRows;
+	}
+	
+	protected int pumpColumn_1(Schema schema, ColumnPumper column,
+			PreparedStatement stmt, int j,
+			int nRows,
+			List<String> primaryDuplicateValues,
+			Map<String, List<String>> uncommittedFresh,
+			Map<String, List<List<String>>> mFreshDuplicatesToDuplicatePks,
+			List<String> freshDuplicates, List<Schema> tablesToChase) {
+		
+		String toInsert = null;
+		float dupOrNullToss = random.nextFloat();
+		
+		boolean stopChase = (column.referencesTo().size() > 0) && column.getMaximumChaseCycles() < column.getCurrentChaseCycle();
+		if( stopChase && (column.getDuplicateRatio() > 0 || !column.isPrimary()) ){
+			column.setDuplicateRatio(1); // DO NOT generate fresh values. Fresh values trigger new chase steps.
+		}	
+		if( j == nRows && (toInsert = column.getNextChased(dbmsConn, schema)) != null ){
+			if(column.isPrimary() || !uncommittedFresh.get(column.getName()).contains(toInsert)){ // If you have inserted all the required rows but there's
+			                                                                                           // still some chased value
+				dbmsConn.setter(stmt, column.getIndex(), column.getType(), toInsert); 
+				addToUncommittedFresh(uncommittedFresh, column, toInsert);
+				/*if( column.hasNextChase() )*/	++nRows; // I haven't finished yet to insert chased values.
+			}
+			else{
+				++nRows;
+			}
 		}
 		else if( column.getDuplicateRatio() > dupOrNullToss){
 			putDuplicate(schema, column, primaryDuplicateValues, 

@@ -20,6 +20,8 @@ package columnTypes;
  * #L%
  */
 
+import java.util.List;
+
 import connection.DBMSConnection;
 import core.main.tableGenerator.aggregatedClasses.ChasePicker;
 import core.main.tableGenerator.aggregatedClasses.DuplicatesPicker;
@@ -121,11 +123,21 @@ public abstract class ColumnPumper extends Column implements FreshValuesGenerato
 	public String getFromReferenced(DBMSConnection db, Schema schema){
 		return cP.getFromReferenced(db, schema);
 	}
+	
+	public void resetChases(){
+		cP.reset();
+	}
 
 	@Override
 	public void reset(){
 		cP.reset();
 		dP.reset();
 		System.gc();
+	}
+
+	public String getNextChased(DBMSConnection dbmsConn, Schema schema,
+			List<String> uncommittedFreshs) {
+		String result = cP.pickChase(dbmsConn, schema, uncommittedFreshs);
+		return result;
 	}
 };

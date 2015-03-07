@@ -23,6 +23,7 @@ package core.main.tableGenerator.aggregatedClasses;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -100,25 +101,31 @@ public class ChasePicker {
 	}
 	
 	public String pickChase(DBMSConnection db, Schema s){
-		if( toChase != null ){
-			try {
+		try {
+			if( (toChase != null) && !toChase.isClosed() ){
 				if( toChase.next() ){
 					return toChase.getString(1);
 				}
 				else{
+					toChase.close();
+					toChase = fillChaseValues(db, s);
+					if( toChase.next() ){
+						return toChase.getString(1);
+					}
 					if( nextChaseSet() ){
 						toChase.close();
 						toChase = fillChaseValues(db, s);
 						return pickChase(db, s);
 					}
+					else toChase.close();
 				}
-			} catch (SQLException e) {
-				e.printStackTrace();
 			}
-		}
-		else if( toChase() ){
-			toChase = fillChaseValues(db, s);
-			return pickChase(db, s);
+			else if( toChase() ){
+				toChase = fillChaseValues(db, s);
+				return pickChase(db, s);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -170,9 +177,18 @@ public class ChasePicker {
 			returnVal = true;
 		}
 		
+//		if( returnVal == false ){
+//			returnVal = doDeepCheck();
+//		}
+		
 		return returnVal;
 	}
 	
+	private boolean doDeepCheck() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	/**
 	 * This method, for the moment, assumes that it is possible
 	 * to reference AT MOST 1 TABLE.
@@ -239,5 +255,48 @@ public class ChasePicker {
 			}
 		}
 		referencedValues = null;
+	}
+
+	public String pickChase(DBMSConnection db, Schema s,
+			List<String> uncommittedFreshs) {
+		try {
+			if( (toChase != null) && !toChase.isClosed() ){
+				boolean stop = false;
+				String curS = null;
+				while( toChase.next() && ! stop ){
+					curS = toChase.getString(1);
+					if( !uncommittedFreshs.contains(curS) ) stop = true;
+				}
+				if( stop ){
+					return curS;
+				}
+				else{
+					toChase.close();
+					toChase = fillChaseValues(db, s);
+					stop = false;
+					curS = null;
+					while( toChase.next() && ! stop ){
+						curS = toChase.getString(1);
+						if( !uncommittedFreshs.contains(curS) ) stop = true;
+					}
+					if( stop ){
+						return curS;
+					}
+					if( nextChaseSet() ){
+						toChase.close();
+						toChase = fillChaseValues(db, s);
+						return pickChase(db, s);
+					}
+					else toChase.close();
+				}
+			}
+			else if( toChase() ){
+				toChase = fillChaseValues(db, s);
+				return pickChase(db, s);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;		
 	}
 };

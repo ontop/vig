@@ -80,7 +80,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		int cnt = 0;
 		while(schemas.hasNext()){
 			Schema schema = schemas.dequeue();
-			
+						
 			fillDomain(schema, dbOriginal);
 			
 			List<Schema> toChase = null;
@@ -147,11 +147,15 @@ public class DatabasePumperDB extends DatabasePumper {
 		while(schemas.hasNext()){
 			Schema schema = schemas.dequeue();
 			
+			
 			fillDomain(schema, dbOriginal);
 			fillOriginalTableSize(schema, dbOriginal);
 			
 			List<Schema> toChase = null;
 			if(schema.isFilled()){ // 
+				if( schema.getTableName().equals("field") ){
+					logger.debug("FIX");
+				}
 				toChase = gen.pumpTable(1, schema);
 			}
 			else{

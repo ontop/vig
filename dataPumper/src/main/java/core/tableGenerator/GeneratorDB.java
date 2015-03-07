@@ -66,6 +66,7 @@ public class GeneratorDB extends GeneratorColumnBased {
 		initDuplicateRatios(schema);		
 		initNumDupsRepetitionCounters();
 		increaseChaseCycles(schema);
+		resetChaseSets(schema);
 		
 		for( ColumnPumper c : schema.getColumns() ){
 			if( c.isPrimary() && c.referencedBy().size() > 0 ){
@@ -82,12 +83,6 @@ public class GeneratorDB extends GeneratorColumnBased {
 
 		// Disable auto-commit
 		dbmsConn.setAutoCommit(false);
-		
-		if( nRows == 1 ){
-			if( schema.getTableName().equals("field") ){
-				logger.debug("FIX");
-			}
-		}
 		
 		for( int j = 1; j <= nRows; ++j ){
 
@@ -145,5 +140,11 @@ public class GeneratorDB extends GeneratorColumnBased {
 		logger.info("Table '"+ schema.getTableName() + "' pumped with " + nRows +" rows.");
 		
 		return tablesToChase; 
+	}
+
+	private void resetChaseSets(Schema schema) {
+		for( ColumnPumper c : schema.getColumns() ){
+			c.resetChases();
+		}		
 	}
 }
