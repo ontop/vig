@@ -20,73 +20,39 @@ package columnTypes;
  * #L%
  */
 
-import java.util.Collections;
 import java.util.List;
-import basicDatatypes.MySqlDatatypes;
 
-public abstract class IncrementableColumn<T extends Comparable<? super T>> extends ColumnPumper {
+import basicDatatypes.MySqlDatatypes;
+import basicDatatypes.Schema;
+
+public abstract class OrderedDomainColumn<T extends Comparable<? super T>> extends ColumnPumper {
+	
+	private static final String NULL = "\\N";
 
 	protected List<T> domain;
-	protected int domainIndex;
-	protected T lastFreshInserted;
+	private int domainIndex;
 	protected T max;
 	protected T min;
 	
-	public IncrementableColumn(String name, MySqlDatatypes type, int index) {
-		super(name, type, index);
+	public OrderedDomainColumn(String name, MySqlDatatypes type, int index, Schema schema) {
+		super(name, type, index, schema);
 		domain = null;
 		domainIndex = 0;
 	}
 	
-	
-	public abstract T increment(T toIncrement);
-	public abstract T getCurrentMax();
-	
 	@Override
 	/** This method has to be called whenever information held for the column can be released **/
 	public void reset(){
-		super.reset();
 		if( domain != null ) domain.clear();
 		domainIndex = 0;
 	}
 	
 	@Override
-	public String getNextFreshValue(){
-		
-		T toInsert = this.getLastFreshInserted();
-		
-		if( toInsert == null ) logger.error(this.toString() +" toInsert is NULL");
-		
-		do{
-			toInsert = increment(toInsert);
-			
-			while( toInsert.compareTo(this.getCurrentMax()) == 1 && this.hasNextMax() )
-				this.nextMax();
-		}
-		while(toInsert.compareTo(this.getCurrentMax()) == 0);
-		
-		this.setLastFreshInserted(toInsert);
-		
-		return toInsert.toString();
+	public String getNextValue(){
+		String result = domain.get(domainIndex++).toString();
+		return result;
 	}
-
-	public void setLastFreshInserted(T toInsert){
-		lastFreshInserted = toInsert;
-	}
-
-	public T getLastFreshInserted(){
-		return lastFreshInserted;
-	}
-	
-	
-	public boolean hasNextMax(){
-		return domainIndex < domain.size();
-	}
-	
-	public void nextMax(){
-		++domainIndex;
-	}
-	
+		
 	public void setMaxValue(T max){
 		this.max = max;
 	}
@@ -106,9 +72,16 @@ public abstract class IncrementableColumn<T extends Comparable<? super T>> exten
 	public void setDomain(List<T> newDomain){
 		if( domain == null ){
 			domain = newDomain;
-			if( domain.size() != 0 )
-				Collections.sort(domain);
+//			if( domain.size() != 0 )
+//				Collections.shuffle(domain);
 		}
+	}
+	
+	public String getNthInDomain(int n){
+		if( domain.get(n) == null ){
+			return NULL;
+		}
+		return domain.get(n).toString();
 	}
 }
 

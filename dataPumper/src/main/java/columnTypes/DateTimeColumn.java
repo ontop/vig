@@ -28,48 +28,63 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import columnTypes.exceptions.BoundariesUnsetException;
+import columnTypes.exceptions.ValueUnsetException;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import connection.DBMSConnection;
 
-public class DateTimeColumn extends IncrementableColumn<Timestamp>{
+public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	
-	public DateTimeColumn(String name, MySqlDatatypes type, int index) {
-		super(name, type, index);
-		
-		lastFreshInserted = null;
+	private boolean boundariesSet = false;
+	
+	public DateTimeColumn(String name, MySqlDatatypes type, int index, Schema schema) {
+		super(name, type, index, schema);
+		domain = null;
+		this.max = null;
+		this.min = null;
+		this.numFreshsToInsert = 0;
 	}
 
 	@Override
-	public void fillDomain(Schema schema, DBMSConnection db) {
-		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+ " WHERE "+getName()+" IS NOT NULL");
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException{
 		
-		List<Timestamp> values = null;
+		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		
+		
+		List<Timestamp> values = new ArrayList<Timestamp>();
+		
+		Calendar c = Calendar.getInstance();
+		c.setTime(min);
+		
+		Calendar c1 = Calendar.getInstance();
+		c1.setTime(min);
+		
+		// 86400 Seconds in one day
 		
 		try {
-			ResultSet result = stmt.executeQuery();
-			
-			values = new ArrayList<Timestamp>();
-		
-			while( result.next() ){
-				values.add(result.getTimestamp(1));
+			for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+				
+				if( i < this.numNullsToInsert ){
+					values.add(null);
+				}
+				
+				long nextValue = this.generator.nextValue(this.numFreshsToInsert) * 86400000 + c.getTimeInMillis();
+				values.add(new Timestamp(nextValue));
 			}
-			stmt.close();
-		} catch (SQLException e) {
+		} catch (ValueUnsetException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		setDomain(values);
 	}
 
 	@Override
-	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
+	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{		
 		
-		if( getName().equals("bsns_arr_area_operator") ){
-			logger.error("START DEBUG");
-		}
-		
-		if( lastFreshInserted != null ) return; // Boundaries already filled
+		this.initNumDupsNullsFreshs();
 		
 		Template t = new Template("select ? from "+schema.getTableName()+";");
 		PreparedStatement stmt;
@@ -79,81 +94,55 @@ public class DateTimeColumn extends IncrementableColumn<Timestamp>{
 		stmt = db.getPreparedStatement(t);
 		try{
 			ResultSet result = stmt.executeQuery();
+			min = new Timestamp(0);
+			max = new Timestamp(Long.MAX_VALUE);
 			
 			if( result.next() && (result.getTimestamp(1) != null) ){
 				
 				if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(new Timestamp(Long.MAX_VALUE)) == 0 ){ // It looks crazy but it happens
-					setMinValue(new Timestamp(0));
-					setMaxValue(new Timestamp(Long.MAX_VALUE));
-					setLastFreshInserted(new Timestamp(0));
+					// Do nothing
 				}
 				else{
-					setMinValue(result.getTimestamp(1));
-					setMaxValue(result.getTimestamp(2));
-					setLastFreshInserted(result.getTimestamp(1));
+					min = result.getTimestamp(1);
+					max = result.getTimestamp(2);
 				}
-			}
-			else{
-				setMinValue(new Timestamp(0));
-				setMaxValue(new Timestamp(Long.MAX_VALUE));
-				setLastFreshInserted(new Timestamp(0));
 			}
 			stmt.close();
 		}
 		catch(SQLException e){
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public Timestamp increment(Timestamp toIncrement) {		
-		
+				
 		Calendar c = Calendar.getInstance();
+		c.setTimeInMillis(min.getTime());
 		
-		c.set(9999,11,31);
-		Timestamp upperBound = new Timestamp(c.getTimeInMillis());
+		Calendar upperBound = Calendar.getInstance();
+		upperBound.set(9999,11,31);
 		
-		c.setTime(toIncrement);
-		Timestamp temp = new Timestamp(c.getTimeInMillis());
-		if (temp.compareTo(upperBound) > -1 ){
-			logger.debug("Insufficient number of days. Fresh value generation can no longer be guaranteed"
-					+ "for column "+this.getName());
-			return min;  // Altro giro di giostra
+		Calendar curMax = Calendar.getInstance();
+		curMax.setTimeInMillis(max.getTime());
+				
+		for( int i = 1; i <= this.numFreshsToInsert; ++i ){
+			
+			if( c.compareTo(upperBound) > -1 ){
+				this.numFreshsToInsert = i;
+				break;
+			}
+
+			c.add(Calendar.DATE, 1);
+			
 		}
+
+		max = new Timestamp(c.getTimeInMillis());
 		
-		c.add(Calendar.DATE, 1);
+		setMinValue(min);
+		setMaxValue(max);
 		
-		return new Timestamp(c.getTimeInMillis());
-		
+		this.boundariesSet = true;
 	}
 
 	@Override
-	public Timestamp getCurrentMax() {
-		if( domain.size() == 0 )
-			return new Timestamp(Long.MAX_VALUE);
-		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
-	}
-
-	@Override
-	public String getNextChased(DBMSConnection db, Schema schema) {
-		
-		String result = cP.pickChase(db, schema);
-		
-		if( result == null ) return null;
-
-		Timestamp chased = new Timestamp(Long.parseLong(result));
-		
-		if( chased.compareTo(lastFreshInserted) > 0 )
-			lastFreshInserted = chased;
-		
-		return result;
-	}
-
-	@Override
-	public void proposeLastFreshInserted(String inserted) {
-		Timestamp chased = new Timestamp(Long.parseLong(inserted));
-		
-		if( chased.compareTo(lastFreshInserted) > 0 )
-			lastFreshInserted = chased;
+	public void updateMinValue(long newMin) {
+		min = new Timestamp(newMin);
 	}
 };

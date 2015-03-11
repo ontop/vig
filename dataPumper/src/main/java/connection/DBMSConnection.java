@@ -30,11 +30,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import configuration.Conf;
-import core.TuplesToCSV;
+import connection.exceptions.UnsupportedDatabaseException;
 import columnTypes.ColumnPumper;
 //import examples.PlayWithMappings;
 import basicDatatypes.MySqlDatatypes;
@@ -55,7 +53,7 @@ public class DBMSConnection {
 	
 	private static Logger logger = Logger.getLogger(DBMSConnection.class.getCanonicalName());
 	
-	public DBMSConnection(String jdbcConnector, String database, String username, String password){
+	public DBMSConnection(String jdbcConnector, String database, String username, String password) throws UnsupportedDatabaseException{
 		
 		this.jdbcConnector = jdbcConnector;
 		this.databaseUrl = database;
@@ -85,27 +83,8 @@ public class DBMSConnection {
 			schemas = new HashMap<String, Schema>();
 			fillDatabaseSchemas();
 		}
-		else{ // ORACLE
-			try {
-				Class.forName("oracle.jdbc.driver.OracleDriver");
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			
-			logger.debug("ORACLE JDBC driver loaded ok");
-			
-//			String url = 
-//					jdbcConnector + "://" + databaseUrl 
-//					+ "?useServerPrepStmts=false&rewriteBatchedStatements=true&user=" + username 
-//					+ "&password=" + password;
-//			try {
-//				connection = DriverManager.getConnection(url, username, password);
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}		
-//			
-//			schemas = new HashMap<String, Schema>();
-//			fillDatabaseSchemas();
+		else{
+			throw new UnsupportedDatabaseException("The generator supports mysql, only");
 		}
 	}
 	
@@ -162,33 +141,6 @@ public class DBMSConnection {
 			e.printStackTrace();
 		}
 		return null;
-	}
-	
-	public void setter(PreparedStatement stmt, int columnIndex, MySqlDatatypes type, String value){
-		try{
-			
-			switch(type){
-//			case INT: {
-//				stmt.setLong(columnIndex, Long.parseLong(value));
-//				break;
-//			}
-//			case DATETIME:{
-//				stmt.setDate(columnIndex, value);
-//			}
-			default:
-				stmt.setString(columnIndex, value);
-				break;
-			}
-		}catch(SQLException e){
-			e.printStackTrace();
-		}
-	}
-	public void commit(){
-		try {
-			connection.commit();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	/**
@@ -318,16 +270,6 @@ public class DBMSConnection {
 //		fillTuplesSchemas(schema);
 		
 		return schema;
-	}
-
-	/**
-	 * Initializes the columns with needed values
-	 * 
-	 * @param schema
-	 */
-	public void initColumns(Schema schema){
-		for( ColumnPumper column : schema.getColumns() )
-			column.fillDomain(schema, this);
 	}
 
 	/**

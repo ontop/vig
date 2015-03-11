@@ -27,54 +27,62 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import columnTypes.exceptions.BoundariesUnsetException;
+import columnTypes.exceptions.ValueUnsetException;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 import connection.DBMSConnection;
 
-public class BigDecimalColumn extends IncrementableColumn<BigDecimal>{
+public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		
-	public BigDecimalColumn(String name, MySqlDatatypes type, int index, int datatypeFirstLength) {
-		super(name, type, index);
+	private boolean boundariesSet = false;
+	
+	public BigDecimalColumn(String name, MySqlDatatypes type, int index, int datatypeFirstLength, Schema schema) {
+		super(name, type, index, schema);
 		domain = null;
 		this.max = null;
 		this.min = null;
-		this.lastFreshInserted = null;
 	}
 	
-	public BigDecimalColumn(String name, MySqlDatatypes type, int index) {
-		super(name, type, index);
+	public BigDecimalColumn(String name, MySqlDatatypes type, int index, Schema schema) {
+		super(name, type, index, schema);
 		domain = null;
 		this.max = null;
 		this.min = null;
-		this.lastFreshInserted = null;
 	}
 	
 	@Override
-	public void fillDomain(Schema schema, DBMSConnection db) {
-		PreparedStatement stmt = db.getPreparedStatement("SELECT DISTINCT "+getName()+ " FROM "+schema.getTableName()+ " WHERE "+getName()+" IS NOT NULL");
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException {
 		
-		List<BigDecimal> values = null;
+		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		
+		List<BigDecimal> values = new ArrayList<BigDecimal>();
+		
+//		for( BigDecimal i = this.getMinValue(); i.compareTo(this.getMaxValue()) < 0; i.add(BigDecimal.ONE) ){
+//			values.add(i);
+//		}
 		
 		try {
-			ResultSet result = stmt.executeQuery();
-			
-			values = new ArrayList<BigDecimal>();
-		
-			while( result.next() ){
-				values.add(BigDecimal.valueOf(result.getDouble(1)));
+			for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+				if( i < this.numNullsToInsert ){
+					values.add(null);
+				}
+				values.add(min.add(new BigDecimal(this.generator.nextValue(this.numFreshsToInsert))));
 			}
-			stmt.close();
-		} catch (SQLException e) {
+		} catch (ValueUnsetException e) {
 			e.printStackTrace();
+			// TODO Release resources
+			System.exit(1);
 		}
+		
 		setDomain(values);
 	}
 
 	@Override
-	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
+	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
 		
-		if( lastFreshInserted != null ) return; // Boundaries already filled
+		this.initNumDupsNullsFreshs();
 		
 		Template t = new Template("select ? from "+schema.getTableName()+";");
 		PreparedStatement stmt;
@@ -83,55 +91,37 @@ public class BigDecimalColumn extends IncrementableColumn<BigDecimal>{
 		
 		stmt = db.getPreparedStatement(t);
 		
-		ResultSet result;
+		ResultSet result = null;
+		min = BigDecimal.ZERO;
+		max = BigDecimal.ZERO;
 		try {
 			result = stmt.executeQuery();
 			if( result.next() ){
-				setMinValue(BigDecimal.valueOf(result.getDouble(1)));
-				setMaxValue(BigDecimal.valueOf(result.getDouble(2)));
-				setLastFreshInserted(BigDecimal.valueOf(result.getDouble(1)));
+				min = BigDecimal.valueOf(result.getDouble(1));
+				max = BigDecimal.valueOf(result.getDouble(2));
 			}
 			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.exit(1);
 		}
+		
+		BigDecimal nFreshsBigDecimalTransl = new BigDecimal(this.numFreshsToInsert);
+		
+		BigDecimal proposedMax = min.add(nFreshsBigDecimalTransl); 
+		
+		if( proposedMax.compareTo(max) > 0 ){ 
+				max = proposedMax;
+		}
+		
+		setMinValue(min);
+		setMaxValue(max);
+		
+		this.boundariesSet = true;
 	}
 
 	@Override
-	public BigDecimal increment(BigDecimal toIncrement) {
-		
-		toIncrement = toIncrement.add(BigDecimal.ONE);
-		
-		return toIncrement;
-	}
-
-	@Override
-	public BigDecimal getCurrentMax() {
-		if( domain.size() == 0 )
-			return BigDecimal.valueOf(Double.MAX_VALUE);
-		return domainIndex < domain.size() ? domain.get(domainIndex) : domain.get(domainIndex -1);
-	}
-	
-	@Override
-	public String getNextChased(DBMSConnection db, Schema schema) {
-		
-		String result = cP.pickChase(db, schema);
-		
-		if( result == null ) return null;
-		
-		BigDecimal resultBD = new BigDecimal(result);
-		if( resultBD.compareTo(lastFreshInserted) > 0 ){
-			lastFreshInserted = resultBD;
-		}
-		
-		return result;
-	}
-
-	@Override
-	public void proposeLastFreshInserted(String inserted) {
-		BigDecimal resultBD = new BigDecimal(inserted);
-		if( resultBD.compareTo(lastFreshInserted) > 0 ){
-			lastFreshInserted = resultBD;
-		}
+	public void updateMinValue(long newMin) {
+		this.min = new BigDecimal(newMin);
 	}
 }

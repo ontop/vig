@@ -44,7 +44,7 @@ import basicDatatypes.Template;
 import utils.Statistics;
 import configuration.UnitConf;
 import connection.DBMSConnection;
-import core.tableGenerator.GeneratorDB;
+import core.table.statistics.GeneratorDB;
 
 /**
  * @author tir
@@ -133,7 +133,7 @@ public class GeneratorDBTest {
 		GeneratorDB gen = new GeneratorDB(db);
 		
 		for( ColumnPumper c : db.getSchema("trivial").getColumns() ){
-			c.fillDomain(db.getSchema("trivial"), db);
+			c.generateValues(db.getSchema("trivial"), db);
 			c.fillDomainBoundaries(db.getSchema("trivial"), db);
 		}
 		
@@ -172,7 +172,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("trivial");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -195,7 +195,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("pkeyTest");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -236,7 +236,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("testBinaryKey");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -259,7 +259,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("pointTest");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -281,7 +281,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("testLinestring");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -303,7 +303,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("testPolygon");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -325,7 +325,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("testMultilinestring");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -347,7 +347,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("testMultipolygon");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -369,7 +369,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("testAutoincrement");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -402,7 +402,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("dateTest");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -424,7 +424,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("doubleTest");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -456,7 +456,7 @@ public class GeneratorDBTest {
 		Schema schema = db.getSchema("timestampTest");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		

@@ -24,7 +24,9 @@ package core.test;
 
 
 import static org.junit.Assert.*;
+
 import org.junit.Ignore;
+
 import mappings.TupleStoreFactory;
 
 import org.apache.log4j.Logger;
@@ -46,7 +48,7 @@ import basicDatatypes.Template;
 import utils.Statistics;
 import configuration.UnitConf;
 import connection.DBMSConnection;
-import core.tableGenerator.GeneratorOBDA;
+import core.table.statistics.GeneratorOBDA;
 
 /**
 * @author tir
@@ -134,7 +136,7 @@ public class GeneratorOBDATest {
 		GeneratorOBDA gen = new GeneratorOBDA(db);
 		
 		for( ColumnPumper c : db.getSchema("trivial").getColumns() ){
-			c.fillDomain(db.getSchema("trivial"), db);
+			c.generateValues(db.getSchema("trivial"), db);
 			c.fillDomainBoundaries(db.getSchema("trivial"), db);
 		}
 		
@@ -172,7 +174,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("trivial");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -195,7 +197,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("pkeyTest");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -237,7 +239,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("testBinaryKey");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -261,7 +263,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("pointTest");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -283,7 +285,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("testLinestring");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -305,7 +307,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("testPolygon");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		
@@ -327,7 +329,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("testMultilinestring");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -349,7 +351,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("testMultipolygon");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -371,7 +373,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("testAutoincrement");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 
@@ -404,7 +406,7 @@ public class GeneratorOBDATest {
 		Schema schema = db.getSchema("dateTest");
 		
 		for( ColumnPumper c : schema.getColumns() ){
-			c.fillDomain(schema, db);
+			c.generateValues(schema, db);
 			c.fillDomainBoundaries(schema, db);
 		}
 		

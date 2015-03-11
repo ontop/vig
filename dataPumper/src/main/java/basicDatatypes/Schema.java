@@ -31,12 +31,8 @@ import columnTypes.BigDecimalColumn;
 import columnTypes.ColumnPumper;
 import columnTypes.DateTimeColumn;
 import columnTypes.IntColumn;
-import columnTypes.LinestringColumn;
-import columnTypes.MultiLinestringColumn;
-import columnTypes.MultiPolygonColumn;
-import columnTypes.PointColumn;
-import columnTypes.PolygonColumn;
 import columnTypes.StringColumn;
+import columnTypes.exceptions.ValueUnsetException;
 import basicDatatypes.MySqlDatatypes;
 
 public class Schema{
@@ -87,25 +83,20 @@ public class Schema{
 	
 	public void addColumn(String colName, String typeString, int index){
 		
-		if( typeString.startsWith("int") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index));
-		else if( typeString.startsWith("smallint") ) columns.add(new IntColumn(colName, MySqlDatatypes.DOUBLE, index));
-		else if( typeString.startsWith("decimal") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, index, TypeStringParser.getFirstBinaryDatatypeSize(typeString), TypeStringParser.getSecondBinaryDatatypeSize(typeString)));
+		if( typeString.startsWith("int") ) columns.add(new IntColumn(colName, MySqlDatatypes.DOUBLE, index, this));
+		else if( typeString.startsWith("smallint") ) columns.add(new IntColumn(colName, MySqlDatatypes.DOUBLE, index, this));
+		else if( typeString.startsWith("decimal") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, index, TypeStringParser.getFirstBinaryDatatypeSize(typeString), TypeStringParser.getSecondBinaryDatatypeSize(typeString), this));
 		else if( typeString.startsWith("double") )
-			columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index));
-		else if( typeString.startsWith("bigint") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index));
-		else if( typeString.startsWith("char") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString)));
-		else if( typeString.startsWith("varchar") )	columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString)));
-		else if( typeString.startsWith("text") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index));
-		else if( typeString.startsWith("longtext") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index));
-		else if( typeString.startsWith("datetime") ) columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, index));
-		else if( typeString.startsWith("date") ) columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, index));
+			columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index, this));
+		else if( typeString.startsWith("bigint") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index, this));
+		else if( typeString.startsWith("char") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString), this));
+		else if( typeString.startsWith("varchar") )	columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString), this));
+		else if( typeString.startsWith("text") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, this));
+		else if( typeString.startsWith("longtext") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, this));
+		else if( typeString.startsWith("datetime") ) columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, index, this));
+		else if( typeString.startsWith("date") ) columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, index, this));
 		else if( typeString.startsWith("timestamp") ) 
-			columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, index));
-		else if( typeString.startsWith("point") ) columns.add(new PointColumn(colName, MySqlDatatypes.POINT, index));
-		else if( typeString.startsWith("linestring") ) columns.add(new LinestringColumn(colName, MySqlDatatypes.LINESTRING, index));
-		else if( typeString.startsWith("multilinestring") ) columns.add(new MultiLinestringColumn(colName, MySqlDatatypes.MULTILINESTRING, index));
-		else if( typeString.startsWith("polygon") ) columns.add(new PolygonColumn(colName, MySqlDatatypes.POLYGON, index));
-		else if( typeString.startsWith("multipolygon") ) columns.add(new MultiPolygonColumn(colName, MySqlDatatypes.MULTIPOLYGON, index));
+			columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, index, this));
 		else{
 			logger.error("SUPPORT FOR TYPE: "+ typeString +" IS MISSING.");
 		}
@@ -165,13 +156,23 @@ public class Schema{
 		return primaryKey;
 	}
 	
-	public void sortColumnsAccordingToDupRatios(){
+	public void sortColumnsAccordingToDupRatios() {
 		Collections.sort(columns, new Comparator<ColumnPumper>() {
 			  @Override
 			  public int compare(ColumnPumper c1, ColumnPumper c2) { // Descending order
 				  
-				  return c1.getDuplicateRatio() > c2.getDuplicateRatio() ? -1 : 
-					  c1.getDuplicateRatio() == c2.getDuplicateRatio() ? 0 : 1;
+				  int result = 0;
+				  
+				  try{
+					  result = c1.getDuplicateRatio() > c2.getDuplicateRatio() ? -1 : 
+						  c1.getDuplicateRatio() == c2.getDuplicateRatio() ? 0 : 1;
+				  }catch(ValueUnsetException e){
+					  e.printStackTrace();
+					  // TODO CLOSE CONNECTIONS!
+					  System.exit(1);
+				  }
+				  
+				  return result;
 			  }
 			});
 		// Update the indexes
@@ -180,7 +181,13 @@ public class Schema{
 			cP.setIndex(++index);
 		}
 	}
-	
+
+	public void reset() {
+		for( ColumnPumper cP : columns ){
+			cP.reset();
+		}
+	}
+
 }
 class TypeStringParser{
 	

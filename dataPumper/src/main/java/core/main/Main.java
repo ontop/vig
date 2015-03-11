@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import configuration.Conf;
 import connection.DBMSConnection;
+import connection.exceptions.UnsupportedDatabaseException;
 
 enum PumperType{
 	DB, OBDA
@@ -38,7 +39,6 @@ enum PumperType{
 
 public class Main {
 	
-	private static DBMSConnection dbToPump;
 	private static DBMSConnection dbOriginal;
 	
 	private static PumperType pumperType;
@@ -50,7 +50,6 @@ public class Main {
 	
 	// Options
 	private static DoubleOption optIncrement = new DoubleOption("--inc", "It specifies the increment ratio", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
-	private static StringOption optFromTable = new StringOption("--from-table", "It starts the pumping process from the specified table", "PUMPER", null);
 	public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
 
 	public static void main(String[] args) {
@@ -59,33 +58,30 @@ public class Main {
 		BasicConfigurator.configure();		
 		Option.parseOptions(args);
 		double percentage = optIncrement.getValue();
-		String fromTable = optFromTable.getValue();
 		conf = Conf.getInstance();
 		
 		pumperType = PumperType.valueOf(conf.pumperType());
-		dbOriginal = new DBMSConnection(conf.jdbcConnector(), conf.dbUrlOriginal(), conf.dbUsernameOriginal(), conf.dbPasswordOriginal());
-		dbToPump = new DBMSConnection(conf.jdbcConnector(), conf.dbUrlToPump(), conf.dbUsernameToPump(), conf.dbPasswordToPump());
+		try {
+			dbOriginal = new DBMSConnection(conf.jdbcConnector(), conf.dbUrlOriginal(), conf.dbUsernameOriginal(), conf.dbPasswordOriginal());
+		} catch (UnsupportedDatabaseException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 		
 		DatabasePumper pumper = null;
 		
 		switch(pumperType){
 		case DB:
-			pumper = new DatabasePumperDB(dbOriginal, dbToPump);
+			pumper = new DatabasePumperDB(dbOriginal);
 			break;
 		case OBDA:
-			pumper = new DatabasePumperOBDA(dbOriginal, dbToPump);
+			pumper = new DatabasePumperDB(dbOriginal);
 			break;
 		}
 		
 		if( conf.pureRandomGeneration() ){
 			pumper.setPureRandomGeneration();
-		}
-		
-		if( fromTable != null ){
-			pumper.pumpDatabase(percentage, fromTable);
-		}
-		else{
-			pumper.pumpDatabase(percentage);
-		}
+		}	
+		pumper.pumpDatabase(percentage);
 	}
 };

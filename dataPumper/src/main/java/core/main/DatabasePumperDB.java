@@ -20,95 +20,38 @@ package core.main;
  * #L%
  */
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import persistence.LogToFile;
 import columnTypes.ColumnPumper;
+import columnTypes.exceptions.BoundariesUnsetException;
+import columnTypes.exceptions.ValueUnsetException;
 import utils.TrivialQueue;
 import basicDatatypes.Schema;
 import connection.DBMSConnection;
-import core.tableGenerator.GeneratorDB;
+import core.table.statistics.TableStatisticsFinder;
+import core.table.statistics.TableStatisticsFinderImpl;
+import core.table.statistics.exception.TooManyValuesException;
 
-// Speed trick 
-// Connection c = DriverManager.getConnection("jdbc:mysql://host:3306/db?useServerPrepStmts=false&rewriteBatchedStatements=true", "username", "password");
-// TODO Try
-// Tried. Very Well.
 public class DatabasePumperDB extends DatabasePumper {
 	
 	private DBMSConnection dbOriginal;
-	private DBMSConnection dbToPump;
-	private boolean pureRandom = false;
 	
 	private static Logger logger = Logger.getLogger(DatabasePumperDB.class.getCanonicalName());	
 	
-	public DatabasePumperDB(DBMSConnection dbOriginal, DBMSConnection dbToPump){
-		this.dbOriginal = dbOriginal;
-		this.dbToPump = dbToPump;
-	}
+	private final TableStatisticsFinder tStatsFinder;
 	
-	public void pumpDatabase(double percentage, String fromTable){
-		long startTime = System.currentTimeMillis();
+	private final LogToFile persistence;
 		
-		dbToPump.setForeignCheckOff();
-		dbToPump.setUniqueCheckOff();
-		
-		GeneratorDB gen = new GeneratorDB(dbToPump);
-		if( pureRandom ) gen.setPureRandomGeneration();
-		
-		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
-		
-		for( String tableName : dbToPump.getAllTableNames() ){
-			Schema s = dbToPump.getSchema(tableName);
-			for( ColumnPumper c : s.getColumns() ){
-				if( !c.referencesTo().isEmpty() ){
-					c.setMaximumChaseCycles(2); // Default for npd
-				}
-			}
-		}
-		
-		// Init the queue
-		boolean reached = false;
-		for( String tableName : dbToPump.getAllTableNames()){
-			if( !tableName.equals(fromTable) && !reached ) continue;
-			reached = true;
-			schemas.enqueue(dbToPump.getSchema(tableName));
-		}
-				
-		// Breadth first strategy
-		// TODO I need a limit, for the moment I put an hard one.
-		int cnt = 0;
-		while(schemas.hasNext()){
-			Schema schema = schemas.dequeue();
-						
-			fillDomain(schema, dbOriginal);
-			
-			List<Schema> toChase = null;
-			if(schema.isFilled()){ // 
-				toChase = gen.pumpTable(1, schema);
-			}
-			else{
-				int nRows = dbOriginal.getNRows(schema.getTableName());
-				nRows = (int) (nRows * percentage);
-				logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
-				
-				toChase = gen.pumpTable(nRows, schema);
-				schema.setFilled();
-			}
-			for( Schema s : toChase ){
-				if(!schemas.contains(s)){
-					
-					if(++cnt % 1 == 0) logger.debug("Ciclo "+cnt);
-					schemas.enqueue(s);
-					
-				}
-			}
-		}
-		long endTime = System.currentTimeMillis();
-		
-		logger.info("Database pumped in " + (endTime - startTime) + " msec.");
+	public DatabasePumperDB(DBMSConnection dbOriginal){
+		this.dbOriginal = dbOriginal;
+		this.tStatsFinder = new TableStatisticsFinderImpl(dbOriginal);
+		this.persistence = new LogToFile();
 	}
-
 	/**
 	 * 
 	 * @param dbOriginal
@@ -119,75 +62,139 @@ public class DatabasePumperDB extends DatabasePumper {
 		
 		long startTime = System.currentTimeMillis();
 		
-		dbToPump.setForeignCheckOff();
-		dbToPump.setUniqueCheckOff();
-		
-		GeneratorDB gen = new GeneratorDB(dbToPump);
-		if( pureRandom ) gen.setPureRandomGeneration();
-		
 		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
+		List<ColumnPumper> listColumns = new ArrayList<ColumnPumper>();
+		initListAllColumns(listColumns, percentage);
 		
-		for( String tableName : dbToPump.getAllTableNames() ){
-			Schema s = dbToPump.getSchema(tableName);
-			for( ColumnPumper c : s.getColumns() ){
-				if( !c.referencesTo().isEmpty() ){
-					c.setMaximumChaseCycles(2); // Default for npd
-				}
-			}
+		try {
+			establishColumnBounds(listColumns);
+		} catch (ValueUnsetException e) {
+			e.printStackTrace();
+			dbOriginal.close();
+			System.exit(1);
 		}
 		
 		// Init the queue
-		for( String tableName : dbToPump.getAllTableNames()){
-			schemas.enqueue(dbToPump.getSchema(tableName));
+		for( String tableName : dbOriginal.getAllTableNames()){
+			schemas.enqueue(dbOriginal.getSchema(tableName));
 		}
 		
-		// Breadth first strategy
-		// TODO I need a limit, for the moment I put an hard one.
-		int cnt = 0;
 		while(schemas.hasNext()){
 			Schema schema = schemas.dequeue();
 			
+			int nRows = dbOriginal.getNRows(schema.getTableName());
+			nRows = (int) (nRows * percentage);
+			logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
 			
-			fillDomain(schema, dbOriginal);
-			fillOriginalTableSize(schema, dbOriginal);
+			if( schema.getTableName().equals("bsns_arr_area") ){
+				logger.debug("FIXME");
+			}
 			
-			List<Schema> toChase = null;
-			if(schema.isFilled()){ // 
-				if( schema.getTableName().equals("field") ){
-					logger.debug("FIX");
-				}
-				toChase = gen.pumpTable(1, schema);
-			}
-			else{
-				int nRows = dbOriginal.getNRows(schema.getTableName());
-				nRows = (int) (nRows * percentage);
-				logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
-				
-				toChase = gen.pumpTable(nRows, schema);
-				schema.setFilled();
-			}
-			for( Schema s : toChase ){
-				if(!schemas.contains(s)){
-					
-					if(++cnt % 1 == 0) logger.debug("Ciclo "+cnt);
-					schemas.enqueue(s);
-					
-				}
-			}
+			fillDomainsForSchema(schema, dbOriginal);			
+			printDomain(schema);
+			
+			schema.reset();
 		}
 		long endTime = System.currentTimeMillis();
 		
 		logger.info("Database pumped in " + (endTime - startTime) + " msec.");
 	}
 
-	private void fillOriginalTableSize(Schema schema, DBMSConnection dbOriginal) {
-		if( schema.getOriginalSize() == 0 ) schema.setOriginalSize(dbOriginal.getNRows(schema.getTableName()));
+	private void printDomain(Schema schema) {
+				
+		List<ColumnPumper> cols = schema.getColumns();
+		
+		StringBuilder line = new StringBuilder();
+		try {
+			persistence.openFile(schema.getTableName() + ".csv");
+			for( int i = 0; i < cols.get(0).getNumRowsToInsert(); ++i ){
+				line.delete(0, line.length());
+				for( int j = 0; j < cols.size(); ++j ){
+					if( j != 0 ) line.append("`");
+					
+					ColumnPumper col = cols.get(j);
+					line.append(col.getNthInDomain(i));
+				}
+//				System.out.println(line);
+				persistence.appendLine(line.toString());
+			}
+		} catch (ValueUnsetException | IOException e) {
+			e.printStackTrace();
+			dbOriginal.close();
+			persistence.closeFile();
+			System.exit(1);
+		}
+		
 	}
-
-	private void fillDomain(Schema schema, DBMSConnection originalDb) {
-		for( ColumnPumper column : schema.getColumns() ){
-			column.fillDomain(schema, originalDb);
-			column.fillDomainBoundaries(schema, originalDb);
+	/**
+	 * 
+	 * This method puts in listColumns all the columns and initializes, for each of them, 
+	 * the duplicates ratio and the number of values that need to be inserted. 
+	 * 
+	 * Finally, it starts establishing the column bounds
+	 * 
+	 * @param listColumns The output
+	 * @param percentage The increment ratio
+	 */
+	private void initListAllColumns(List<ColumnPumper> listColumns, double percentage) {
+		for( String tableName : dbOriginal.getAllTableNames()){
+			Schema s = dbOriginal.getSchema(tableName);
+			for( ColumnPumper c : s.getColumns() ){
+				listColumns.add(c);
+				float dupsRatio = tStatsFinder.findDuplicatesRatio(s, c);
+				c.setDuplicatesRatio(dupsRatio);
+				
+				float nullRatio = tStatsFinder.findNullRatio(s, c);
+				c.setNullRatio(nullRatio);
+				
+				int nRows = dbOriginal.getNRows(s.getTableName());
+				nRows = (int) (nRows * percentage);
+				try {
+					c.setNumRowsToInsert(nRows);
+				} catch (TooManyValuesException e) {
+					e.printStackTrace();
+					dbOriginal.close();
+					System.exit(1);
+				}
+			}
+		}	
+		
+		try {
+			establishColumnBounds(listColumns);
+		} catch (ValueUnsetException e) {
+			e.printStackTrace();
+			dbOriginal.close();
+			System.exit(1);
 		}
 	}
+
+	private void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException{
+		for( ColumnPumper cP : listColumns ){
+			cP.fillDomainBoundaries(cP.getSchema(), dbOriginal);
+		}
+	}
+	
+	private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
+		for( ColumnPumper column : schema.getColumns() ){
+			if( column.getName().equals("baaName")){
+				logger.debug("FIXME");
+			}
+			
+			try {
+				column.generateValues(schema, originalDb);
+			} catch (BoundariesUnsetException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+	}
+	
+	protected void resetDuplicateValues(Schema schema){
+		for( ColumnPumper c : schema.getColumns()){
+			c.reset();
+		}
+	}
+
+	
+
 };

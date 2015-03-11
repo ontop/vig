@@ -23,7 +23,6 @@ package columnTypes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import basicDatatypes.MySqlDatatypes;
@@ -38,7 +37,7 @@ public abstract class Column {
 	protected boolean geometric;
 	private boolean independent;
 	private boolean autoincrement;
-	private Schema schema;
+	protected Schema schema;
 	private List<QualifiedName> referencesTo; // this.name subseteq that.name
 	private List<QualifiedName> referencedBy; // that.name subseteq this.name
 	
@@ -51,7 +50,7 @@ public abstract class Column {
 	
 	// ---------------------- //
 	
-	public Column(String name, MySqlDatatypes type, int index){
+	public Column(String name, MySqlDatatypes type, int index, Schema schema){
 		this.name = name;
 		this.type = type;
 		this.primary = false;
@@ -63,6 +62,8 @@ public abstract class Column {
 		this.index = index;
 		this.geometric = false;
 		this.datatypeLength = 15; // A default value
+		
+		this.schema = schema;
 		
 	}
 	

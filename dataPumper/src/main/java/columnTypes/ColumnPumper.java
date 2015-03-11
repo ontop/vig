@@ -20,124 +20,127 @@ package columnTypes;
  * #L%
  */
 
-import java.util.List;
-
-import connection.DBMSConnection;
-import core.main.tableGenerator.aggregatedClasses.ChasePicker;
-import core.main.tableGenerator.aggregatedClasses.DuplicatesPicker;
+import core.table.statistics.exception.TooManyValuesException;
+import columnTypes.exceptions.ValueUnsetException;
 import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.Schema;
 
-public abstract class ColumnPumper extends Column implements FreshValuesGenerator{
-	
-	protected ChasePicker cP;
-	private DuplicatesPicker dP;
-	protected boolean ignore;
-	
-	public ColumnPumper(String name, MySqlDatatypes type, int index){
-		super(name, type, index);
-		cP = new ChasePicker(this);
-		dP = new DuplicatesPicker(this);
-		ignore = false;
-	}
-	
-	public abstract void proposeLastFreshInserted(String inserted);
-	
-	public boolean ignore(){
-		return ignore;
-	}
-	
-	/**
-	 * Do NOT fill this column
-	 */
-	public void setIgnore(){
-		ignore = true;
-	}
-	/**
-	 * Filling of this column is enabled again
-	 */
-	public void unsetIgnore(){
-		ignore = false;
-	}
+public abstract class ColumnPumper extends Column implements ColumnPumperInterface{
 		
-	public void setDuplicateRatio(float ratio){
-		dP.setDuplicateRatio(ratio);
-	}
+	private float duplicateRatio;
+	private float nullRatio;
+	private int numRowsToInsert;
+	protected int numFreshsToInsert;
+	protected int numDupsToInsert;
+	protected int numNullsToInsert;
 	
-	public float getDuplicateRatio(){
-		return dP.getDuplicateRatio();
-	}
+	private boolean duplicateRatioSet;
+	private boolean nullRatioSet;
+	private boolean numRowsToInsertSet;
 	
-	public float getNullRatio(){
-		return dP.getNullRatio();
-	}
+	private boolean numDupsNullRowsSet;
 	
-	public void setNullRatio(float ratio){
-		dP.setNullRatio(ratio);
-	}
+	protected CyclicGroupGenerator generator;
 	
-	@Override
-	public String pickNextDupFromDuplicatesToInsert(){
-		return dP.pickNextDupFromDuplicatesToInsert();
-	}
-	@Override
-	public void beforeFirstDuplicatesToInsert(){
-		dP.beforeFirstDuplicatesToInsert();
-	}
-	
-	@Override
-	public void fillDuplicates(DBMSConnection dbmsConn, Schema schema, int insertedRows){
-		dP.fillDuplicates(dbmsConn, schema.getTableName(), insertedRows);
-	}
-	
-	@Override
-	public void refillCurChaseSet(DBMSConnection dbConn, Schema s){
-		cP.refillCurChaseSet(dbConn, s);
-	}
-	@Override
-	public boolean hasNextChase(){
-		return cP.hasNextChase();
-	}
-	
-	@Override
-	public int getCurrentChaseCycle(){
-		return cP.getCurrentChaseCycle();
-	}
-	
-	@Override
-	public void incrementCurrentChaseCycle(){
-		cP.incrementChaseCycle();
-	}
-	
-	@Override
-	public int getMaximumChaseCycles(){
-		return cP.getMaximumChaseCycles();
-	}
-	
-	@Override
-	public void setMaximumChaseCycles(int maximumChaseCycles){
-		cP.setMaximumChaseCycles(maximumChaseCycles);
-	}
-	
-	@Override
-	public String getFromReferenced(DBMSConnection db, Schema schema){
-		return cP.getFromReferenced(db, schema);
-	}
-	
-	public void resetChases(){
-		cP.reset();
+	public ColumnPumper(String name, MySqlDatatypes type, int index, Schema schema){ // index: index of the column
+		super(name, type, index, schema);
+		this.duplicateRatio = 0;
+		this.nullRatio = 0;
+		this.numRowsToInsert = 0;
+		this.numFreshsToInsert = 0;
+		this.numDupsToInsert = 0;
+
+		duplicateRatioSet = false;
+		nullRatioSet = false;
+		numRowsToInsertSet = false;
+		this.numDupsNullRowsSet = false;
+//		boolean numFreshsToInsertSet = false;
+//		boolean numDupsToInsertSet = false;
+
 	}
 
 	@Override
-	public void reset(){
-		cP.reset();
-		dP.reset();
-		System.gc();
+	public void setDuplicatesRatio(float ratio) {
+		this.duplicateRatio = ratio;
+		this.duplicateRatioSet = true;
 	}
 
-	public String getNextChased(DBMSConnection dbmsConn, Schema schema,
-			List<String> uncommittedFreshs) {
-		String result = cP.pickChase(dbmsConn, schema, uncommittedFreshs);
-		return result;
+	@Override
+	public float getDuplicateRatio() throws ValueUnsetException {
+		if( ! duplicateRatioSet ) throw new ValueUnsetException();
+		return this.duplicateRatio;
 	}
+
+	@Override
+	public float getNullRatio() throws ValueUnsetException {
+		if( ! nullRatioSet ) throw new ValueUnsetException();
+		return this.nullRatio;
+	}
+
+	@Override
+	public void setNullRatio(float ratio) {
+		this.nullRatioSet = true;
+		this.nullRatio = ratio;
+	}
+	
+	@Override
+	public void setNumRowsToInsert(int num) throws TooManyValuesException{
+		this.numRowsToInsertSet = true;
+		this.numRowsToInsert = num;
+	}
+	
+	@Override
+	public int getNumRowsToInsert() throws ValueUnsetException{
+		if( ! numRowsToInsertSet ) throw new ValueUnsetException();		
+		return this.numRowsToInsert;
+	}
+	
+	protected void initNumDupsNullsFreshs(){
+		
+		if(this.numDupsNullRowsSet == true) return; // Values set already
+		
+		try{
+			this.numDupsToInsert = (int) (this.getNumRowsToInsert() * this.getDuplicateRatio());
+			this.numNullsToInsert = (int) (this.getNumRowsToInsert() * this.getNullRatio());
+			this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;
+			
+//			if( this.numFreshsToInsert == -1 ){
+//				System.err.println("FIXME");
+//			}
+			
+		}catch(ValueUnsetException e){
+			e.printStackTrace();			
+			// TODO: Release all resources
+			System.exit(1);
+		}
+		this.numDupsNullRowsSet = true;
+		this.generator = new CyclicGroupGenerator(numFreshsToInsert);
+	}
+
+	
+//	@Override
+//	public int getNumFreshsToInsert() throws ValueUnsetException{
+//		if( ! numFreshsToInsertSet ) throw new ValueUnsetException();
+//		return numFreshsToInsert;
+//	}
+//	
+//	@Override
+//	public void setNumFreshsToInsert(int numFreshsToInsert) {
+//		this.numFreshsToInsertSet = true;
+//		this.numFreshsToInsert = numFreshsToInsert;
+//	}
+//
+//	@Override
+//	public int getNumDupsToInsert() throws ValueUnsetException {
+//		if( ! numDupsToInsertSet ) throw new ValueUnsetException();
+//		return numDupsToInsert;
+//	}
+//
+//	@Override
+//	public void setNumDupsToInsert(int numDupsToInsert) {
+//		this.numDupsToInsertSet = true;
+//		this.numDupsToInsert = numDupsToInsert;
+//	}
+	
+
 };

@@ -1,4 +1,4 @@
-package core.main.tableGenerator.aggregatedClasses;
+package core.main.table.statistics.aggrclasses;
 
 /*
  * #%L
