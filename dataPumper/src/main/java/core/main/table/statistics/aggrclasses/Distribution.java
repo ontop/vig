@@ -24,7 +24,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import connection.DBMSConnection;

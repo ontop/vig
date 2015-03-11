@@ -32,20 +32,19 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import connection.exceptions.InstanceNullException;
 import connection.exceptions.UnsupportedDatabaseException;
 import columnTypes.ColumnPumper;
-//import examples.PlayWithMappings;
-import basicDatatypes.MySqlDatatypes;
 import basicDatatypes.QualifiedName;
 import basicDatatypes.Schema;
 import basicDatatypes.Template;
 
 public class DBMSConnection {
 	
-	private String jdbcConnector;
-	private String databaseUrl;
-	private String username;
-	private String password;
+	private final String jdbcConnector;
+	private final String databaseUrl;
+	private final String username;
+	private final String password;
 	
 	private java.sql.Connection connection;
 	
@@ -53,41 +52,18 @@ public class DBMSConnection {
 	
 	private static Logger logger = Logger.getLogger(DBMSConnection.class.getCanonicalName());
 	
-	public DBMSConnection(String jdbcConnector, String database, String username, String password) throws UnsupportedDatabaseException{
-		
-		this.jdbcConnector = jdbcConnector;
-		this.databaseUrl = database;
-		this.username = username;
-		this.password = password;
-		
-		if( this.jdbcConnector.equals("jdbc:mysql") ){ // Mysql
-			
-			try {
-				Class.forName("com.mysql.jdbc.Driver");
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			
-			logger.debug("MySQL JDBC driver loaded ok");
-			
-			String url = 
-					jdbcConnector + "://" + databaseUrl 
-					+ "?useServerPrepStmts=false&rewriteBatchedStatements=true&user=" + username 
-					+ "&password=" + password;
-			try {
-				connection = DriverManager.getConnection(url, username, password);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}		
-			
-			schemas = new HashMap<String, Schema>();
-			fillDatabaseSchemas();
-		}
-		else{
-			throw new UnsupportedDatabaseException("The generator supports mysql, only");
-		}
+	private static DBMSConnection instance = null;
+	
+	public static void initInstance(String jdbcConnector, String database, String username, String password) throws UnsupportedDatabaseException{
+		DBMSConnection.instance = new DBMSConnection(jdbcConnector, database, username, password);
 	}
 	
+	public static DBMSConnection getInstance() throws InstanceNullException{
+		if( DBMSConnection.instance == null ) throw new InstanceNullException("The method DBMSConnection.initInstance() has not been called yet");
+		
+		return DBMSConnection.instance;
+	}
+		
 	public String getJdbcConnector(){
 		return jdbcConnector;
 	}
@@ -143,48 +119,6 @@ public class DBMSConnection {
 		return null;
 	}
 	
-	/**
-	 * 
-	 * @author tir
-	 * @param s: Schema of the table for which an insert query has to be created
-	 * @return A template insert query with a suitable number of place-holders
-	 * 
-	 * TODO: is this good for autoincrement cols? -- Sol. just keep track of autoincrement cols
-	 */
-	public String createInsertTemplate(Schema s){
-		StringBuilder insertQuery = new StringBuilder();
-		insertQuery.append("INSERT IGNORE into "+s.getTableName()+" ("); // TODO Note: I use IGNORE because, from tests, I know that 
-		                                                                 //      primary key duplication is extremely rare --some hard bug
-		int i = 0;
-		
-		for( ColumnPumper col : s.getColumns() ){
-			insertQuery.append(col.getName());
-			if( ++i < s.getNumColumns() )
-				insertQuery.append(", ");
-		}
-		insertQuery.append(") VALUES (");
-		
-		i = 0;
-		for( ColumnPumper c : s.getColumns() ){
-			if( c.getType() == MySqlDatatypes.POINT ||
-					c.getType() == MySqlDatatypes.POLYGON ||
-					c.getType() == MySqlDatatypes.MULTIPOLYGON ||
-					c.getType() == MySqlDatatypes.LINESTRING ||
-					c.getType() == MySqlDatatypes.MULTILINESTRING ){
-				
-				insertQuery.append("GeomFromText(?)");
-			}
-			else{
-				insertQuery.append("?");
-			}
-			if( i++ < s.getNumColumns() -1 )
-				insertQuery.append(", ");
-		}
-		insertQuery.append(")");
-		
-		return insertQuery.toString();
-	}
-	
 	public Schema getSchema(String tableName){
 		return schemas.get(tableName);
 	}
@@ -204,72 +138,6 @@ public class DBMSConnection {
 				}
 			}
 		}
-	}
-	
-	private Schema fillTableSchema(String tableName){
-		
-		logger.info("Adding schema "+tableName);
-		
-		Schema schema = new Schema(tableName);
-		
-		try{
-			PreparedStatement stmt;
-			stmt = connection.prepareStatement("DESCRIBE "+tableName);
-			ResultSet result = stmt.executeQuery();
-			
-			// Field - Type - Null - Default - Extra
-			int index = 0;
-			while(result.next()){
-				logger.debug("Adding column " + result.getString(1) + " from table " + tableName);
-
-				schema.addColumn(result.getString(1), result.getString(2), ++index);
-				
-				
-				// Primary keys need to be all different
-				logger.debug(result.getString(4));
-				if( result.getString(4).equals("PRI") /*|| result.getString(4).equals("UNI")*/ ){ //TODO BUGFIX!!
-					
-					schema.getColumn(result.getString(1)).setPrimary();
-				}		
-			}
-			stmt.close();
-			
-			// Retrieve columns with allDifferent()
-			int cnt = 0;
-			ColumnPumper ref = null;
-			for( ColumnPumper c : schema.getColumns() ){
-				if( c.isPrimary() ){ ref = c; ++cnt; }
-			}
-			if( cnt == 1 ) ref.setAllDifferent();
-			
-			
-			// Now let's retrieve foreign keys
-			String informationSchemaQuery = 
-					"select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME"
-					+ " from INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
-					+ "	where TABLE_NAME = ? and constraint_schema = ?"
-					+ " and REFERENCED_TABLE_NAME != 'null'";
-					
-			stmt = connection.prepareStatement(informationSchemaQuery);
-			stmt.setString(1, tableName);
-			stmt.setString(2, getDbName());
-			
-			result = stmt.executeQuery();
-			
-			while(result.next()){
-				schema.getColumn(result.getString(2))
-				.referencesTo().add(new QualifiedName(result.getString(4), result.getString(5)));
-			}
-			
-			stmt.close();		
-		}
-		catch(SQLException e){
-			e.printStackTrace();
-		}
-		
-//		fillTuplesSchemas(schema);
-		
-		return schema;
 	}
 
 	/**
@@ -361,6 +229,109 @@ public class DBMSConnection {
 			e.printStackTrace();
 		}
 		return result;
+	}
+	
+	// Private Interface
+	
+	private DBMSConnection(String jdbcConnector, String database, String username, String password) throws UnsupportedDatabaseException{
+		
+		this.jdbcConnector = jdbcConnector;
+		this.databaseUrl = database;
+		this.username = username;
+		this.password = password;
+		
+		if( this.jdbcConnector.equals("jdbc:mysql") ){ // Mysql
+			
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			
+			logger.debug("MySQL JDBC driver loaded ok");
+			
+			String url = 
+					jdbcConnector + "://" + databaseUrl 
+					+ "?useServerPrepStmts=false&rewriteBatchedStatements=true&user=" + username 
+					+ "&password=" + password;
+			try {
+				connection = DriverManager.getConnection(url, username, password);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}		
+			
+			schemas = new HashMap<String, Schema>();
+			fillDatabaseSchemas();
+		}
+		else{
+			throw new UnsupportedDatabaseException("The generator supports mysql, only");
+		}
+	}
+	
+	private Schema fillTableSchema(String tableName){
+		
+		logger.info("Adding schema "+tableName);
+		
+		Schema schema = new Schema(tableName);
+		
+		try{
+			PreparedStatement stmt;
+			stmt = connection.prepareStatement("DESCRIBE "+tableName);
+			ResultSet result = stmt.executeQuery();
+			
+			// Field - Type - Null - Default - Extra
+			int index = 0;
+			while(result.next()){
+				logger.debug("Adding column " + result.getString(1) + " from table " + tableName);
+
+				schema.addColumn(result.getString(1), result.getString(2), ++index);
+				
+				
+				// Primary keys need to be all different
+				logger.debug(result.getString(4));
+				if( result.getString(4).equals("PRI") /*|| result.getString(4).equals("UNI")*/ ){ //TODO BUGFIX!!
+					
+					schema.getColumn(result.getString(1)).setPrimary();
+				}		
+			}
+			stmt.close();
+			
+			// Retrieve columns with allDifferent()
+			int cnt = 0;
+			ColumnPumper ref = null;
+			for( ColumnPumper c : schema.getColumns() ){
+				if( c.isPrimary() ){ ref = c; ++cnt; }
+			}
+			if( cnt == 1 ) ref.setAllDifferent();
+			
+			
+			// Now let's retrieve foreign keys
+			String informationSchemaQuery = 
+					"select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME"
+					+ " from INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
+					+ "	where TABLE_NAME = ? and constraint_schema = ?"
+					+ " and REFERENCED_TABLE_NAME != 'null'";
+					
+			stmt = connection.prepareStatement(informationSchemaQuery);
+			stmt.setString(1, tableName);
+			stmt.setString(2, getDbName());
+			
+			result = stmt.executeQuery();
+			
+			while(result.next()){
+				schema.getColumn(result.getString(2))
+				.referencesTo().add(new QualifiedName(result.getString(4), result.getString(5)));
+			}
+			
+			stmt.close();		
+		}
+		catch(SQLException e){
+			e.printStackTrace();
+		}
+		
+//		fillTuplesSchemas(schema);
+		
+		return schema;
 	}
 	
 };

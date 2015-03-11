@@ -48,44 +48,31 @@ public class Conf {
 	
 	/** Returns the name of the database driver **/
 	public String jdbcConnector(){
-		return searchTag("JdbcConnector");
+		return searchTag("jdbc-connector");
 	}
 	/** Returns the url of the original database (this will not be pumped. A copy of it will) **/
-	public  String dbUrlOriginal(){
-		return searchTag("DbUrlOriginal");
+	public  String dbUrl(){
+		return searchTag("database-url");
 	}
 	/** Returns the username for the original database (this will not be pumped. A copy of it will) **/
-	public  String dbUsernameOriginal(){
-		return searchTag("DbUsernameOriginal");
+	public  String dbUser(){
+		return searchTag("database-user");
 	}
 	/** Returns the password for the original database (this will not be pumped. A copy of it will) **/
-	public  String dbPasswordOriginal(){
-		return searchTag("DbPasswordOriginal");
-	}
-	
-	/** Returns the url of the database to be pumped **/
-	public  String dbUrlToPump(){
-		return searchTag("DbUrlToPump");
-	}
-	/** Returns the username of the database to be pumped **/
-	public  String dbUsernameToPump(){
-		return searchTag("DbUsernameToPump");
-	}
-	/** Returns the password of the database to be pumped **/
-	public  String dbPasswordToPump(){
-		return searchTag("DbPasswordToPump");
+	public  String dbPwd(){
+		return searchTag("database-pwd");
 	}
 	public  boolean pureRandomGeneration(){
-		String randomValue = searchTag("randomGen");
+		String randomValue = searchTag("random-gen");
 		return randomValue.equals("true");
 	}
 	/** Returns the obda file containing the mappings **/
 	public  String mappingsFile(){
-		return searchTag("obdaFile");
+		return searchTag("obda-file");
 	}
 	/** Returns the configuration scheme for the data generation **/
 	public  String pumperType(){
-		return searchTag("pumperType");
+		return searchTag("pumper-type");
 	}
 	
 	protected  String searchTag(String tag){

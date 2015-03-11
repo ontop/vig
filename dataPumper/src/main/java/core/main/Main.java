@@ -27,7 +27,6 @@ import it.unibz.inf.vig_options.core.StringOption;
 import it.unibz.inf.vig_options.ranges.DoubleRange;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 
 import configuration.Conf;
 import connection.DBMSConnection;
@@ -39,17 +38,13 @@ enum PumperType{
 
 public class Main {
 	
-	private static DBMSConnection dbOriginal;
-	
 	private static PumperType pumperType;
-	
-	private static Logger logger = Logger.getLogger(Main.class.getCanonicalName());
 	
 	// configuration file
 	private static Conf conf;
 	
 	// Options
-	private static DoubleOption optIncrement = new DoubleOption("--inc", "It specifies the increment ratio", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
+	private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
 	public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
 
 	public static void main(String[] args) {
@@ -57,12 +52,12 @@ public class Main {
 		// --- configuration -- //
 		BasicConfigurator.configure();		
 		Option.parseOptions(args);
-		double percentage = optIncrement.getValue();
+		double percentage = optScaling.getValue();
 		conf = Conf.getInstance();
 		
 		pumperType = PumperType.valueOf(conf.pumperType());
 		try {
-			dbOriginal = new DBMSConnection(conf.jdbcConnector(), conf.dbUrlOriginal(), conf.dbUsernameOriginal(), conf.dbPasswordOriginal());
+			DBMSConnection.initInstance(conf.jdbcConnector(), conf.dbUrl(), conf.dbUser(), conf.dbPwd());
 		} catch (UnsupportedDatabaseException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -72,10 +67,10 @@ public class Main {
 		
 		switch(pumperType){
 		case DB:
-			pumper = new DatabasePumperDB(dbOriginal);
+			pumper = new DatabasePumperDB();
 			break;
 		case OBDA:
-			pumper = new DatabasePumperDB(dbOriginal);
+			pumper = new DatabasePumperDB();
 			break;
 		}
 		

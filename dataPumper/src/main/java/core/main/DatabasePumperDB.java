@@ -33,6 +33,7 @@ import columnTypes.exceptions.ValueUnsetException;
 import utils.TrivialQueue;
 import basicDatatypes.Schema;
 import connection.DBMSConnection;
+import connection.exceptions.InstanceNullException;
 import core.table.statistics.TableStatisticsFinder;
 import core.table.statistics.TableStatisticsFinderImpl;
 import core.table.statistics.exception.TooManyValuesException;
@@ -47,10 +48,17 @@ public class DatabasePumperDB extends DatabasePumper {
 	
 	private final LogToFile persistence;
 		
-	public DatabasePumperDB(DBMSConnection dbOriginal){
-		this.dbOriginal = dbOriginal;
+	public DatabasePumperDB(){
 		this.tStatsFinder = new TableStatisticsFinderImpl(dbOriginal);
 		this.persistence = new LogToFile();
+		
+		try {
+			this.dbOriginal = DBMSConnection.getInstance();
+		} catch (InstanceNullException e) {
+			e.printStackTrace();
+			this.persistence.closeFile();
+			System.exit(1);
+		}
 	}
 	/**
 	 * 
@@ -86,9 +94,9 @@ public class DatabasePumperDB extends DatabasePumper {
 			nRows = (int) (nRows * percentage);
 			logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
 			
-			if( schema.getTableName().equals("bsns_arr_area") ){
-				logger.debug("FIXME");
-			}
+//			if( schema.getTableName().equals("bsns_arr_area") ){
+//				logger.debug("FIXME");
+//			}
 			
 			fillDomainsForSchema(schema, dbOriginal);			
 			printDomain(schema);
@@ -176,10 +184,9 @@ public class DatabasePumperDB extends DatabasePumper {
 	
 	private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
 		for( ColumnPumper column : schema.getColumns() ){
-			if( column.getName().equals("baaName")){
-				logger.debug("FIXME");
-			}
-			
+//			if( column.getName().equals("baaName")){
+//				logger.debug("FIXME");
+//			}
 			try {
 				column.generateValues(schema, originalDb);
 			} catch (BoundariesUnsetException e) {
