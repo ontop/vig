@@ -26,13 +26,11 @@ import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
-import java.util.List;
-
 public interface ColumnPumperInterface {
 	
 	public String getNextValue();
 	
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException;
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException;
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException;
 	
 	public void setDuplicatesRatio(float ratio);
@@ -47,16 +45,27 @@ public interface ColumnPumperInterface {
 	 * 
 	 * @param newMin
 	 */
-	public void updateMinValue(long newMin);
-	
+	public void updateMinValueByEncoding(long newMin);
+	public void updateMaxValueByEncoding(long newMax);
+		
 	public void setNumRowsToInsert(int num) throws TooManyValuesException;
 	public int getNumRowsToInsert() throws ValueUnsetException;
-
+	
+	int getNumFreshsToInsert() throws ValueUnsetException;
+	
+	public long getMaxEncoding() throws BoundariesUnsetException;
+	public long getMinEncoding() throws BoundariesUnsetException;
+	
 	public String getNthInDomain(int i);
+	
+	public void incrementNumFreshs();
+	public void decrementNumFreshs();
 	
 	public void reset(); // To reset the internal state
 //	int getNumFreshsToInsert() throws ValueUnsetException;
 //	void setNumFreshsToInsert(int numFreshsToInsert);
 //	int getNumDupsToInsert() throws ValueUnsetException;
 //	void setNumDupsToInsert(int numDupsToInsert);
+
+
 }

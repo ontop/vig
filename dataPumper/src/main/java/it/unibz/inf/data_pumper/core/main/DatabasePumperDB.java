@@ -20,38 +20,41 @@ package it.unibz.inf.data_pumper.core.main;
  * #L%
  */
 
+import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
+import it.unibz.inf.data_pumper.core.exception.ProblematicCycleForPrimaryKeyException;
 import it.unibz.inf.data_pumper.core.table.statistics.TableStatisticsFinder;
 import it.unibz.inf.data_pumper.core.table.statistics.TableStatisticsFinderImpl;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 import it.unibz.inf.data_pumper.persistence.LogToFile;
-import it.unibz.inf.data_pumper.utils.TrivialQueue;
+import it.unibz.inf.data_pumper.utils.UtilsMath;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
 public class DatabasePumperDB extends DatabasePumper {
 	
-	private DBMSConnection dbOriginal;
+	protected DBMSConnection dbOriginal;
 	
-	private static Logger logger = Logger.getLogger(DatabasePumperDB.class.getCanonicalName());	
+	protected static Logger logger = Logger.getLogger(DatabasePumperDB.class.getCanonicalName());	
 	
-	private final TableStatisticsFinder tStatsFinder;
+	protected final TableStatisticsFinder tStatsFinder;
 	
-	private final LogToFile persistence;
-		
+	protected final LogToFile persistence;
+	
+	protected static double scaleFactor;
+	
 	public DatabasePumperDB(){
-		this.tStatsFinder = new TableStatisticsFinderImpl(dbOriginal);
-		this.persistence = new LogToFile();
-		
 		try {
 			this.dbOriginal = DBMSConnection.getInstance();
 		} catch (InstanceNullException e) {
@@ -59,6 +62,9 @@ public class DatabasePumperDB extends DatabasePumper {
 			this.persistence.closeFile();
 			System.exit(1);
 		}
+		this.tStatsFinder = new TableStatisticsFinderImpl(dbOriginal);
+		this.persistence = LogToFile.getInstance();
+		
 	}
 	/**
 	 * 
@@ -66,37 +72,51 @@ public class DatabasePumperDB extends DatabasePumper {
 	 * @param db
 	 * @param nRows
 	 */
-	public void pumpDatabase(double percentage){
+	public void pumpDatabase(double scaleFactor){
+		
 		
 		long startTime = System.currentTimeMillis();
 		
-		TrivialQueue<Schema> schemas = new TrivialQueue<Schema>();
+		List<Schema> schemas = new LinkedList<Schema>();
 		List<ColumnPumper> listColumns = new ArrayList<ColumnPumper>();
-		initListAllColumns(listColumns, percentage);
+		initListAllColumns(listColumns, scaleFactor);
+		
 		
 		try {
 			establishColumnBounds(listColumns);
-		} catch (ValueUnsetException e) {
+			updateBoundariesWRTForeignKeys(listColumns);
+		} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException e) {
 			e.printStackTrace();
-			dbOriginal.close();
+			DatabasePumper.closeEverything();
 			System.exit(1);
 		}
+
 		
-		// Init the queue
-		for( String tableName : dbOriginal.getAllTableNames()){
-			schemas.enqueue(dbOriginal.getSchema(tableName));
+		for( String tableName : dbOriginal.getAllTableNames() ){
+			Schema schema = dbOriginal.getSchema(tableName);
+			schemas.add(schema);
+			try {
+				checkPrimaryKeys(schema);
+			} catch (ValueUnsetException e) {
+				e.printStackTrace();
+				DatabasePumper.closeEverything();
+				System.exit(1);
+			}
 		}
 		
-		while(schemas.hasNext()){
-			Schema schema = schemas.dequeue();
+		for( Schema schema : schemas ){
+			
+			if( schema.getTableName().equals("bsns_arr_area_operator") ){
+				System.err.println("debug");
+			}
+			if( schema.getTableName().equals("company") ){
+				System.err.println("debug");
+			}
 			
 			int nRows = dbOriginal.getNRows(schema.getTableName());
-			nRows = (int) (nRows * percentage);
-			logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
 			
-//			if( schema.getTableName().equals("bsns_arr_area") ){
-//				logger.debug("FIXME");
-//			}
+			nRows = (int) (nRows * scaleFactor);
+			logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
 			
 			fillDomainsForSchema(schema, dbOriginal);			
 			printDomain(schema);
@@ -108,6 +128,107 @@ public class DatabasePumperDB extends DatabasePumper {
 		logger.info("Database pumped in " + (endTime - startTime) + " msec.");
 	}
 
+	/**
+	 * for each primary key (col1,col2,...,coln) of table schema, 
+	 * check whether lcm(col1.nFreshs, ..., coln.nFreshs) > nFreshsToInsert
+	 * 
+	 * @param schema
+	 * @throws ValueUnsetException 
+	 */
+	private void checkPrimaryKeys(Schema schema) throws ValueUnsetException {
+		class LocalUtils{
+			long[] limitValues = {10,100,1000,10000,100000,1000000,10000000,1000000000}; // TODO Something nicer
+			
+			boolean isLimit(long n){
+				boolean result = false;
+				for( int i = 0; i < limitValues.length; ++i ){
+					if( n == limitValues[i] ){
+						result = true;
+					}
+				}
+				return result;
+			}
+		}
+		
+		if( schema.getTableName().equals("field_investment_yearly") ){
+			System.err.println("debug");
+		}
+
+		List<ColumnPumper> pk = schema.getPk();
+		List<Number> freshs = new ArrayList<Number>();
+		
+		LocalUtils lu = new LocalUtils();
+		
+		for( ColumnPumper cP : pk ){
+			freshs.add(cP.getNumFreshsToInsert());
+		}
+		
+		long lcm = UtilsMath.lcm(freshs);
+		
+		boolean violation = false;
+		for( ColumnPumper cP : pk ){
+			long nValuesToInsert = cP.getNumRowsToInsert();
+			if( nValuesToInsert > lcm ){
+				violation = true;
+				break;
+			}
+		}
+		if( violation ){ // We broke out
+			boolean noneEmpty = true;
+			for( ColumnPumper cP : pk ){
+				if( cP.referencesTo().isEmpty() ){
+					if( !lu.isLimit(cP.getNumFreshsToInsert()) ){ 
+						noneEmpty = false;
+						cP.incrementNumFreshs();
+						checkPrimaryKeys(schema);
+						break;
+					}
+				}
+			}
+			if( noneEmpty ){
+				noneEmpty = true;
+				for( ColumnPumper cP : pk ){
+					if( cP.referencedBy().isEmpty() ){
+						noneEmpty = false;
+						cP.decrementNumFreshs();
+						checkPrimaryKeys(schema);
+						break;
+					}
+				}
+				if( noneEmpty ){
+					try{
+						throw new ProblematicCycleForPrimaryKeyException();
+					}catch(ProblematicCycleForPrimaryKeyException e){
+						e.printStackTrace();
+						DatabasePumper.closeEverything();
+						System.exit(1);
+					}
+				}
+			}
+		}
+	}
+	
+	protected void updateBoundariesWRTForeignKeys(List<ColumnPumper> listColumns) throws InstanceNullException, BoundariesUnsetException {
+		Queue<ColumnPumper> toUpdateBoundaries = new LinkedList<ColumnPumper>();
+		toUpdateBoundaries.addAll(listColumns);
+		
+		while( !toUpdateBoundaries.isEmpty() ){
+			ColumnPumper first = toUpdateBoundaries.remove();
+			long firstMinEncoding = first.getMinEncoding();
+			for( QualifiedName referredName : first.referencesTo() ){
+				ColumnPumper referred = DBMSConnection.getInstance().getSchema(referredName.getTableName()).getColumn(referredName.getColName());
+				long refMinEncoding = referred.getMinEncoding();
+				if( firstMinEncoding > refMinEncoding ){
+					first.updateMinValueByEncoding(refMinEncoding);
+					// Update the boundaries for all the kids
+					for( QualifiedName kidName : first.referencedBy() ){
+						ColumnPumper kid = DBMSConnection.getInstance().getSchema(kidName.getTableName()).getColumn(kidName.getColName());
+						toUpdateBoundaries.add(kid);
+					}
+				}
+			}
+		}
+	}
 	private void printDomain(Schema schema) {
 				
 		List<ColumnPumper> cols = schema.getColumns();
@@ -123,7 +244,6 @@ public class DatabasePumperDB extends DatabasePumper {
 					ColumnPumper col = cols.get(j);
 					line.append(col.getNthInDomain(i));
 				}
-//				System.out.println(line);
 				persistence.appendLine(line.toString());
 			}
 		} catch (ValueUnsetException | IOException e) {
@@ -166,42 +286,39 @@ public class DatabasePumperDB extends DatabasePumper {
 				}
 			}
 		}	
-		
-		try {
-			establishColumnBounds(listColumns);
-		} catch (ValueUnsetException e) {
-			e.printStackTrace();
-			dbOriginal.close();
-			System.exit(1);
-		}
 	}
 
-	private void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException{
+	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException{
 		for( ColumnPumper cP : listColumns ){
+			if( cP.getSchema().getTableName().equals("field_investment_yearly") && cP.getName().equals("prfYear")){
+				System.err.println("debug");
+			}
+			if( cP.getSchema().getTableName().equals("field_investment_yearly") && cP.getName().equals("prfNpdidInformationCarrier")){
+				System.err.println("debug");
+			}
 			cP.fillDomainBoundaries(cP.getSchema(), dbOriginal);
 		}
 	}
 	
 	private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
 		for( ColumnPumper column : schema.getColumns() ){
-//			if( column.getName().equals("baaName")){
-//				logger.debug("FIXME");
-//			}
 			try {
 				column.generateValues(schema, originalDb);
-			} catch (BoundariesUnsetException e) {
+			} catch (BoundariesUnsetException | ValueUnsetException e) {
 				e.printStackTrace();
+				DatabasePumper.closeEverything();
 				System.exit(1);
 			}
 		}
 	}
 	
-	protected void resetDuplicateValues(Schema schema){
+	private void resetDuplicateValues(Schema schema){
 		for( ColumnPumper c : schema.getColumns()){
 			c.reset();
 		}
 	}
-
 	
-
+	public static double getScaleFactor(){
+		return scaleFactor;
+	}
 };

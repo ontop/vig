@@ -21,11 +21,9 @@ package it.unibz.inf.data_pumper.basic_datatypes;
  */
 
 public class QualifiedName {
-	private String tableName;
-	private String colName;
-	
-	public QualifiedName(){}
-	
+	private final String tableName;
+	private final String colName;
+		
 	public QualifiedName(String tableName, String colName){
 		this.tableName = tableName;
 		this.colName = colName;
@@ -41,16 +39,27 @@ public class QualifiedName {
 	public String getTableName() {
 		return tableName;
 	}
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
-	}
+
 	public String getColName() {
 		return colName;
 	}
-	public void setColName(String colName) {
-		this.colName = colName;
+	
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if( obj instanceof QualifiedName ){
+			QualifiedName other = (QualifiedName) obj;
+			result = (this.tableName.equals(other.tableName)) && (this.colName.equals(other.colName));
+		}
+		return result;
 	}
 	
+	@Override
+	public int hashCode() {
+		return (this.tableName + "." + this.colName).hashCode();
+	}
+		
+	@Override
 	public String toString(){
 		return tableName + "." + colName;
 	}

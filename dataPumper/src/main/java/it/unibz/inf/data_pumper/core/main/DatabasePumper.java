@@ -1,5 +1,9 @@
 package it.unibz.inf.data_pumper.core.main;
 
+import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
+import it.unibz.inf.data_pumper.persistence.LogToFile;
+
 /*
  * #%L
  * dataPumper
@@ -29,5 +33,16 @@ public abstract class DatabasePumper {
 	
 	public void setPureRandomGeneration() {
 		pureRandom = true;
+	}
+	
+	protected static void closeEverything(){
+		try {
+			DBMSConnection.getInstance().close();
+		} catch (InstanceNullException e) {
+			e.printStackTrace();
+		}
+		finally{
+			LogToFile.getInstance().closeFile();
+		}
 	}
 }

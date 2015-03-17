@@ -24,6 +24,7 @@ package it.unibz.inf.data_pumper.core.main;
 import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.exceptions.UnsupportedDatabaseException;
+import it.unibz.inf.data_pumper.utils.Statistics;
 import it.unibz.inf.vig_options.core.DoubleOption;
 import it.unibz.inf.vig_options.core.Option;
 import it.unibz.inf.vig_options.core.StringOption;
@@ -43,7 +44,7 @@ public class Main {
 	private static Conf conf;
 	
 	// Options
-	private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
+	private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 10, new DoubleRange(0, Double.MAX_VALUE, false, true));	
 	public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
 
 	public static void main(String[] args) {
@@ -69,7 +70,7 @@ public class Main {
 			pumper = new DatabasePumperDB();
 			break;
 		case OBDA:
-			pumper = new DatabasePumperDB();
+			pumper = new DatabasePumperOBDA();
 			break;
 		}
 		
@@ -77,5 +78,7 @@ public class Main {
 			pumper.setPureRandomGeneration();
 		}	
 		pumper.pumpDatabase(percentage);
+		
+		Statistics.printStats();
 	}
 };

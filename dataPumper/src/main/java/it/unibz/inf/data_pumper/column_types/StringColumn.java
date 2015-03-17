@@ -39,6 +39,10 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	private List<Integer> rndIndexes;
 	private String characters = "0123456789abcdefghijklmnopqrstuvwxyz{}[];:@'#/?.><,¬~!£$%^&*()_-+="; // Ordered from the least to the bigger (String.compareTo)
 	
+	
+	// Encodings
+	private long minEncoding;
+	
 	private boolean boundariesSet = false;
 
 	public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
@@ -54,6 +58,7 @@ public class StringColumn extends OrderedDomainColumn<String> {
 			rndIndexes.add(0); // Initial String: 00000000...
 
 		this.numFreshsToInsert = 0;
+		this.minEncoding = 0;
 	}
 	
 	public StringColumn(String name, MySqlDatatypes type, int index, Schema schema) {
@@ -66,6 +71,7 @@ public class StringColumn extends OrderedDomainColumn<String> {
 			rndIndexes.add(0); // Initial String: 00000000...
 
 		this.numFreshsToInsert = 0;
+		this.minEncoding = 0;
 	}
 	
 	// Encode in base 62
@@ -108,7 +114,7 @@ public class StringColumn extends OrderedDomainColumn<String> {
 					values.add(null);
 				}
 				else{
-					String trail = encode(this.generator.nextValue(this.numFreshsToInsert));
+					String trail = encode(minEncoding + this.generator.nextValue(this.numFreshsToInsert));
 					
 					StringBuilder zeroes = new StringBuilder();
 					for( int j = 0; j < min.length() - trail.length(); ++j ){
@@ -176,9 +182,36 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	}
 
 	@Override
-	public void updateMinValue(long newMin) {
-		// The min for strings is always the same
+	public void updateMinValueByEncoding(long newMin) {
+		this.minEncoding = newMin;
 	}
+	
+	@Override
+	public void updateMaxValueByEncoding(long newMax) {
+		this.max = encode(newMax);
+	}
+
+	@Override
+	public long getMaxEncoding() throws BoundariesUnsetException {
+		long base = 1;
+		for( int i = 0; i < datatypeLength && i < 10; ++i ){ // 1.568336881×10¹⁸
+			base *= characters.length();
+		}
+		long proposed = this.minEncoding + this.numFreshsToInsert;
+		if( base >= proposed )
+			return proposed;
+		else {
+			return Long.MAX_VALUE; // Some kind of error
+		}
+	}
+
+	@Override
+	public long getMinEncoding() throws BoundariesUnsetException {
+		return this.minEncoding;
+	}
+
+
+	
 };
 
 //private String increment(String toIncrement) {

@@ -54,49 +54,56 @@ public class Distribution {
 	}
 	
 	public float nullRatioNaive(String columnName, String tableName) {
-		PreparedStatement st1 = dbmsConn.getPreparedStatement("SELECT COUNT("+columnName+") FROM "+tableName);
-		PreparedStatement st2 = dbmsConn.getPreparedStatement("SELECT COUNT("+columnName+") FROM "+tableName+ " WHERE " + columnName + " IS NOT NULL");
-		int total = 0;
-		try {
-			ResultSet rs = st1.executeQuery();
-			if( rs.next() )
-				total = rs.getInt(1);
-			st1.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		int nonNull = 0;
-		try {
-			ResultSet rs = st2.executeQuery();
-			if( rs.next() )
-				nonNull = rs.getInt(1);
-			st2.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		if (total > 0) {
-			return (total - nonNull) / total;
-		}
-		return 0;
+		int nRows = nRows(tableName);
+		if( nRows == 0 ) return 0; // No rows in the table
+		
+		int nNulls = nRows - nValues(columnName, tableName);
+		
+		if( nNulls <= 0 ) return 0;
+		
+		float ratio = (float)(nNulls) / (float)nRows;
+		
+		logger.debug("Nulls Ratio according to Naive Strategy: " + ratio);
+		
+		return ratio; 
 	}
 	
-	public float naiveStrategy(String columnName, String tableName){
+	
+	public float dupsRatioNaive(String columnName, String tableName){
 		
-		int nRows = nRows(columnName, tableName);
+		int nRows = nRows(tableName);
 		if( nRows == 0 ) return 0; // No rows in the table
+		
+		int nNulls = nRows - nValues(columnName, tableName);
 		int sizeProjection = sizeProjection(columnName, tableName);
 		
-		if( nRows - sizeProjection == 0 ) return 0;
+		int nDups = nRows - nNulls - sizeProjection;
 		
-		float ratio = (float)(nRows - sizeProjection) / (float)nRows;
+		if( nDups <= 0 ) return 0;
+		
+		float ratio = (float)(nDups) / (float)nRows;
 		
 		logger.debug("Duplicates Ratio according to Naive Strategy: " + ratio);
 		
 		return ratio; 
 	}
 	
-	public int nRows(String columnName, String tableName){
-		PreparedStatement stmt = dbmsConn.getPreparedStatement("SELECT COUNT("+columnName+") FROM "+tableName);
+	public int nValues(String colName, String tableName){
+		PreparedStatement stmt = dbmsConn.getPreparedStatement("SELECT COUNT("+colName+") FROM "+tableName+ " WHERE " + colName + " IS NOT NULL");
+		int result = 0;
+		try {
+			ResultSet rs = stmt.executeQuery();
+			if( rs.next() )
+				result = rs.getInt(1);
+			stmt.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public int nRows(String tableName){
+		PreparedStatement stmt = dbmsConn.getPreparedStatement("SELECT COUNT(*) FROM "+tableName);
 		int result = 0;
 		try {
 			ResultSet rs = stmt.executeQuery();
@@ -120,6 +127,25 @@ public class Distribution {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		return result;
+	}
+
+	// mysql> select count(distinct A.wlbNpdidWellbore) from wellbore_shallow_all A join wellbore_development_all B on A.wlbNpdidWellbore = B.wlbNpdidWellbore;
+	public int sharedDistinctRows(String colName, String colTableName, String refName, String refTableName) throws SQLException{
+		
+		int result = 0;
+		
+		String projPart = "SELECT COUNT(DISTINCT A."+colName+") FROM "+ colTableName + " A JOIN " + refTableName + " B";
+		String onClause = " ON A."+colName +"=B."+refName;
+		String query = projPart + onClause;
+		
+		PreparedStatement stmt = dbmsConn.getPreparedStatement(query);
+		
+		ResultSet rs = stmt.executeQuery();
+		if( rs.next() ){
+			result = rs.getInt(1);
+		}
+					
 		return result;
 	}
 };

@@ -24,6 +24,7 @@ import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.basic_datatypes.Template;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
+import it.unibz.inf.data_pumper.column_types.exceptions.DateOutOfBoundariesException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 
@@ -38,6 +39,7 @@ import java.util.List;
 public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	
 	private boolean boundariesSet = false;
+	private final int MILLISECONDS_PER_DAY=86400000;
 	
 	public DateTimeColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
@@ -48,7 +50,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	}
 
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException{
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException{
 		
 		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		
@@ -58,26 +60,17 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 		Calendar c = Calendar.getInstance();
 		c.setTime(min);
 		
-		Calendar c1 = Calendar.getInstance();
-		c1.setTime(min);
-		
 		// 86400 Seconds in one day
 		
-		try {
-			for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-				
-				if( i < this.numNullsToInsert ){
-					values.add(null);
-				}
-				
-				long nextValue = this.generator.nextValue(this.numFreshsToInsert) * 86400000 + c.getTimeInMillis();
-				values.add(new Timestamp(nextValue));
+		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+			
+			if( i < this.numNullsToInsert ){
+				values.add(null);
 			}
-		} catch (ValueUnsetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+			long nextValue = this.generator.nextValue(this.numFreshsToInsert) * this.MILLISECONDS_PER_DAY + c.getTimeInMillis();
+			values.add(new Timestamp(nextValue));
 		}
-		
 		setDomain(values);
 	}
 
@@ -128,9 +121,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 				this.numFreshsToInsert = i;
 				break;
 			}
-
 			c.add(Calendar.DATE, 1);
-			
 		}
 
 		max = new Timestamp(c.getTimeInMillis());
@@ -142,7 +133,38 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	}
 
 	@Override
-	public void updateMinValue(long newMin) {
-		min = new Timestamp(newMin);
+	public void updateMinValueByEncoding(long newMin) {
+		min = new Timestamp(newMin * this.MILLISECONDS_PER_DAY);
+	}
+	
+	@Override
+	public void updateMaxValueByEncoding(long newMax) {
+		
+		Calendar upperBound = Calendar.getInstance();
+		upperBound.set(9999,11,31);
+		
+		if( upperBound.getTimeInMillis() > newMax * this.MILLISECONDS_PER_DAY ){		
+			max = new Timestamp(newMax * this.MILLISECONDS_PER_DAY);
+		}
+		else{
+			try{
+				throw new DateOutOfBoundariesException();
+			}catch(DateOutOfBoundariesException e){
+				logger.error("The Date field cannot hold this many rows");
+				System.exit(1);
+			}
+		}
+	}
+	
+	@Override
+	public long getMinEncoding() throws BoundariesUnsetException {
+		long encoding = (long) (this.min.getTime() / this.MILLISECONDS_PER_DAY);
+		return encoding;
+	}
+
+	@Override
+	public long getMaxEncoding() throws BoundariesUnsetException {
+		long encoding = (long) (this.max.getTime() / this.MILLISECONDS_PER_DAY);
+		return encoding;
 	}
 };

@@ -119,9 +119,27 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		
 		this.boundariesSet = true;
 	}
+	
+	@Override
+	public long getMaxEncoding() throws BoundariesUnsetException {
+		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		return this.max.longValue();
+	};
 
 	@Override
-	public void updateMinValue(long newMin) {
-		this.min = new BigDecimal(newMin);
+	public long getMinEncoding() throws BoundariesUnsetException {
+		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		return this.min.longValue();
 	}
+
+	@Override
+	public void updateMinValueByEncoding(long newMin) {
+		this.min = new BigDecimal(newMin);		
+	}
+	
+	@Override
+	public void updateMaxValueByEncoding(long newMax) {
+		this.max = new BigDecimal(newMax);		
+	}
+
 }

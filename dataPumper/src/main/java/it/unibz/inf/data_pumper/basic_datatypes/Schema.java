@@ -45,6 +45,7 @@ public class Schema{
 	private int maxDupsRepetition;
 	
 	private int originalSize;
+	private int numRowsOriginal;
 		
 	private static Logger logger = Logger.getLogger(Schema.class.getCanonicalName());
 	
@@ -186,6 +187,14 @@ public class Schema{
 		for( ColumnPumper cP : columns ){
 			cP.reset();
 		}
+	}
+
+	public void setNumRowsOriginal(int nRows) {
+		this.numRowsOriginal = nRows;
+	}
+	
+	public int getNumRowsOriginal(){
+		return this.numRowsOriginal;
 	}
 
 }

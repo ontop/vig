@@ -118,12 +118,42 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	}
 
 	
-//	@Override
-//	public int getNumFreshsToInsert() throws ValueUnsetException{
-//		if( ! numFreshsToInsertSet ) throw new ValueUnsetException();
-//		return numFreshsToInsert;
-//	}
-//	
+	@Override
+	public int getNumFreshsToInsert() throws ValueUnsetException{
+		if( !this.numDupsNullRowsSet ) throw new ValueUnsetException();
+		return numFreshsToInsert;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		boolean result = false;
+		if( other != null && this.getClass().equals(other.getClass()) ){
+			ColumnPumper that = (ColumnPumper) other;
+			if( this.getSchema().getTableName().equals(that.getSchema().getTableName()) ){
+				if( this.getName().equals(that.getName()) ){
+					result = true;
+				}
+			}
+		}
+		return result;
+	}
+	
+	@Override
+	public int hashCode() {
+		return (this.getSchema().getTableName() + "." + this.getName()).hashCode();
+	}
+	
+	@Override
+	public void incrementNumFreshs() {
+		++this.numFreshsToInsert;
+	}
+	
+	@Override
+	public void decrementNumFreshs() {
+		--this.numFreshsToInsert;
+	}
+
+	//	
 //	@Override
 //	public void setNumFreshsToInsert(int numFreshsToInsert) {
 //		this.numFreshsToInsertSet = true;
@@ -141,6 +171,6 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 //		this.numDupsToInsertSet = true;
 //		this.numDupsToInsert = numDupsToInsert;
 //	}
-	
+
 
 };

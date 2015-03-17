@@ -39,7 +39,7 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 	private int datatypeLengthSecondArgument;
 	private boolean boundariesSet;
 	
-	private long modulo;
+//	private long modulo;
 	
 	public IntColumn(String name, MySqlDatatypes type, int index, int datatypeLengthFirst, int datatypeLengthSecondArgument, Schema schema) {
 		super(name, type, index, schema);
@@ -64,7 +64,7 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 		this.datatypeLengthFirstArgument = Integer.MAX_VALUE;
 		this.datatypeLengthSecondArgument = 0;
 		
-		modulo = Long.MAX_VALUE;
+//		modulo = Long.MAX_VALUE;
 		
 		index = 0;
 	}
@@ -77,29 +77,23 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 			builder.append("9");
 		}
 		
-		modulo = Long.parseLong(builder.toString());
+//		modulo = Long.parseLong(builder.toString());
 		
 	}
 
 
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException {
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
 		
 		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		
 		List<Long> values = new ArrayList<Long>();
 		
-		try {
-			for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-				if( i < this.numNullsToInsert ){
-					values.add(null);
-				}
-				values.add(min + this.generator.nextValue(this.numFreshsToInsert));
+		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+			if( i < this.numNullsToInsert ){
+				values.add(null);
 			}
-		} catch (ValueUnsetException e) {
-			e.printStackTrace();
-			// TODO Release resources
-			System.exit(1);
+			values.add(min + this.generator.nextValue(this.numFreshsToInsert));
 		}
 		setDomain(values);
 	}
@@ -139,7 +133,25 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 	}
 
 	@Override
-	public void updateMinValue(long newMin) {
+	public void updateMinValueByEncoding(long newMin) {
 		this.min = newMin;
 	}
-}
+	
+	@Override
+	public void updateMaxValueByEncoding(long newMax) {
+		this.max = newMax;
+	}
+	
+	@Override
+	public long getMinEncoding() throws BoundariesUnsetException {
+		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		return min.longValue();
+	}
+	
+	@Override
+	public long getMaxEncoding() throws BoundariesUnsetException {
+		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		return this.max.longValue();
+	}
+
+};

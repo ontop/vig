@@ -22,7 +22,7 @@ diskosv:		http://sws.ifi.uio.no/vocab/diskos#
 sourceUri	x
 connectionUrl	jdbc:mysql://localhost/provaNpdOriginal
 username	tir
-password	
+password	gr3g4r10
 driverClass	com.mysql.jdbc.Driver
 
 [MappingDeclaration] @collection [[
