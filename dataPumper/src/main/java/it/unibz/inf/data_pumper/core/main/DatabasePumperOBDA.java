@@ -57,11 +57,6 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 			System.exit(1);
 		}
 	}
-
-	@Override
-	protected void updateBoundariesWRTForeignKeys(List<ColumnPumper> listColumns) throws InstanceNullException, BoundariesUnsetException {
-		
-	}
 	
 	/**
 	 * Update the boundaries of those columns in a correlated set
