@@ -45,6 +45,7 @@ public abstract class OrderedDomainColumn<T extends Comparable<? super T>> exten
 	public void reset(){
 		if( domain != null ) domain.clear();
 		domainIndex = 0;
+		System.gc();
 	}
 	
 	@Override

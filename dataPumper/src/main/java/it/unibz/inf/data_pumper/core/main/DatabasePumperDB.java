@@ -209,6 +209,7 @@ public class DatabasePumperDB extends DatabasePumper {
 				ColumnPumper referred = DBMSConnection.getInstance().getSchema(referredName.getTableName()).getColumn(referredName.getColName());
 				long refMinEncoding = referred.getMinEncoding();
 				if( firstMinEncoding > refMinEncoding ){
+					
 					first.updateMinValueByEncoding(refMinEncoding);
 					// Update the boundaries for all the kids
 					for( QualifiedName kidName : first.referencedBy() ){
