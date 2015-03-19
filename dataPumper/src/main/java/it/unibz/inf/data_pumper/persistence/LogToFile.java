@@ -38,5 +38,9 @@ public class LogToFile {
 			outCSV.close();
 		}
 	}
+	
+	public void flush(){
+		outCSV.flush();
+	}
 		
 };

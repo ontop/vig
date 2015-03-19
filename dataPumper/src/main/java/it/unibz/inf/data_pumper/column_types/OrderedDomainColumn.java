@@ -78,10 +78,15 @@ public abstract class OrderedDomainColumn<T extends Comparable<? super T>> exten
 	}
 	
 	public String getNthInDomain(int n){
-		if( domain.get(n) == null ){
+		String result = domain.get(n) == null ? NULL : domain.get(n).toString() ;
+		if( result == null ){
 			return NULL;
 		}
-		return domain.get(n).toString();
+		if( this.getType().equals(MySqlDatatypes.BIGINT) ){
+			String value1 = result.substring(0, result.indexOf("."));
+			result = value1;
+		}
+		return result;
 	}
 }
 

@@ -26,6 +26,8 @@ import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
+import it.unibz.inf.data_pumper.core.main.DatabasePumper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,6 +102,19 @@ public class StringColumn extends OrderedDomainColumn<String> {
 		
 		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		
+		// Debug
+		if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
+			if( this.numFreshsToInsert >= this.characters.length()){
+				try{
+					throw new DEBUGEXCEPTION();
+				}
+				catch(DEBUGEXCEPTION e){
+					e.printStackTrace();
+					System.exit(1);
+				}
+			}
+		}
+		
 		List<String> values = new ArrayList<String>();
 				
 //		String curString = min;
@@ -154,7 +169,7 @@ public class StringColumn extends OrderedDomainColumn<String> {
 			this.max = upperBoundValue();
 			this.numFreshsToInsert = 1;
 			for( int i = 0; i < this.max.length(); ++i ){
-				this.numFreshsToInsert *= characters.length();
+				this.numFreshsToInsert *= characters.length() -1;
 			}
 		}
 		

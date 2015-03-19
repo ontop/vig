@@ -106,14 +106,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		}
 		
 		for( Schema schema : schemas ){
-			
-			if( schema.getTableName().equals("bsns_arr_area_operator") ){
-				System.err.println("debug");
-			}
-			if( schema.getTableName().equals("company") ){
-				System.err.println("debug");
-			}
-			
+						
 			int nRows = dbOriginal.getNRows(schema.getTableName());
 			
 			nRows = (int) (nRows * scaleFactor);
@@ -149,10 +142,6 @@ public class DatabasePumperDB extends DatabasePumper {
 				}
 				return result;
 			}
-		}
-		
-		if( schema.getTableName().equals("field_investment_yearly") ){
-			System.err.println("debug");
 		}
 
 		List<ColumnPumper> pk = schema.getPk();
@@ -247,10 +236,6 @@ public class DatabasePumperDB extends DatabasePumper {
 				}
 				
 				String value = line.toString();
-				if( schema.getColumns().get(i).getType().equals(MySqlDatatypes.BIGINT) ){
-					String value1 = value.substring(0, value.indexOf("."));
-					value = value1;
-				}
 				
 				persistence.appendLine(value);
 			}
@@ -260,6 +245,7 @@ public class DatabasePumperDB extends DatabasePumper {
 			persistence.closeFile();
 			System.exit(1);
 		}
+		persistence.closeFile();
 		
 	}
 	/**
@@ -298,12 +284,7 @@ public class DatabasePumperDB extends DatabasePumper {
 
 	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException{
 		for( ColumnPumper cP : listColumns ){
-			if( cP.getSchema().getTableName().equals("field_investment_yearly") && cP.getName().equals("prfYear")){
-				System.err.println("debug");
-			}
-			if( cP.getSchema().getTableName().equals("field_investment_yearly") && cP.getName().equals("prfNpdidInformationCarrier")){
-				System.err.println("debug");
-			}
+			
 			cP.fillDomainBoundaries(cP.getSchema(), dbOriginal);
 		}
 	}
