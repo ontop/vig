@@ -23,6 +23,7 @@ package it.unibz.inf.data_pumper.basic_datatypes;
 public enum MySqlDatatypes {
 	INT, 
 	DOUBLE,
+	BIGINT,
 	CHAR,
 	VARCHAR,
 	TEXT,

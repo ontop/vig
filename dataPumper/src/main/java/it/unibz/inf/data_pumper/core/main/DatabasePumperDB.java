@@ -20,6 +20,7 @@ package it.unibz.inf.data_pumper.core.main;
  * #L%
  */
 
+import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
@@ -244,7 +245,14 @@ public class DatabasePumperDB extends DatabasePumper {
 					ColumnPumper col = cols.get(j);
 					line.append(col.getNthInDomain(i));
 				}
-				persistence.appendLine(line.toString());
+				
+				String value = line.toString();
+				if( schema.getColumns().get(i).getType().equals(MySqlDatatypes.BIGINT) ){
+					String value1 = value.substring(0, value.indexOf("."));
+					value = value1;
+				}
+				
+				persistence.appendLine(value);
 			}
 		} catch (ValueUnsetException | IOException e) {
 			e.printStackTrace();
