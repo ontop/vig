@@ -27,6 +27,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	private CorrelatedColumnsExtractor cCE;
 		
 	public DatabasePumperOBDA() {
+		super();
 		try {
 			JoinableColumnsFinder jCF = new JoinableColumnsFinder(Conf.getInstance().mappingsFile());
 			this.cCE = new CorrelatedColumnsExtractor(jCF);
