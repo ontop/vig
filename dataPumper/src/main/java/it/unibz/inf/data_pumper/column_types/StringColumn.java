@@ -27,7 +27,6 @@ import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
-import it.unibz.inf.data_pumper.core.main.DatabasePumper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +38,7 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	
 	// For random generation of fixed size
 	private List<Integer> rndIndexes;
-	private String characters = "0123456789abcdefghijklmnopqrstuvwxyz{}[];:@'#/?.><,¬~!£$%^&*()_-+="; // Ordered from the least to the bigger (String.compareTo)
-	
+	private String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILMNOPKRSTUVWXYZ"; // Ordered from the least to the bigger (String.compareTo)
 	
 	// Encodings
 	private long minEncoding;

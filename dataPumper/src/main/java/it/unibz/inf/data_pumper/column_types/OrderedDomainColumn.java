@@ -25,7 +25,7 @@ import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 
 import java.util.List;
 
-public abstract class OrderedDomainColumn<T extends Comparable<? super T>> extends ColumnPumper {
+public abstract class OrderedDomainColumn<T> extends ColumnPumper {
 	
 	private static final String NULL = "\\N";
 
