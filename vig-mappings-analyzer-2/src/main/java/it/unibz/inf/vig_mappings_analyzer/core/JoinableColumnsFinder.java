@@ -35,6 +35,7 @@ import it.unibz.krdb.obda.model.Term;
 import it.unibz.krdb.obda.model.Variable;
 import it.unibz.krdb.obda.model.impl.OBDADataFactoryImpl;
 import it.unibz.krdb.obda.model.impl.RDBMSourceParameterConstants;
+import it.unibz.krdb.obda.model.impl.TermUtils;
 import it.unibz.krdb.obda.parser.SQLQueryParser;
 import it.unibz.krdb.sql.DBMetadata;
 import it.unibz.krdb.sql.api.ParsedSQLQuery;
@@ -163,16 +164,20 @@ public class JoinableColumnsFinder {
 //								}
 								
 								// Retrieve list of variables
-								List<Variable> variables = new ArrayList<Variable>();
-								for( Term term : f.getTerms() ){
-								    for( Variable v : term.getReferencedVariables() ){
-								        variables.add(v);
-								    }
-								}
+//								List<Variable> variables = new ArrayList<Variable>();
+//								for( Term term : f.getTerms() ){
+////								    Function fTerm = (Function) term;
+//								    for( Variable v : term.getReferencedVariables() ){
+//								        variables.add(v);
+//								    }
+//								}
 								
-								for( int cnt = 0; cnt < variables.size(); ++cnt ){
+								List<Variable> varlist = new LinkedList<>();
+						        TermUtils.addReferencedVariablesTo(varlist, f);
+								
+								for( int cnt = 0; cnt < varlist.size(); ++cnt ){
 								    
-									Variable v = variables.get(cnt);
+									Variable v = varlist.get(cnt);
 									Argument arg = null;
 									if( !old ){
 										arg = new Argument();
