@@ -20,9 +20,12 @@ package it.unibz.inf.data_pumper.column_types;
  * #L%
  */
 
+import java.util.List;
+
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
+import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
@@ -42,19 +45,22 @@ public interface ColumnPumperInterface {
 	 * In case of a foreign key dependency, having a min value 
 	 * equals to the min value of the referred column guarantees
 	 * not to break the foreign key dependency
+	 * @param <T>
 	 * 
 	 * @param newMin
 	 */
-	public void updateMinValueByEncoding(long newMin);
-	public void updateMaxValueByEncoding(long newMax);
+//	public void updateMinValueByEncoding(long newMin);
+//	public void updateMaxValueByEncoding(long newMax);
+//	public long getMaxEncoding() throws BoundariesUnsetException;
+//	public long getMinEncoding() throws BoundariesUnsetException;
+	
+	public <T> List<Interval<T>> getIntervals();
 		
 	public void setNumRowsToInsert(int num) throws TooManyValuesException;
 	public int getNumRowsToInsert() throws ValueUnsetException;
 	
 	int getNumFreshsToInsert() throws ValueUnsetException;
 	
-	public long getMaxEncoding() throws BoundariesUnsetException;
-	public long getMinEncoding() throws BoundariesUnsetException;
 	
 	public String getNthInDomain(int i);
 	

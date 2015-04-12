@@ -43,8 +43,8 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	protected CyclicGroupGenerator generator;
 	
 	public ColumnPumper(String name, MySqlDatatypes type, int index, Schema schema){ // index: index of the column
-		super(name, type, index, schema);
-		this.duplicateRatio = 0;
+	    super(name, type, index, schema);
+	    this.duplicateRatio = 0;
 		this.nullRatio = 0;
 		this.numRowsToInsert = 0;
 		this.numFreshsToInsert = 0;
@@ -54,9 +54,6 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 		nullRatioSet = false;
 		numRowsToInsertSet = false;
 		this.numDupsNullRowsSet = false;
-//		boolean numFreshsToInsertSet = false;
-//		boolean numDupsToInsertSet = false;
-
 	}
 
 	@Override
@@ -102,12 +99,7 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 		try{
 			this.numDupsToInsert = (int) (this.getNumRowsToInsert() * this.getDuplicateRatio());
 			this.numNullsToInsert = (int) (this.getNumRowsToInsert() * this.getNullRatio());
-			this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;
-			
-//			if( this.numFreshsToInsert == -1 ){
-//				System.err.println("FIXME");
-//			}
-			
+			this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;			
 		}catch(ValueUnsetException e){
 			e.printStackTrace();			
 			// TODO: Release all resources
@@ -125,25 +117,6 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	}
 	
 	@Override
-	public boolean equals(Object other) {
-		boolean result = false;
-		if( other != null && this.getClass().equals(other.getClass()) ){
-			ColumnPumper that = (ColumnPumper) other;
-			if( this.getSchema().getTableName().equals(that.getSchema().getTableName()) ){
-				if( this.getName().equals(that.getName()) ){
-					result = true;
-				}
-			}
-		}
-		return result;
-	}
-	
-	@Override
-	public int hashCode() {
-		return (this.getSchema().getTableName() + "." + this.getName()).hashCode();
-	}
-	
-	@Override
 	public void incrementNumFreshs() {
 		++this.numFreshsToInsert;
 	}
@@ -152,25 +125,4 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	public void decrementNumFreshs() {
 		--this.numFreshsToInsert;
 	}
-
-	//	
-//	@Override
-//	public void setNumFreshsToInsert(int numFreshsToInsert) {
-//		this.numFreshsToInsertSet = true;
-//		this.numFreshsToInsert = numFreshsToInsert;
-//	}
-//
-//	@Override
-//	public int getNumDupsToInsert() throws ValueUnsetException {
-//		if( ! numDupsToInsertSet ) throw new ValueUnsetException();
-//		return numDupsToInsert;
-//	}
-//
-//	@Override
-//	public void setNumDupsToInsert(int numDupsToInsert) {
-//		this.numDupsToInsertSet = true;
-//		this.numDupsToInsert = numDupsToInsert;
-//	}
-
-
 };

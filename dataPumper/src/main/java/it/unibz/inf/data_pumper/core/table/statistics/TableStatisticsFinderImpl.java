@@ -1,6 +1,7 @@
 package it.unibz.inf.data_pumper.core.table.statistics;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
@@ -58,4 +59,18 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 		
 		return sharedRatio;
 	}
+
+	/**
+	 * AND DISJOINT FROM ANYONE ELSE! e.g., list of length 1 means
+	 * "IS ONLY IN THIS and NOT IN THE OTHERS"
+	 */
+    @Override
+    public float findSharedRatio(
+            List<ColumnPumper> cols)
+            throws SQLException,
+            InstanceNullException,
+            ValueUnsetException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 }

@@ -25,6 +25,8 @@ import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.basic_datatypes.Template;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
+import it.unibz.inf.data_pumper.column_types.intervals.IntInterval;
+import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 
 import java.sql.PreparedStatement;
@@ -37,63 +39,59 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 	
 	private int datatypeLengthFirstArgument;
 	private int datatypeLengthSecondArgument;
-	private boolean boundariesSet;
+	private boolean firstIntervalSet;
+	
+	private List<Interval<Long>> intervals;
+
+	private int intervalIndex;
 	
 //	private long modulo;
 	
 	public IntColumn(String name, MySqlDatatypes type, int index, int datatypeLengthFirst, int datatypeLengthSecondArgument, Schema schema) {
 		super(name, type, index, schema);
 		domain = null;
-		this.max = null;
-		this.min = null;
+//		this.max = null;
+//		this.min = null;
 		
 		this.datatypeLengthFirstArgument = datatypeLengthFirst;
 		this.datatypeLengthSecondArgument = datatypeLengthSecondArgument;
-				
-		fillModulo();
 		
-		index = 0;
+		this.intervals = new ArrayList<Interval<Long>>();
+		
+		this.intervalIndex = 0;
 	}
 	
 	public IntColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
 		domain = null;
-		this.max = null;
-		this.min = null;
+//		this.max = null;
+//		this.min = null;
 		
 		this.datatypeLengthFirstArgument = Integer.MAX_VALUE;
 		this.datatypeLengthSecondArgument = 0;
 		
-//		modulo = Long.MAX_VALUE;
-		
-		index = 0;
+		this.intervalIndex = 0;
 	}
-	
-	private void fillModulo() { 
-		
-		StringBuilder builder = new StringBuilder();
-		
-		for( int i = 0; i < (datatypeLengthFirstArgument - datatypeLengthSecondArgument); ++i ){
-			builder.append("9");
-		}
-		
-//		modulo = Long.parseLong(builder.toString());
-		
-	}
-
 
 	@Override
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
 		
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		if(!firstIntervalSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		
 		List<Long> values = new ArrayList<Long>();
+		int insertedInInterval = 0;
 		
 		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
 			if( i < this.numNullsToInsert ){
 				values.add(null);
+			}			
+			Interval<Long> interval = intervals.get(intervalIndex);
+			values.add(interval.getMinValue() + this.generator.nextValue(this.numFreshsToInsert));
+			
+			if( insertedInInterval >= interval.nValues ){
+			    insertedInInterval = 0;
+			    ++intervalIndex;
 			}
-			values.add(min + this.generator.nextValue(this.numFreshsToInsert));
 		}
 		setDomain(values);
 	}
@@ -126,32 +124,18 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 		
 		max = min + this.numFreshsToInsert;  
 		
-		setMinValue(min);
-		setMaxValue(max);
+		// Create the single initial interval
+		Interval<Long> interval = new IntInterval(this.getCode(), this.getType(), this.numFreshsToInsert);
 		
-		this.boundariesSet = true;
+		interval.setMinValue(min);
+		interval.setMaxValue(max);
+		
+		this.firstIntervalSet = true;
 	}
 
-	@Override
-	public void updateMinValueByEncoding(long newMin) {
-		this.min = newMin;
-	}
-	
-	@Override
-	public void updateMaxValueByEncoding(long newMax) {
-		this.max = newMax;
-	}
-	
-	@Override
-	public long getMinEncoding() throws BoundariesUnsetException {
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
-		return min.longValue();
-	}
-	
-	@Override
-	public long getMaxEncoding() throws BoundariesUnsetException {
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
-		return this.max.longValue();
-	}
-
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Interval<Long>> getIntervals() {
+        return this.intervals;
+    }
 };

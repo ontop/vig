@@ -4,6 +4,11 @@ import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
+import it.unibz.inf.data_pumper.column_types.intervals.BigDecimalInterval;
+import it.unibz.inf.data_pumper.column_types.intervals.DatetimeInterval;
+import it.unibz.inf.data_pumper.column_types.intervals.IntInterval;
+import it.unibz.inf.data_pumper.column_types.intervals.Interval;
+import it.unibz.inf.data_pumper.column_types.intervals.StringInterval;
 import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
@@ -21,6 +26,10 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+/**
+ * @author tir
+ *
+ */
 public class DatabasePumperOBDA extends DatabasePumperDB {
 	
 	// Aggregated classes
@@ -38,7 +47,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	}
 	
 	@Override
-	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException{
+	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException{
 		for( ColumnPumper cP : listColumns ){
 			cP.fillDomainBoundaries(cP.getSchema(), dbOriginal);
 		}
@@ -48,8 +57,11 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		
 		// search for correlated columns and order them by fresh values to insert
 		List<CorrelatedColumnsList> correlatedCols = this.cCE.extractCorrelatedColumns();
-	
-		// sono gia in ordine, il primo NON va aggiornato
+		
+		// Now, correlatedCols contains sets of correlated columns (closed under referencesTo and referredBy).
+		// I need to identify the intervals, now.
+		identifyIntervals(correlatedCols);
+		
 		try {
 			updateColumnBoundsWRTCorrelated(correlatedCols);
 		} catch (BoundariesUnsetException | DEBUGEXCEPTION e) {
@@ -60,6 +72,115 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	}
 	
 	/**
+	 * Identify the intervals, and put into each of them the number of fresh values to insert
+	 * 
+	 * 
+	 * @param correlatedCols
+	 * @throws DEBUGEXCEPTION 
+	 * @throws InstanceNullException 
+	 */
+	@SuppressWarnings("rawtypes")
+    private void identifyIntervals(
+            List<CorrelatedColumnsList> correlatedCols) throws DEBUGEXCEPTION, InstanceNullException {
+	    
+	    class LocalUtils{
+	        private Interval obtainIntersectionInterval(Interval g, Interval toAdd) throws DEBUGEXCEPTION{
+	            Interval newInt = null; 
+	            switch(g.getType()){
+                    case BIGINT: case DOUBLE: 
+                        newInt = new BigDecimalInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0); 
+                        break;
+                    case CHAR:
+                        break;
+                    case DATETIME:
+                        newInt = new DatetimeInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0);
+                        break;
+                    case INT:
+                        newInt = new IntInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0); 
+                        break;
+                    case LINESTRING:
+                        break;
+                    case LONGTEXT:
+                        break;
+                    case MULTILINESTRING:
+                        break;
+                    case MULTIPOLYGON:
+                        break;
+                    case POINT:
+                        break;
+                    case POLYGON:
+                        break;
+                    case TEXT:
+                        break;
+                    case VARCHAR:
+                        newInt = new StringInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0);
+                        break;
+                    default:
+                        break;
+	                
+	            }
+	            if( newInt == null ){ 
+	                throw new DEBUGEXCEPTION();
+	            }
+	            return newInt;
+	        }
+
+	        @SuppressWarnings("unchecked")
+            void addNewIntervalToCPs(Interval toAdd) throws InstanceNullException {
+	            String[] splits = toAdd.getKey().split("-");
+	            for( String s : splits ){
+	                String[] splits1 = s.split(".");
+	                QualifiedName qF = new QualifiedName(splits1[0], splits1[1]);
+	                ColumnPumper cP = DBMSConnection.getInstance().getSchema(qF.getTableName()).getColumn(qF.getColName());
+	                cP.getIntervals().add(toAdd);
+	            }
+            }
+
+            public void checkIfEmpty(
+                    Interval toAdd, Interval curInt) throws InstanceNullException {
+                String[] splits = toAdd.getKey().split("-");
+                for( String s : splits ){
+                    String[] splits1 = s.split(".");
+                    QualifiedName qF = new QualifiedName(splits1[0], splits1[1]);
+                    ColumnPumper cP = DBMSConnection.getInstance().getSchema(qF.getTableName()).getColumn(qF.getColName());
+                    splits1 = curInt.getKey().split(".");
+                    QualifiedName curQF = new QualifiedName(splits1[0], splits1[1]);
+                    ColumnPumper curCP = DBMSConnection.getInstance().getSchema(curQF.getTableName()).getColumn(curQF.getColName());
+                    // TODO findNElementsInRatio
+                }
+            }
+	    }
+	    
+	    LocalUtils utils = new LocalUtils();
+	    
+	    for( CorrelatedColumnsList cCL : correlatedCols ){
+	        Queue<Interval> groups = new LinkedList<Interval>();
+	        // Add all intervals with a single column
+	        for( int i = 0; i < cCL.size(); ++i ){
+	            ColumnPumper cP = cCL.get(i);
+	            groups.add(cP.getIntervals().get(0));
+	        }
+	        
+	        while( groups.isEmpty() ){
+	            Interval g = groups.poll();
+
+	            // Add intervals with n columns
+	            for( int i = 0; i < cCL.size(); ++i ){
+	                ColumnPumper cP = cCL.get(i);           
+	                Interval curInt = cP.getIntervals().get(0);
+	                // If this combination has not been considered already
+	                if( !g.getKey().contains(curInt.getKey()) ){
+	                    Interval toAdd = utils.obtainIntersectionInterval(g, curInt);
+	                    utils.checkIfEmpty(toAdd, curInt);
+	                    utils.addNewIntervalToCPs(toAdd);
+	                    groups.add(toAdd);
+	                }
+	            }
+	        }
+	    }
+	}
+
+    /**
 	 * Update the boundaries of those columns in a correlated set
 	 * @param correlatedCols
 	 * @throws ValueUnsetException 
@@ -195,11 +316,14 @@ class CorrelatedColumnsExtractor{
 			List<FunctionTemplate> templates = jCF.findFunctionTemplates();
 			
 			Set<Set<Field>> correlatedFields = extractCorrelatedFields(templates);
+			
 			Queue<Set<Field>> qCorrelatedFields = new LinkedList<Set<Field>>();
 			for( Set<Field> fields : correlatedFields ){
 				qCorrelatedFields.add(fields);
 			}
 			correlatedFields.clear();
+			
+			addForeignKeys(qCorrelatedFields);
 			
 			// merge 
 			List<Set<Field>> maximalMerge = new ArrayList<Set<Field>>();
@@ -214,7 +338,48 @@ class CorrelatedColumnsExtractor{
 		return result;
 	}
 
-	private List<CorrelatedColumnsList> constructCorrelatedColumnsList(List<Set<Field>> maximalMerge) {
+	/**
+	 * It adds to each set of correlated fields (Set<Field>) all correlated columns that derive
+	 * from foreign keys.. ( what about transitive closure? ) 
+	 * 
+	 * @param qCorrelatedFields
+	 * @throws InstanceNullException
+	 */
+	private void addForeignKeys(Queue<Set<Field>> qCorrelatedFields) throws InstanceNullException {
+	    
+	    for( Set<Field> sF : qCorrelatedFields ){
+	        for( Field f : sF ){
+	            
+	            Queue<QualifiedName> correlated = new LinkedList<QualifiedName>();
+	            correlated.add(new QualifiedName(f.tableName, f.colName));
+	            
+	            List<QualifiedName> correlatedMax = new ArrayList<QualifiedName>();
+	            // Side effect 
+	            correlatedThroughForeignKeys(correlated, correlatedMax);
+	            
+	            for( QualifiedName qN : correlatedMax ){
+	                Field toInsert = new Field(qN.getTableName(), qN.getColName());
+	                sF.add(toInsert); // Try to insert if new
+	            }
+	        }
+	    }
+    }
+
+    private void correlatedThroughForeignKeys(Queue<QualifiedName> correlated, List<QualifiedName> result) throws InstanceNullException {
+        QualifiedName current = correlated.poll();
+        if( result.contains(current) ){
+            correlatedThroughForeignKeys(correlated, result);  // Recursion
+        }
+        else{
+            ColumnPumper cP = DBMSConnection.getInstance().getSchema(current.getTableName()).getColumn(current.getColName());
+            correlated.addAll(cP.referencedBy());
+            correlated.addAll(cP.referencesTo());
+            result.add(current);
+            correlatedThroughForeignKeys(correlated, result);  // Recursion
+        }
+    }
+
+    private List<CorrelatedColumnsList> constructCorrelatedColumnsList(List<Set<Field>> maximalMerge) {
 		
 		List<CorrelatedColumnsList> result = new ArrayList<CorrelatedColumnsList>();
 		
@@ -224,6 +389,7 @@ class CorrelatedColumnsExtractor{
 				try {
 					ColumnPumper cP = DBMSConnection.getInstance().getSchema(f.tableName).getColumn(f.colName);
 					cCL.insert(cP);
+					
 				} catch (InstanceNullException e) {
 					e.printStackTrace();
 					DatabasePumperOBDA.closeEverything();

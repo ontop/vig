@@ -34,7 +34,6 @@ public abstract class Column {
 	private final MySqlDatatypes type;
 	private boolean allDifferent;
 	private boolean primary;
-	protected boolean geometric;
 	private boolean independent;
 	private boolean autoincrement;
 	protected Schema schema;
@@ -46,7 +45,7 @@ public abstract class Column {
 	
 	private int index;	
 	
-	protected static Logger logger = Logger.getLogger(ColumnPumper.class.getCanonicalName());
+	protected static Logger logger = Logger.getLogger(Column.class.getCanonicalName());
 	
 	// ---------------------- //
 	
@@ -60,39 +59,14 @@ public abstract class Column {
 		referencesTo = new ArrayList<QualifiedName>();
 		referencedBy = new ArrayList<QualifiedName>();
 		this.index = index;
-		this.geometric = false;
 		this.datatypeLength = 15; // A default value
 		
 		this.schema = schema;
 		
 	}
-	
-//	public Column(Schema schema, String name, MySqlDatatypes type, int index){
-//		this.name = name;
-//		this.type = type;
-//		this.primary = false;
-//		this.independent = false;
-//		this.allDifferent = false;
-//		this.autoincrement = false;
-//		referencesTo = new ArrayList<QualifiedName>();
-//		referencedBy = new ArrayList<QualifiedName>();
-//		this.maximumChaseCycles = Integer.MAX_VALUE;
-//		this.currentChaseCycle = 0;
-//		this.duplicatesRatio = 0;
-//		this.index = index;
-//		this.geometric = false;
-//		this.datatypeLength = 15; // A default value
-//		this.schema = schema;
-//		
-//		logger.setLevel(Level.INFO);
-//	}
-	
+		
 	public Schema getSchema(){
 		return schema;
-	}
-	
-	public boolean isGeometric(){
-		return geometric;
 	}
 	
 	public int getIndex(){
@@ -153,5 +127,24 @@ public abstract class Column {
 	
 	public String toString(){
 		return name;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+	    boolean result = false;
+	    if( other != null && this.getClass().equals(other.getClass()) ){
+	        Column that = (Column) other;
+	        if( this.schema.getTableName().equals(that.schema.getTableName()) ){
+	            if( this.getName().equals(that.getName()) ){
+	                result = true;
+	            }
+	        }
+	    }
+	    return result;
+	}
+	
+	@Override
+	public int hashCode() {
+	    return (this.getSchema().getTableName() + "." + this.getName()).hashCode();
 	}
 }

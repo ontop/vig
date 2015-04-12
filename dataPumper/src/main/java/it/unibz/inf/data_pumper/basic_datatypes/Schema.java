@@ -84,8 +84,8 @@ public class Schema{
 	
 	public void addColumn(String colName, String typeString, int index){
 		
-		if( typeString.startsWith("int") ) columns.add(new IntColumn(colName, MySqlDatatypes.DOUBLE, index, this));
-		else if( typeString.startsWith("smallint") ) columns.add(new IntColumn(colName, MySqlDatatypes.DOUBLE, index, this));
+		if( typeString.startsWith("int") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, index, this));
+		else if( typeString.startsWith("smallint") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, index, this));
 		else if( typeString.startsWith("decimal") ) columns.add(new IntColumn(colName, MySqlDatatypes.INT, index, TypeStringParser.getFirstBinaryDatatypeSize(typeString), TypeStringParser.getSecondBinaryDatatypeSize(typeString), this));
 		else if( typeString.startsWith("double") )
 			columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index, this));

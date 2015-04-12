@@ -20,7 +20,6 @@ package it.unibz.inf.data_pumper.core.main;
  * #L%
  */
 
-import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
@@ -86,7 +85,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		try {
 			establishColumnBounds(listColumns);
 			updateBoundariesWRTForeignKeys(listColumns);
-		} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException e) {
+		} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException | DEBUGEXCEPTION e) {
 			e.printStackTrace();
 			DatabasePumper.closeEverything();
 			System.exit(1);
@@ -204,13 +203,13 @@ public class DatabasePumperDB extends DatabasePumper {
 		
 		while( !toUpdateBoundaries.isEmpty() ){
 			ColumnPumper first = toUpdateBoundaries.remove();
-			long firstMinEncoding = first.getMinEncoding();
+			long firstMinEncoding = first.getIntervals().get(0).getMinEncoding();
 			for( QualifiedName referredName : first.referencesTo() ){
 				ColumnPumper referred = DBMSConnection.getInstance().getSchema(referredName.getTableName()).getColumn(referredName.getColName());
-				long refMinEncoding = referred.getMinEncoding();
+				long refMinEncoding = referred.getIntervals().get(0).getMinEncoding();
 				if( firstMinEncoding > refMinEncoding ){
 					
-					first.updateMinValueByEncoding(refMinEncoding);
+					first.getIntervals().get(0).updateMinValueByEncoding(refMinEncoding);
 					// Update the boundaries for all the kids
 					for( QualifiedName kidName : first.referencedBy() ){
 						ColumnPumper kid = DBMSConnection.getInstance().getSchema(kidName.getTableName()).getColumn(kidName.getColName());
@@ -283,7 +282,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		}	
 	}
 
-	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException{
+	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException{
 		for( ColumnPumper cP : listColumns ){
 			
 			cP.fillDomainBoundaries(cP.getSchema(), dbOriginal);
@@ -301,13 +300,7 @@ public class DatabasePumperDB extends DatabasePumper {
 			}
 		}
 	}
-	
-	private void resetDuplicateValues(Schema schema){
-		for( ColumnPumper c : schema.getColumns()){
-			c.reset();
-		}
-	}
-	
+		
 	public static double getScaleFactor(){
 		return scaleFactor;
 	}

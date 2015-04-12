@@ -31,8 +31,8 @@ public abstract class OrderedDomainColumn<T> extends ColumnPumper {
 
 	protected List<T> domain;
 	private int domainIndex;
-	protected T max;
-	protected T min;
+//	protected T max;
+//	protected T min;
 	
 	public OrderedDomainColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
@@ -54,27 +54,30 @@ public abstract class OrderedDomainColumn<T> extends ColumnPumper {
 		return result;
 	}
 		
-	public void setMaxValue(T max){
-		this.max = max;
-	}
+//	public void setMaxValue(T max){
+//		this.max = max;
+//	}
+//	
+//	public T getMaxValue(){
+//		return max;
+//	}
+//	
+//	public void setMinValue(T min){
+//		this.min = min;
+//	}
+//	
+//	public T getMinValue(){
+//		return min;
+//	}
 	
-	public T getMaxValue(){
-		return max;
-	}
-	
-	public void setMinValue(T min){
-		this.min = min;
-	}
-	
-	public T getMinValue(){
-		return min;
+	public String getCode(){
+	    String result = this.getSchema().getTableName() + "." + this.getName();
+	    return result;
 	}
 	
 	public void setDomain(List<T> newDomain){
 		if( domain == null ){
 			domain = newDomain;
-//			if( domain.size() != 0 )
-//				Collections.shuffle(domain);
 		}
 	}
 	
