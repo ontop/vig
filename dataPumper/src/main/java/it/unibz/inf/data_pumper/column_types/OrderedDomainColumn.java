@@ -22,6 +22,7 @@ package it.unibz.inf.data_pumper.column_types;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
+import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 
 import java.util.List;
 
@@ -31,13 +32,17 @@ public abstract class OrderedDomainColumn<T> extends ColumnPumper {
 
 	protected List<T> domain;
 	private int domainIndex;
-//	protected T max;
-//	protected T min;
+	
+	protected int intervalIndex;
+	protected List<Interval<T>> intervals;
+	protected boolean firstIntervalSet;
 	
 	public OrderedDomainColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
-		domain = null;
-		domainIndex = 0;
+		this.domain = null;
+		this.domainIndex = 0;
+		this.intervalIndex = 0;
+		this.firstIntervalSet = false;
 	}
 	
 	@Override

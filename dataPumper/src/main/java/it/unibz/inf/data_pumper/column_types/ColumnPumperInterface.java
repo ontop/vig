@@ -33,6 +33,16 @@ public interface ColumnPumperInterface {
 	
 	public String getNextValue();
 	
+	/** 
+	 * Pick values from intervals and put them into the 
+	 * domain vector (held in main memory).
+	 * 
+	 * @param schema
+	 * @param db
+	 * @throws BoundariesUnsetException
+	 * @throws ValueUnsetException
+	 *
+	 */
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException;
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException;
 	
@@ -54,6 +64,9 @@ public interface ColumnPumperInterface {
 //	public long getMaxEncoding() throws BoundariesUnsetException;
 //	public long getMinEncoding() throws BoundariesUnsetException;
 	
+	// TODO Do I really want to guarantee free access to the intervals?
+	// Pro: modular
+	// Contro: I might corrupt the intervals 
 	public <T> List<Interval<T>> getIntervals();
 		
 	public void setNumRowsToInsert(int num) throws TooManyValuesException;

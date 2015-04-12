@@ -25,6 +25,8 @@ import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.basic_datatypes.Template;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
+import it.unibz.inf.data_pumper.column_types.intervals.BigDecimalInterval;
+import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 
 import java.math.BigDecimal;
@@ -37,48 +39,36 @@ import java.util.List;
 public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		
 	private boolean boundariesSet = false;
-	
-	public BigDecimalColumn(String name, MySqlDatatypes type, int index, int datatypeFirstLength, Schema schema) {
-		super(name, type, index, schema);
-		domain = null;
-		this.max = null;
-		this.min = null;
-	}
-	
+			
 	public BigDecimalColumn(String name, MySqlDatatypes type, int index, Schema schema) {
-		super(name, type, index, schema);
-		domain = null;
-		this.max = null;
-		this.min = null;
+	    super(name, type, index, schema);		
 	}
 	
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException {
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
 		
 		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		
 		List<BigDecimal> values = new ArrayList<BigDecimal>();
+		int insertedInInterval = 0;
 		
-//		for( BigDecimal i = this.getMinValue(); i.compareTo(this.getMaxValue()) < 0; i.add(BigDecimal.ONE) ){
-//			values.add(i);
-//		}
-		
-		try {
-			for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-				if( i < this.numNullsToInsert ){
-					values.add(null);
-				}
-				values.add(min.add(new BigDecimal(this.generator.nextValue(this.numFreshsToInsert))));
-			}
-		} catch (ValueUnsetException e) {
-			e.printStackTrace();
-			// TODO Release resources
-			System.exit(1);
+		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+		    if( i < this.numNullsToInsert ){
+		        values.add(null);
+		    }
+		    Interval<BigDecimal> interval = this.intervals.get(intervalIndex);
+		    BigDecimal genFresh = new BigDecimal(this.generator.nextValue(this.numFreshsToInsert));
+		    values.add(interval.getMinValue().add(genFresh));
+		    
+		    
+		    if( insertedInInterval >= interval.nValues ){
+                insertedInInterval = 0;
+                ++intervalIndex;
+		    }
 		}
-		
 		setDomain(values);
 	}
-
+	
 	@Override
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
 		
@@ -92,8 +82,8 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		stmt = db.getPreparedStatement(t);
 		
 		ResultSet result = null;
-		min = BigDecimal.ZERO;
-		max = BigDecimal.ZERO;
+		BigDecimal min = BigDecimal.ZERO;
+		BigDecimal max = BigDecimal.ZERO;
 		try {
 			result = stmt.executeQuery();
 			if( result.next() ){
@@ -107,39 +97,25 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		}
 		
 		BigDecimal nFreshsBigDecimalTransl = new BigDecimal(this.numFreshsToInsert);
-		
 		BigDecimal proposedMax = min.add(nFreshsBigDecimalTransl); 
 		
 		if( proposedMax.compareTo(max) > 0 ){ 
 				max = proposedMax;
 		}
 		
-		setMinValue(min);
-		setMaxValue(max);
+		// Create the single initial interval
+        Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getCode(), this.getType(), this.numFreshsToInsert);
+		
+		initialInterval.setMinValue(min);
+		initialInterval.setMaxValue(max);
 		
 		this.boundariesSet = true;
 	}
 	
-	@Override
-	public long getMaxEncoding() throws BoundariesUnsetException {
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
-		return this.max.longValue();
-	};
-
-	@Override
-	public long getMinEncoding() throws BoundariesUnsetException {
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
-		return this.min.longValue();
-	}
-
-	@Override
-	public void updateMinValueByEncoding(long newMin) {
-		this.min = new BigDecimal(newMin);		
-	}
-	
-	@Override
-	public void updateMaxValueByEncoding(long newMax) {
-		this.max = new BigDecimal(newMax);		
-	}
+	@SuppressWarnings("unchecked")
+    @Override
+    public List<Interval<BigDecimal>> getIntervals() {
+        return this.intervals;
+    }
 
 }

@@ -39,38 +39,23 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 	
 	private int datatypeLengthFirstArgument;
 	private int datatypeLengthSecondArgument;
-	private boolean firstIntervalSet;
-	
-	private List<Interval<Long>> intervals;
-
-	private int intervalIndex;
-	
-//	private long modulo;
 	
 	public IntColumn(String name, MySqlDatatypes type, int index, int datatypeLengthFirst, int datatypeLengthSecondArgument, Schema schema) {
 		super(name, type, index, schema);
-		domain = null;
-//		this.max = null;
-//		this.min = null;
 		
 		this.datatypeLengthFirstArgument = datatypeLengthFirst;
 		this.datatypeLengthSecondArgument = datatypeLengthSecondArgument;
 		
 		this.intervals = new ArrayList<Interval<Long>>();
-		
-		this.intervalIndex = 0;
 	}
 	
 	public IntColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
-		domain = null;
-//		this.max = null;
-//		this.min = null;
 		
 		this.datatypeLengthFirstArgument = Integer.MAX_VALUE;
 		this.datatypeLengthSecondArgument = 0;
 		
-		this.intervalIndex = 0;
+		this.intervals = new ArrayList<Interval<Long>>();
 	}
 
 	@Override
