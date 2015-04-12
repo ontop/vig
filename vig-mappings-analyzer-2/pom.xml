@@ -11,7 +11,7 @@
 		<dependency>
 			<groupId>it.unibz.inf.ontop</groupId>
 			<artifactId>ontop-quest-owlapi3</artifactId>
-			<version>1.14.1-SNAPSHOT</version>
+			<version>1.14.0</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
