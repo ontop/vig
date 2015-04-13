@@ -33,7 +33,6 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper {
 	protected List<T> domain;
 	private int domainIndex;
 	
-	protected int intervalIndex;
 	protected List<Interval<T>> intervals;
 	protected boolean firstIntervalSet;
 	
@@ -41,7 +40,6 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper {
 		super(name, type, index, schema);
 		this.domain = null;
 		this.domainIndex = 0;
-		this.intervalIndex = 0;
 		this.firstIntervalSet = false;
 	}
 	

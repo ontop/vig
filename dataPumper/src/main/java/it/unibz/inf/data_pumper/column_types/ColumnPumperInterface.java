@@ -20,6 +20,7 @@ package it.unibz.inf.data_pumper.column_types;
  * #L%
  */
 
+import java.sql.SQLException;
 import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
@@ -44,7 +45,7 @@ public interface ColumnPumperInterface {
 	 *
 	 */
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException;
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException;
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException;
 	
 	public void setDuplicatesRatio(float ratio);
 	public float getDuplicateRatio() throws ValueUnsetException;

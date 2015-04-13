@@ -30,6 +30,7 @@ import it.unibz.inf.data_pumper.column_types.intervals.StringInterval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,6 +108,8 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	            String valueToAdd = zeroes.toString() + trail;
 	            values.add(valueToAdd);
 
+	            ++insertedInInterval;
+	            
 	            if( insertedInInterval >= interval.nFreshsToInsert ){
 	                insertedInInterval = 0;
 	                ++intervalIndex;
@@ -117,7 +120,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	}
 
 	@Override
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException {
 		
 		this.initNumDupsNullsFreshs();
 		

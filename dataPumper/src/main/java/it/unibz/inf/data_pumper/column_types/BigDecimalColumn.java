@@ -38,16 +38,15 @@ import java.util.List;
 
 public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		
-	private boolean boundariesSet = false;
-			
-	public BigDecimalColumn(String name, MySqlDatatypes type, int index, Schema schema) {
+    public BigDecimalColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 	    super(name, type, index, schema);		
+	    this.intervals = new ArrayList<Interval<BigDecimal>>();
 	}
 	
 	@Override
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
 		
-		if(!boundariesSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+		if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 
 		int intervalIndex = 0;
 		
@@ -62,7 +61,8 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		        Interval<BigDecimal> interval = this.intervals.get(intervalIndex);
 		        BigDecimal genFresh = new BigDecimal(this.generator.nextValue(this.numFreshsToInsert));
 		        values.add(interval.getMinValue().add(genFresh));
-		        
+
+		        ++insertedInInterval;
 		        
 		        if( insertedInInterval >= interval.nFreshsToInsert ){
 		            insertedInInterval = 0;
@@ -74,7 +74,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 	}
 	
 	@Override
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException {
 		
 		this.initNumDupsNullsFreshs();
 		
@@ -115,7 +115,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		
 		this.intervals.add(initialInterval);
 		
-		this.boundariesSet = true;
+		this.firstIntervalSet = true;
 	}
 	
 	@SuppressWarnings("unchecked")
