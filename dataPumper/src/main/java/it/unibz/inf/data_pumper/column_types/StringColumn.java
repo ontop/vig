@@ -25,13 +25,11 @@ import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
-import it.unibz.inf.data_pumper.column_types.intervals.BigDecimalInterval;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.column_types.intervals.StringInterval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,13 +38,9 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	// Constants
 	private static final int MAX_LENGTH = 20;
 	
-	// For random generation of fixed size
-//	private List<Integer> rndIndexes;
-	private String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILMNOPKRSTUVWXYZ"; // Ordered from the least to the bigger (String.compareTo)
-	
-	// Encodings
-	private long minEncoding;
-	
+	// Characters out of which Strings will be formed
+	String characters = StringInterval.characters;
+		
 	public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
 		super(name, type, index, schema);
 
@@ -60,7 +54,6 @@ public class StringColumn extends MultiIntervalColumn<String> {
 //			rndIndexes.add(0); // Initial String: 00000000...
 
 		this.numFreshsToInsert = 0;
-		this.minEncoding = 0;
 	}
 	
 	public StringColumn(String name, MySqlDatatypes type, int index, Schema schema) {
@@ -73,76 +66,54 @@ public class StringColumn extends MultiIntervalColumn<String> {
 //			rndIndexes.add(0); // Initial String: 00000000...
 
 		this.numFreshsToInsert = 0;
-		this.minEncoding = 0;
 	}
 	
-	// Encode in base 62
-	private String encode(long value){
-		
-		List<Integer> number = new ArrayList<Integer>();
-		
-		while( !(value == 0) ){
-			int remainder = (int) value % characters.length();
-			number.add(0, remainder);
-			
-			value = value / characters.length();
-			
-		}
-		
-		StringBuilder result = new StringBuilder();
-		for( int i = 0; i < number.size(); ++i ){
-			result.append(characters.charAt((number.get(i))));
-		}
-		
-		return result.toString();
-	}
-
 	@Override
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
-		
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
-		
-		int intervalIndex = 0;
-		
-		// Debug
-		if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
-			if( this.numFreshsToInsert >= this.characters.length()){
-				try{
-					throw new DEBUGEXCEPTION();
-				}
-				catch(DEBUGEXCEPTION e){
-					e.printStackTrace();
-					System.exit(1);
-				}
-			}
-		}
-		
-		List<String> values = new ArrayList<String>();
-		int insertedInInterval = 0;
-				
-		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-		    if( i < this.numNullsToInsert ){
-		        values.add(null);
-		    }
-		    else{
-		        Interval<String> interval = this.intervals.get(intervalIndex);
-		        
-		        String trail = encode(interval.getMinEncoding() + this.generator.nextValue(this.numFreshsToInsert));
 
-		        StringBuilder zeroes = new StringBuilder();
-		        for( int j = 0; j < encode(interval.getMinEncoding()).length() - trail.length(); ++j ){
-		            zeroes.append("0");
-		        }
-		        String valueToAdd = zeroes.toString() + trail;
-		        values.add(valueToAdd);
-		        
-		        if( insertedInInterval >= interval.nValues ){
-	                  insertedInInterval = 0;
-	                    ++intervalIndex;
-	              }
-		    }
-		}				
-		setDomain(values);
+	    if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+
+	    int intervalIndex = 0;
+
+	    // Debug
+	    if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
+	        if( this.numFreshsToInsert >= this.characters.length()){
+	            try{
+	                throw new DEBUGEXCEPTION();
+	            }
+	            catch(DEBUGEXCEPTION e){
+	                e.printStackTrace();
+	                System.exit(1);
+	            }
+	        }
+	    }
+
+	    List<String> values = new ArrayList<String>();
+	    int insertedInInterval = 0;
+
+	    for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+	        if( i < this.numNullsToInsert ){
+	            values.add(null);
+	        }
+	        else{
+	            Interval<String> interval = this.intervals.get(intervalIndex);
+
+	            String trail = StringInterval.encode(interval.getMinEncoding() + this.generator.nextValue(this.numFreshsToInsert));
+
+	            StringBuilder zeroes = new StringBuilder();
+	            for( int j = 0; j < StringInterval.encode(interval.getMinEncoding()).length() - trail.length(); ++j ){
+	                zeroes.append("0");
+	            }
+	            String valueToAdd = zeroes.toString() + trail;
+	            values.add(valueToAdd);
+
+	            if( insertedInInterval >= interval.nFreshsToInsert ){
+	                insertedInInterval = 0;
+	                ++intervalIndex;
+	            }
+	        }
+	    }				
+	    setDomain(values);
 	}
 
 	@Override
@@ -150,7 +121,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		
 		this.initNumDupsNullsFreshs();
 		
-//		this.getIntervals().get(0).minEncoding = 0; // TODO TTT
+//		this.getIntervals().get(0).minEncoding = 0; // TODO See this part
 //		String lowerBouldValue = lowerBoundValue();
 //		
 //		String trail = encode(this.numFreshsToInsert);
@@ -171,12 +142,12 @@ public class StringColumn extends MultiIntervalColumn<String> {
 //		}
 		
 		// Create the single initial interval
-        Interval<String> initialInterval = new StringInterval(this.getCode(), this.getType(), this.numFreshsToInsert);
+        Interval<String> initialInterval = new StringInterval(this.getCode(), this.getType(), this.numFreshsToInsert, this.datatypeLength);
         
         initialInterval.setMinValue(lowerBoundValue());
         initialInterval.setMaxValue(upperBoundValue());
 		
-		this.boundariesSet = true;
+		this.firstIntervalSet = true;
 	}
 	
 	private String lowerBoundValue(){
@@ -199,42 +170,13 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		return builder.toString();
 	}
 
-	@Override
-	public void updateMinValueByEncoding(long newMin) {
-		this.minEncoding = newMin;
-	}
-	
-	@Override
-	public void updateMaxValueByEncoding(long newMax) {
-		this.max = encode(newMax);
-	}
 
-	@Override
-	public long getMaxEncoding() throws BoundariesUnsetException {
-		long base = 1;
-		for( int i = 0; i < datatypeLength && i < 10; ++i ){ // 1.568336881×10¹⁸
-			base *= characters.length();
-		}
-		long proposed = this.minEncoding + this.numFreshsToInsert;
-		if( base >= proposed )
-			return proposed;
-		else {
-			return Long.MAX_VALUE; // Some kind of error
-		}
-	}
-
-	@Override
-	public long getMinEncoding() throws BoundariesUnsetException {
-		return this.minEncoding;
-	}
 
     @Override
     public <T> List<Interval<T>> getIntervals() {
         // TODO Auto-generated method stub
         return null;
     }
-
-
 	
 };
 

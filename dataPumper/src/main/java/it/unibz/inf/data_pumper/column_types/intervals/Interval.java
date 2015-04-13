@@ -20,14 +20,14 @@ public abstract class Interval<T> {
     private final MySqlDatatypes type;
     
     private final String key;
-    public final long nValues;
+    public final long nFreshsToInsert;
     
     public Interval(String key, MySqlDatatypes type, long nValues){
         this.domain = null;
         this.domainIndex = 0;
         this.key = key;
         this.type = type;
-        this.nValues = nValues;
+        this.nFreshsToInsert = nValues;
     }
     
     public String getKey(){

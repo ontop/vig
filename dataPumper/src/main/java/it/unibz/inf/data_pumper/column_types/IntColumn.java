@@ -61,7 +61,7 @@ public class IntColumn extends MultiIntervalColumn<Long> {
 	@Override
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
 		
-		if(!firstIntervalSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 		
 		List<Long> values = new ArrayList<Long>();
 		int insertedInInterval = 0;
@@ -74,7 +74,7 @@ public class IntColumn extends MultiIntervalColumn<Long> {
 			    Interval<Long> interval = intervals.get(intervalIndex);
 			    values.add(interval.getMinValue() + this.generator.nextValue(this.numFreshsToInsert));
 			    
-			    if( insertedInInterval >= interval.nValues ){
+			    if( insertedInInterval >= interval.nFreshsToInsert ){
 			        insertedInInterval = 0;
 			        ++intervalIndex;
 			    }

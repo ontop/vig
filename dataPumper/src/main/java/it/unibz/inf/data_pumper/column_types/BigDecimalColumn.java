@@ -47,7 +47,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 	@Override
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
 		
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		if(!boundariesSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 
 		int intervalIndex = 0;
 		
@@ -64,7 +64,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		        values.add(interval.getMinValue().add(genFresh));
 		        
 		        
-		        if( insertedInInterval >= interval.nValues ){
+		        if( insertedInInterval >= interval.nFreshsToInsert ){
 		            insertedInInterval = 0;
 		            ++intervalIndex;
 		        }
