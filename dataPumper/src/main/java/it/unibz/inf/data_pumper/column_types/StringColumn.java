@@ -25,9 +25,13 @@ import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
+import it.unibz.inf.data_pumper.column_types.intervals.BigDecimalInterval;
+import it.unibz.inf.data_pumper.column_types.intervals.Interval;
+import it.unibz.inf.data_pumper.column_types.intervals.StringInterval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +41,7 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	private static final int MAX_LENGTH = 20;
 	
 	// For random generation of fixed size
-	private List<Integer> rndIndexes;
+//	private List<Integer> rndIndexes;
 	private String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILMNOPKRSTUVWXYZ"; // Ordered from the least to the bigger (String.compareTo)
 	
 	// Encodings
@@ -52,10 +56,10 @@ public class StringColumn extends OrderedDomainColumn<String> {
 		
 		if( this.datatypeLength > MAX_LENGTH ) this.datatypeLength = MAX_LENGTH;
 		
-		rndIndexes = new ArrayList<Integer>(datatypeLength);
-
-		for( int i = 0; i < datatypeLength; ++i )
-			rndIndexes.add(0); // Initial String: 00000000...
+//		rndIndexes = new ArrayList<Integer>(datatypeLength);
+//
+//		for( int i = 0; i < datatypeLength; ++i )
+//			rndIndexes.add(0); // Initial String: 00000000...
 
 		this.numFreshsToInsert = 0;
 		this.minEncoding = 0;
@@ -65,10 +69,10 @@ public class StringColumn extends OrderedDomainColumn<String> {
 		super(name, type, index, schema);
 
 		this.datatypeLength = MAX_LENGTH;
-		rndIndexes = new ArrayList<Integer>(datatypeLength);
-
-		for( int i = 0; i < datatypeLength; ++i )
-			rndIndexes.add(0); // Initial String: 00000000...
+//		rndIndexes = new ArrayList<Integer>(datatypeLength);
+//
+//		for( int i = 0; i < datatypeLength; ++i )
+//			rndIndexes.add(0); // Initial String: 00000000...
 
 		this.numFreshsToInsert = 0;
 		this.minEncoding = 0;
@@ -96,9 +100,11 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	}
 
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException{
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
 		
 		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		
+		int intervalIndex = 0;
 		
 		// Debug
 		if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
@@ -114,36 +120,30 @@ public class StringColumn extends OrderedDomainColumn<String> {
 		}
 		
 		List<String> values = new ArrayList<String>();
+		int insertedInInterval = 0;
 				
-//		String curString = min;
-//		for( int i = 0; i < this.numFreshsToInsert; ++i ){
-//			curString = increment(min);
-//			values.add(curString);
-//		}
-		
-		try {
-			for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-				if( i < this.numNullsToInsert ){
-					values.add(null);
-				}
-				else{
-					String trail = encode(minEncoding + this.generator.nextValue(this.numFreshsToInsert));
-					
-					StringBuilder zeroes = new StringBuilder();
-					for( int j = 0; j < min.length() - trail.length(); ++j ){
-						zeroes.append("0");
-					}
-					String valueToAdd = zeroes.toString() + trail;
-					
-					values.add(valueToAdd);
-				}
-			}
-		} catch (ValueUnsetException e) {
-			e.printStackTrace();
-			// TODO Release resources
-			System.exit(1);
-		}
-				
+		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+		    if( i < this.numNullsToInsert ){
+		        values.add(null);
+		    }
+		    else{
+		        Interval<String> interval = this.intervals.get(intervalIndex);
+		        
+		        String trail = encode(interval.getMinEncoding() + this.generator.nextValue(this.numFreshsToInsert));
+
+		        StringBuilder zeroes = new StringBuilder();
+		        for( int j = 0; j < encode(interval.getMinEncoding()).length() - trail.length(); ++j ){
+		            zeroes.append("0");
+		        }
+		        String valueToAdd = zeroes.toString() + trail;
+		        values.add(valueToAdd);
+		        
+		        if( insertedInInterval >= interval.nValues ){
+	                  insertedInInterval = 0;
+	                    ++intervalIndex;
+	              }
+		    }
+		}				
 		setDomain(values);
 	}
 
@@ -152,24 +152,31 @@ public class StringColumn extends OrderedDomainColumn<String> {
 		
 		this.initNumDupsNullsFreshs();
 		
-		this.min = lowerBoundValue();
+//		this.getIntervals().get(0).minEncoding = 0; // TODO TTT
+//		String lowerBouldValue = lowerBoundValue();
+//		
+//		String trail = encode(this.numFreshsToInsert);
+//		StringBuilder zeroes = new StringBuilder();
+//		
+//		if( lowerBouldValue.length() > trail.length() ){
+//			for( int j = 0; j < lowerBouldValue.length() - trail.length(); ++j ){
+//				zeroes.append("0");
+//			}
+//			this.max = zeroes.toString() + trail;
+//		}
+//		else{
+//			this.max = upperBoundValue();
+//			this.numFreshsToInsert = 1;
+//			for( int i = 0; i < this.max.length(); ++i ){
+//				this.numFreshsToInsert *= characters.length() -1;
+//			}
+//		}
 		
-		String trail = encode(this.numFreshsToInsert);
-		StringBuilder zeroes = new StringBuilder();
-		
-		if( min.length() > trail.length() ){
-			for( int j = 0; j < min.length() - trail.length(); ++j ){
-				zeroes.append("0");
-			}
-			this.max = zeroes.toString() + trail;
-		}
-		else{
-			this.max = upperBoundValue();
-			this.numFreshsToInsert = 1;
-			for( int i = 0; i < this.max.length(); ++i ){
-				this.numFreshsToInsert *= characters.length() -1;
-			}
-		}
+		// Create the single initial interval
+        Interval<String> initialInterval = new StringInterval(this.getCode(), this.getType(), this.numFreshsToInsert);
+        
+        initialInterval.setMinValue(lowerBoundValue());
+        initialInterval.setMaxValue(upperBoundValue());
 		
 		this.boundariesSet = true;
 	}
@@ -222,6 +229,12 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	public long getMinEncoding() throws BoundariesUnsetException {
 		return this.minEncoding;
 	}
+
+    @Override
+    public <T> List<Interval<T>> getIntervals() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 
 	

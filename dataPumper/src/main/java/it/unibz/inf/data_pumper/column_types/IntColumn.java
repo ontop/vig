@@ -70,12 +70,14 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 			if( i < this.numNullsToInsert ){
 				values.add(null);
 			}			
-			Interval<Long> interval = intervals.get(intervalIndex);
-			values.add(interval.getMinValue() + this.generator.nextValue(this.numFreshsToInsert));
-			
-			if( insertedInInterval >= interval.nValues ){
-			    insertedInInterval = 0;
-			    ++intervalIndex;
+			else{
+			    Interval<Long> interval = intervals.get(intervalIndex);
+			    values.add(interval.getMinValue() + this.generator.nextValue(this.numFreshsToInsert));
+			    
+			    if( insertedInInterval >= interval.nValues ){
+			        insertedInInterval = 0;
+			        ++intervalIndex;
+			    }
 			}
 		}
 		setDomain(values);

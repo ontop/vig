@@ -48,6 +48,8 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
 		
 		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+
+		int intervalIndex = 0;
 		
 		List<BigDecimal> values = new ArrayList<BigDecimal>();
 		int insertedInInterval = 0;
@@ -56,14 +58,16 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		    if( i < this.numNullsToInsert ){
 		        values.add(null);
 		    }
-		    Interval<BigDecimal> interval = this.intervals.get(intervalIndex);
-		    BigDecimal genFresh = new BigDecimal(this.generator.nextValue(this.numFreshsToInsert));
-		    values.add(interval.getMinValue().add(genFresh));
-		    
-		    
-		    if( insertedInInterval >= interval.nValues ){
-                insertedInInterval = 0;
-                ++intervalIndex;
+		    else{
+		        Interval<BigDecimal> interval = this.intervals.get(intervalIndex);
+		        BigDecimal genFresh = new BigDecimal(this.generator.nextValue(this.numFreshsToInsert));
+		        values.add(interval.getMinValue().add(genFresh));
+		        
+		        
+		        if( insertedInInterval >= interval.nValues ){
+		            insertedInInterval = 0;
+		            ++intervalIndex;
+		        }
 		    }
 		}
 		setDomain(values);
