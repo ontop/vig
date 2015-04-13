@@ -35,7 +35,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StringColumn extends OrderedDomainColumn<String> {
+public class StringColumn extends MultiIntervalColumn<String> {
 	
 	// Constants
 	private static final int MAX_LENGTH = 20;
@@ -47,8 +47,6 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	// Encodings
 	private long minEncoding;
 	
-	private boolean boundariesSet = false;
-
 	public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
 		super(name, type, index, schema);
 
@@ -148,7 +146,7 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	}
 
 	@Override
-	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
 		
 		this.initNumDupsNullsFreshs();
 		

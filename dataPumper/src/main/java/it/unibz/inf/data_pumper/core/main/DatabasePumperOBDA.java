@@ -49,7 +49,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	@Override
 	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException{
 		for( ColumnPumper cP : listColumns ){
-			cP.fillDomainBoundaries(cP.getSchema(), dbOriginal);
+			cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 		}
 		// At this point, each column is initialized with statistical information
 		// like null, dups ratio, num rows and freshs to insert, etc.

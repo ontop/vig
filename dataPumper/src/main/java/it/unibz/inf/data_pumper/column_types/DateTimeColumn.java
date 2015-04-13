@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
+public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	
 	private boolean boundariesSet = false;
 	private final int MILLISECONDS_PER_DAY=86400000;
@@ -75,7 +75,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	}
 
 	@Override
-	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{		
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{		
 		
 		this.initNumDupsNullsFreshs();
 		

@@ -285,7 +285,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException{
 		for( ColumnPumper cP : listColumns ){
 			
-			cP.fillDomainBoundaries(cP.getSchema(), dbOriginal);
+			cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 		}
 	}
 	

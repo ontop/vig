@@ -26,7 +26,7 @@ import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 
 import java.util.List;
 
-public abstract class OrderedDomainColumn<T> extends ColumnPumper {
+public abstract class MultiIntervalColumn<T> extends ColumnPumper {
 	
 	private static final String NULL = "\\N";
 
@@ -37,7 +37,7 @@ public abstract class OrderedDomainColumn<T> extends ColumnPumper {
 	protected List<Interval<T>> intervals;
 	protected boolean firstIntervalSet;
 	
-	public OrderedDomainColumn(String name, MySqlDatatypes type, int index, Schema schema) {
+	public MultiIntervalColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
 		this.domain = null;
 		this.domainIndex = 0;

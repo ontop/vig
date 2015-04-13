@@ -36,7 +36,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
+public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		
 	private boolean boundariesSet = false;
 			
@@ -74,7 +74,7 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 	}
 	
 	@Override
-	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
 		
 		this.initNumDupsNullsFreshs();
 		
@@ -112,6 +112,8 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		
 		initialInterval.setMinValue(min);
 		initialInterval.setMaxValue(max);
+		
+		this.intervals.add(initialInterval);
 		
 		this.boundariesSet = true;
 	}

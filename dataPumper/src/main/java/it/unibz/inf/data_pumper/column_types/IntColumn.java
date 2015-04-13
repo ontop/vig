@@ -35,7 +35,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IntColumn extends OrderedDomainColumn<Long> {
+public class IntColumn extends MultiIntervalColumn<Long> {
 	
 	private int datatypeLengthFirstArgument;
 	private int datatypeLengthSecondArgument;
@@ -84,7 +84,7 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 	}
 
 	@Override
-	public void fillDomainBoundaries(Schema schema, DBMSConnection db) {
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) {
 		
 		this.initNumDupsNullsFreshs();
 		
@@ -116,6 +116,8 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 		
 		interval.setMinValue(min);
 		interval.setMaxValue(max);
+		
+		this.intervals.add(interval);
 		
 		this.firstIntervalSet = true;
 	}
