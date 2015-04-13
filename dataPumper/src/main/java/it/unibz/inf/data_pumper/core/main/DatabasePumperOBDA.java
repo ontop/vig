@@ -47,7 +47,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	}
 	
 	@Override
-	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException{
+	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException, SQLException{
 		for( ColumnPumper cP : listColumns ){
 			cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 		}

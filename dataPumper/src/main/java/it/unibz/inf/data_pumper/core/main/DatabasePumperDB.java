@@ -35,6 +35,7 @@ import it.unibz.inf.data_pumper.persistence.LogToFile;
 import it.unibz.inf.data_pumper.utils.UtilsMath;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,12 +86,11 @@ public class DatabasePumperDB extends DatabasePumper {
 		try {
 			establishColumnBounds(listColumns);
 			updateBoundariesWRTForeignKeys(listColumns);
-		} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException | DEBUGEXCEPTION e) {
+		} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException | DEBUGEXCEPTION | SQLException e) {
 			e.printStackTrace();
 			DatabasePumper.closeEverything();
 			System.exit(1);
 		}
-
 		
 		for( String tableName : dbOriginal.getAllTableNames() ){
 			Schema schema = dbOriginal.getSchema(tableName);
@@ -282,9 +282,8 @@ public class DatabasePumperDB extends DatabasePumper {
 		}	
 	}
 
-	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException{
+	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException, SQLException{
 		for( ColumnPumper cP : listColumns ){
-			
 			cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 		}
 	}

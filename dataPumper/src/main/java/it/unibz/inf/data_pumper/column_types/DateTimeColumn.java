@@ -24,26 +24,20 @@ import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.basic_datatypes.Template;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.column_types.exceptions.DateOutOfBoundariesException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
-import it.unibz.inf.data_pumper.column_types.intervals.BigDecimalInterval;
 import it.unibz.inf.data_pumper.column_types.intervals.DatetimeInterval;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
-	
-	private final int MILLISECONDS_PER_DAY=86400000;
 	
 	public DateTimeColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
@@ -60,7 +54,6 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 		List<Timestamp> values = new ArrayList<Timestamp>();
 		int insertedInInterval = 0;
 		
-		
 		// 86400 Seconds in one day
 		
 		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
@@ -72,7 +65,7 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 			    Calendar c = Calendar.getInstance();
 			    c.setTime(interval.getMinValue());
 			    
-			    long nextValue = this.generator.nextValue(this.numFreshsToInsert) * this.MILLISECONDS_PER_DAY + c.getTimeInMillis();
+			    long nextValue = this.generator.nextValue(this.numFreshsToInsert) * DatetimeInterval.MILLISECONDS_PER_DAY + c.getTimeInMillis();
 			    values.add(new Timestamp(nextValue));
 			    
 			    ++insertedInInterval;
@@ -145,45 +138,9 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    this.firstIntervalSet = true;
 	}
 
-	@Override
-	public void updateMinValueByEncoding(long newMin) {
-	    min = new Timestamp(newMin * this.MILLISECONDS_PER_DAY);
-	}
-
-	@Override
-	public void updateMaxValueByEncoding(long newMax) {
-
-	    Calendar upperBound = Calendar.getInstance();
-	    upperBound.set(9999,11,31);
-
-	    if( upperBound.getTimeInMillis() > newMax * this.MILLISECONDS_PER_DAY ){		
-			max = new Timestamp(newMax * this.MILLISECONDS_PER_DAY);
-		}
-		else{
-			try{
-				throw new DateOutOfBoundariesException();
-			}catch(DateOutOfBoundariesException e){
-				logger.error("The Date field cannot hold this many rows");
-				System.exit(1);
-			}
-		}
-	}
-	
-	@Override
-	public long getMinEncoding() throws BoundariesUnsetException {
-		long encoding = (long) (this.min.getTime() / this.MILLISECONDS_PER_DAY);
-		return encoding;
-	}
-
-	@Override
-	public long getMaxEncoding() throws BoundariesUnsetException {
-		long encoding = (long) (this.max.getTime() / this.MILLISECONDS_PER_DAY);
-		return encoding;
-	}
-
+    @SuppressWarnings("unchecked")
     @Override
-    public <T> List<Interval<T>> getIntervals() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Interval<Timestamp>> getIntervals() {
+        return this.intervals;
     }
 };
