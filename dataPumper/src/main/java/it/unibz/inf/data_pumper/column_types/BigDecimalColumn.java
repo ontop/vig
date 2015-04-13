@@ -68,7 +68,9 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 				if( i < this.numNullsToInsert ){
 					values.add(null);
 				}
-				values.add(min.add(new BigDecimal(this.generator.nextValue(this.numFreshsToInsert))));
+				else{
+				    values.add(min.add(new BigDecimal(this.generator.nextValue(this.numFreshsToInsert))));
+				}
 			}
 		} catch (ValueUnsetException e) {
 			e.printStackTrace();

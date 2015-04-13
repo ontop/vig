@@ -93,7 +93,9 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 			if( i < this.numNullsToInsert ){
 				values.add(null);
 			}
-			values.add(min + this.generator.nextValue(this.numFreshsToInsert));
+			else{
+			    values.add(min + this.generator.nextValue(this.numFreshsToInsert));
+			}
 		}
 		setDomain(values);
 	}

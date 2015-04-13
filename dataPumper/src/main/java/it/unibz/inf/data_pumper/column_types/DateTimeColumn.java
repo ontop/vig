@@ -67,9 +67,10 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 			if( i < this.numNullsToInsert ){
 				values.add(null);
 			}
-			
-			long nextValue = this.generator.nextValue(this.numFreshsToInsert) * this.MILLISECONDS_PER_DAY + c.getTimeInMillis();
-			values.add(new Timestamp(nextValue));
+			else{
+			    long nextValue = this.generator.nextValue(this.numFreshsToInsert) * this.MILLISECONDS_PER_DAY + c.getTimeInMillis();
+			    values.add(new Timestamp(nextValue));
+			}
 		}
 		setDomain(values);
 	}
