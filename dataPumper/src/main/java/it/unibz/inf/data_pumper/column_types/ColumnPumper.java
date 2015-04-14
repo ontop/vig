@@ -29,10 +29,10 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 		
 	private float duplicateRatio;
 	private float nullRatio;
-	private int numRowsToInsert;
-	protected int numFreshsToInsert;
-	protected int numDupsToInsert;
-	protected int numNullsToInsert;
+	private long numRowsToInsert;
+	protected long numFreshsToInsert;
+	protected long numDupsToInsert;
+	protected long numNullsToInsert;
 	
 	private boolean duplicateRatioSet;
 	private boolean nullRatioSet;
@@ -87,7 +87,7 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	}
 	
 	@Override
-	public int getNumRowsToInsert() throws ValueUnsetException{
+	public long getNumRowsToInsert() throws ValueUnsetException{
 		if( ! numRowsToInsertSet ) throw new ValueUnsetException();		
 		return this.numRowsToInsert;
 	}
@@ -97,8 +97,8 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 		if(this.numDupsNullRowsSet == true) return; // Values set already
 		
 		try{
-			this.numDupsToInsert = (int) (this.getNumRowsToInsert() * this.getDuplicateRatio());
-			this.numNullsToInsert = (int) (this.getNumRowsToInsert() * this.getNullRatio());
+			this.numDupsToInsert = (long) (this.getNumRowsToInsert() * this.getDuplicateRatio());
+			this.numNullsToInsert = (long) (this.getNumRowsToInsert() * this.getNullRatio());
 			this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;			
 		}catch(ValueUnsetException e){
 			e.printStackTrace();			
@@ -111,7 +111,7 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 
 	
 	@Override
-	public int getNumFreshsToInsert() throws ValueUnsetException{
+	public long getNumFreshsToInsert() throws ValueUnsetException{
 		if( !this.numDupsNullRowsSet ) throw new ValueUnsetException();
 		return numFreshsToInsert;
 	}

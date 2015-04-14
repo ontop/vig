@@ -58,7 +58,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		// search for correlated columns and order them by fresh values to insert
 		List<CorrelatedColumnsList> correlatedCols = this.cCE.extractCorrelatedColumns();
 		
-		// Now, correlatedCols contains sets of correlated columns (closed under referencesTo and referredBy).
+		// Now, correlatedCols contains sets of correlated columns (closed under referencesTo and referredBy). :) :) :) :)
 		// I need to identify the intervals, now.
 		identifyIntervals(correlatedCols);
 		
@@ -269,13 +269,13 @@ class CorrelatedColumnsList{
 	 */
 	public void insert(ColumnPumper cP){
 		try{
-			int nFreshs = cP.getNumFreshsToInsert();
+			long nFreshs = cP.getNumFreshsToInsert();
 			if( this.columns.size() == 0 ){
 				this.columns.add(cP);
 			}
 			for( int i = 0; i < this.columns.size(); ++i ){
 				ColumnPumper el = this.columns.get(i);
-				int elNFreshs = el.getNumFreshsToInsert();
+				long elNFreshs = el.getNumFreshsToInsert();
 				if( nFreshs > elNFreshs ){
 					this.columns.add(i, cP);
 					break;
@@ -340,32 +340,44 @@ class CorrelatedColumnsExtractor{
 
 	/**
 	 * It adds to each set of correlated fields (Set<Field>) all correlated columns that derive
-	 * from foreign keys.. ( what about transitive closure? ) 
 	 * 
 	 * @param qCorrelatedFields
 	 * @throws InstanceNullException
 	 */
 	private void addForeignKeys(Queue<Set<Field>> qCorrelatedFields) throws InstanceNullException {
 	    
-	    for( Set<Field> sF : qCorrelatedFields ){
-	        for( Field f : sF ){
-	            
+	    Queue<Set<Field>> result = new LinkedList<Set<Field>>();
+	    
+	    while( !qCorrelatedFields.isEmpty() ){
+	        Set<Field> sF = qCorrelatedFields.poll();
+	        
+	        Queue<Field> queueOfFields = new LinkedList<Field>(sF);
+            
+	        while( queueOfFields.isEmpty() ){
+	            Field f = queueOfFields.poll();
 	            Queue<QualifiedName> correlated = new LinkedList<QualifiedName>();
-	            correlated.add(new QualifiedName(f.tableName, f.colName));
-	            
-	            List<QualifiedName> correlatedMax = new ArrayList<QualifiedName>();
-	            // Side effect 
-	            correlatedThroughForeignKeys(correlated, correlatedMax);
-	            
-	            for( QualifiedName qN : correlatedMax ){
-	                Field toInsert = new Field(qN.getTableName(), qN.getColName());
-	                sF.add(toInsert); // Try to insert if new
-	            }
+                correlated.add(new QualifiedName(f.tableName, f.colName));
+                
+                List<QualifiedName> correlatedMax = new ArrayList<QualifiedName>();
+                
+                // Side effect on correlatedMax
+                correlatedThroughForeignKeys(correlated, correlatedMax);
+                
+                // Insert all columns that are correlated because of a foreign key constraint
+                for( QualifiedName qN : correlatedMax ){
+                    Field toInsert = new Field(qN.getTableName(), qN.getColName());
+                    sF.add(toInsert); // Try to insert if new
+                }
 	        }
+	        result.add(sF);
 	    }
-    }
+	    qCorrelatedFields.addAll(result);
+	}
 
     private void correlatedThroughForeignKeys(Queue<QualifiedName> correlated, List<QualifiedName> result) throws InstanceNullException {
+        
+        if( correlated.isEmpty() ) return;
+        
         QualifiedName current = correlated.poll();
         if( result.contains(current) ){
             correlatedThroughForeignKeys(correlated, result);  // Recursion

@@ -53,6 +53,7 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 
 		List<Timestamp> values = new ArrayList<Timestamp>();
 		int insertedInInterval = 0;
+		int numDupsInsertedInInterval = 0;
 		
 		// 86400 Seconds in one day
 		
@@ -70,9 +71,12 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 			    
 			    ++insertedInInterval;
 			    
-			    if( insertedInInterval >= interval.nFreshsToInsert ){
-                    insertedInInterval = 0;
-                    ++intervalIndex;
+			    if( insertedInInterval >= interval.nFreshsToInsert && (intervalIndex < intervals.size() - 1) ){
+                    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
+                        insertedInInterval = 0;
+                        ++intervalIndex;
+                        numDupsInsertedInInterval = 0;
+                    }
                 }
 			}
 		}

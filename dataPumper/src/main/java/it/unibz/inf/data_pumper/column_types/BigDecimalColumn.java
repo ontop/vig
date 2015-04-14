@@ -52,6 +52,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		
 		List<BigDecimal> values = new ArrayList<BigDecimal>();
 		int insertedInInterval = 0;
+		int numDupsInsertedInInterval = 0;
 		
 		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
 		    if( i < this.numNullsToInsert ){
@@ -64,10 +65,13 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 
 		        ++insertedInInterval;
 		        
-		        if( insertedInInterval >= interval.nFreshsToInsert ){
-		            insertedInInterval = 0;
-		            ++intervalIndex;
-		        }
+                if( insertedInInterval >= interval.nFreshsToInsert && (intervalIndex < intervals.size() - 1) ){
+                    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
+                        insertedInInterval = 0;
+                        ++intervalIndex;
+                        numDupsInsertedInInterval = 0;
+                    }
+                }
 		    }
 		}
 		setDomain(values);

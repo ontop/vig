@@ -55,6 +55,8 @@ public class StringColumn extends MultiIntervalColumn<String> {
 //			rndIndexes.add(0); // Initial String: 00000000...
 
 		this.numFreshsToInsert = 0;
+		
+		this.intervals = new ArrayList<Interval<String>>();
 	}
 	
 	public StringColumn(String name, MySqlDatatypes type, int index, Schema schema) {
@@ -67,6 +69,8 @@ public class StringColumn extends MultiIntervalColumn<String> {
 //			rndIndexes.add(0); // Initial String: 00000000...
 
 		this.numFreshsToInsert = 0;
+		
+		this.intervals = new ArrayList<Interval<String>>();
 	}
 	
 	@Override
@@ -91,6 +95,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 
 	    List<String> values = new ArrayList<String>();
 	    int insertedInInterval = 0;
+	    int numDupsInsertedInInterval = 0;
 
 	    for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
 	        if( i < this.numNullsToInsert ){
@@ -110,10 +115,13 @@ public class StringColumn extends MultiIntervalColumn<String> {
 
 	            ++insertedInInterval;
 	            
-	            if( insertedInInterval >= interval.nFreshsToInsert ){
-	                insertedInInterval = 0;
-	                ++intervalIndex;
-	            }
+	            if( insertedInInterval >= interval.nFreshsToInsert && (intervalIndex < intervals.size() - 1) ){
+                    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
+                        insertedInInterval = 0;
+                        ++intervalIndex;
+                        numDupsInsertedInInterval = 0;
+                    }
+                }
 	        }
 	    }				
 	    setDomain(values);
@@ -149,6 +157,8 @@ public class StringColumn extends MultiIntervalColumn<String> {
         
         initialInterval.setMinValue(lowerBoundValue());
         initialInterval.setMaxValue(upperBoundValue());
+        
+        this.intervals.add(initialInterval);
 		
 		this.firstIntervalSet = true;
 	}
@@ -173,12 +183,10 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		return builder.toString();
 	}
 
-
-
+    @SuppressWarnings("unchecked")
     @Override
-    public <T> List<Interval<T>> getIntervals() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Interval<String>> getIntervals() {
+        return this.intervals;
     }
 	
 };

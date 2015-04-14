@@ -71,9 +71,9 @@ public interface ColumnPumperInterface {
 	public <T> List<Interval<T>> getIntervals();
 		
 	public void setNumRowsToInsert(int num) throws TooManyValuesException;
-	public int getNumRowsToInsert() throws ValueUnsetException;
+	public long getNumRowsToInsert() throws ValueUnsetException;
 	
-	int getNumFreshsToInsert() throws ValueUnsetException;
+	long getNumFreshsToInsert() throws ValueUnsetException;
 	
 	
 	public String getNthInDomain(int i);

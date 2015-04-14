@@ -57,6 +57,25 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper {
 		return result;
 	}
 		
+    /**
+     * 
+     * @param intervalIndex
+     * @return distribute duplicates proportionally to the size of each interval
+     */
+    protected long numDupsForInterval( int intervalIndex ) {
+        
+        long totFreshsToInsert = this.numFreshsToInsert;
+        long totDupsToInsert = this.numDupsToInsert;
+        
+        long intervalFreshs = this.intervals.get(intervalIndex).nFreshsToInsert;
+        
+        float ratioFreshsInInterval = intervalFreshs / totFreshsToInsert;
+        
+        long numDupsToInsertInInterval = (long) (totDupsToInsert * ratioFreshsInInterval);
+        
+        return numDupsToInsertInInterval;
+    }
+	
 //	public void setMaxValue(T max){
 //		this.max = max;
 //	}
