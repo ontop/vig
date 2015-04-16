@@ -4,11 +4,7 @@ import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
-import it.unibz.inf.data_pumper.column_types.intervals.BigDecimalInterval;
-import it.unibz.inf.data_pumper.column_types.intervals.DatetimeInterval;
-import it.unibz.inf.data_pumper.column_types.intervals.IntInterval;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
-import it.unibz.inf.data_pumper.column_types.intervals.StringInterval;
 import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
@@ -59,8 +55,8 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		List<CorrelatedColumnsList> correlatedCols = this.cCE.extractCorrelatedColumns();
 		
 		// Now, correlatedCols contains sets of correlated columns (closed under referencesTo and referredBy). :) :) :) :)
-		// I need to identify the intervals, now.
-		identifyIntervals(correlatedCols);
+//		// I need to identify the intervals, now.
+//		identifyIntervals(correlatedCols); 
 		
 		try {
 			updateColumnBoundsWRTCorrelated(correlatedCols);
@@ -71,164 +67,280 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		}
 	}
 	
-	/**
-	 * Identify the intervals, and put into each of them the number of fresh values to insert
-	 * 
-	 * 
-	 * @param correlatedCols
-	 * @throws DEBUGEXCEPTION 
-	 * @throws InstanceNullException 
-	 */
-	@SuppressWarnings("rawtypes")
-    private void identifyIntervals(
-            List<CorrelatedColumnsList> correlatedCols) throws DEBUGEXCEPTION, InstanceNullException {
-	    
-	    class LocalUtils{
-	        private Interval obtainIntersectionInterval(Interval g, Interval toAdd) throws DEBUGEXCEPTION{
-	            Interval newInt = null; 
-	            switch(g.getType()){
-                    case BIGINT: case DOUBLE: 
-                        newInt = new BigDecimalInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0); 
-                        break;
-                    case CHAR:
-                        break;
-                    case DATETIME:
-                        newInt = new DatetimeInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0);
-                        break;
-                    case INT:
-                        newInt = new IntInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0); 
-                        break;
-                    case LINESTRING:
-                        break;
-                    case LONGTEXT:
-                        break;
-                    case MULTILINESTRING:
-                        break;
-                    case MULTIPOLYGON:
-                        break;
-                    case POINT:
-                        break;
-                    case POLYGON:
-                        break;
-                    case TEXT:
-                        break;
-                    case VARCHAR:
-                        newInt = new StringInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0);
-                        break;
-                    default:
-                        break;
-	                
-	            }
-	            if( newInt == null ){ 
-	                throw new DEBUGEXCEPTION();
-	            }
-	            return newInt;
-	        }
-
-	        @SuppressWarnings("unchecked")
-            void addNewIntervalToCPs(Interval toAdd) throws InstanceNullException {
-	            String[] splits = toAdd.getKey().split("-");
-	            for( String s : splits ){
-	                String[] splits1 = s.split(".");
-	                QualifiedName qF = new QualifiedName(splits1[0], splits1[1]);
-	                ColumnPumper cP = DBMSConnection.getInstance().getSchema(qF.getTableName()).getColumn(qF.getColName());
-	                cP.getIntervals().add(toAdd);
-	            }
-            }
-
-            public void checkIfEmpty(
-                    Interval toAdd, Interval curInt) throws InstanceNullException {
-                String[] splits = toAdd.getKey().split("-");
-                for( String s : splits ){
-                    String[] splits1 = s.split(".");
-                    QualifiedName qF = new QualifiedName(splits1[0], splits1[1]);
-                    ColumnPumper cP = DBMSConnection.getInstance().getSchema(qF.getTableName()).getColumn(qF.getColName());
-                    splits1 = curInt.getKey().split(".");
-                    QualifiedName curQF = new QualifiedName(splits1[0], splits1[1]);
-                    ColumnPumper curCP = DBMSConnection.getInstance().getSchema(curQF.getTableName()).getColumn(curQF.getColName());
-                    // TODO findNElementsInRatio
-                }
-            }
-	    }
-	    
-	    LocalUtils utils = new LocalUtils();
-	    
-	    for( CorrelatedColumnsList cCL : correlatedCols ){
-	        Queue<Interval> groups = new LinkedList<Interval>();
-	        // Add all intervals with a single column
-	        for( int i = 0; i < cCL.size(); ++i ){
-	            ColumnPumper cP = cCL.get(i);
-	            groups.add(cP.getIntervals().get(0));
-	        }
-	        
-	        while( groups.isEmpty() ){
-	            Interval g = groups.poll();
-
-	            // Add intervals with n columns
-	            for( int i = 0; i < cCL.size(); ++i ){
-	                ColumnPumper cP = cCL.get(i);           
-	                Interval curInt = cP.getIntervals().get(0);
-	                // If this combination has not been considered already
-	                if( !g.getKey().contains(curInt.getKey()) ){
-	                    Interval toAdd = utils.obtainIntersectionInterval(g, curInt);
-	                    utils.checkIfEmpty(toAdd, curInt);
-	                    utils.addNewIntervalToCPs(toAdd);
-	                    groups.add(toAdd);
-	                }
-	            }
-	        }
-	    }
-	}
+//	/**
+//	 * Identify the intervals, and put into each of them the number of fresh values to insert
+//	 * 
+//	 * 
+//	 * @param correlatedCols
+//	 * @throws DEBUGEXCEPTION 
+//	 * @throws InstanceNullException 
+//	 */
+//	@SuppressWarnings("rawtypes")
+//    private void identifyIntervals(
+//            List<CorrelatedColumnsList> correlatedCols) throws DEBUGEXCEPTION, InstanceNullException {
+//	    
+//	    class LocalUtils{
+//	        private Interval obtainIntersectionInterval(Interval g, Interval toAdd) throws DEBUGEXCEPTION{
+//	            Interval newInt = null; 
+//	            switch(g.getType()){
+//                    case BIGINT: case DOUBLE: 
+//                        newInt = new BigDecimalInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0); 
+//                        break;
+//                    case CHAR:
+//                        break;
+//                    case DATETIME:
+//                        newInt = new DatetimeInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0);
+//                        break;
+//                    case INT:
+//                        newInt = new IntInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0); 
+//                        break;
+//                    case LINESTRING:
+//                        break;
+//                    case LONGTEXT:
+//                        break;
+//                    case MULTILINESTRING:
+//                        break;
+//                    case MULTIPOLYGON:
+//                        break;
+//                    case POINT:
+//                        break;
+//                    case POLYGON:
+//                        break;
+//                    case TEXT:
+//                        break;
+//                    case VARCHAR:
+//                        newInt = new StringInterval(g.getKey() + "-" + toAdd.getKey(), g.getType(), 0);
+//                        break;
+//                    default:
+//                        break;
+//	                
+//	            }
+//	            if( newInt == null ){ 
+//	                throw new DEBUGEXCEPTION();
+//	            }
+//	            return newInt;
+//	        }
+//
+//	        @SuppressWarnings("unchecked")
+//            void addNewIntervalToCPs(Interval toAdd) throws InstanceNullException {
+//	            String[] splits = toAdd.getKey().split("-");
+//	            for( String s : splits ){
+//	                String[] splits1 = s.split(".");
+//	                QualifiedName qF = new QualifiedName(splits1[0], splits1[1]);
+//	                ColumnPumper cP = DBMSConnection.getInstance().getSchema(qF.getTableName()).getColumn(qF.getColName());
+//	                cP.getIntervals().add(toAdd);
+//	            }
+//            }
+//
+//            public void checkIfEmpty(
+//                    Interval toAdd, Interval curInt) throws InstanceNullException {
+//                String[] splits = toAdd.getKey().split("-");
+//                for( String s : splits ){
+//                    String[] splits1 = s.split(".");
+//                    QualifiedName qF = new QualifiedName(splits1[0], splits1[1]);
+//                    ColumnPumper cP = DBMSConnection.getInstance().getSchema(qF.getTableName()).getColumn(qF.getColName());
+//                    splits1 = curInt.getKey().split(".");
+//                    QualifiedName curQF = new QualifiedName(splits1[0], splits1[1]);
+//                    ColumnPumper curCP = DBMSConnection.getInstance().getSchema(curQF.getTableName()).getColumn(curQF.getColName());
+//                    // TODO findNElementsInRatio
+//                }
+//            }
+//	    }
+//	    
+//	    LocalUtils utils = new LocalUtils();
+//	    
+//	    for( CorrelatedColumnsList cCL : correlatedCols ){
+//	        Queue<Interval> groups = new LinkedList<Interval>();
+//	        // Add all intervals with a single column
+//	        for( int i = 0; i < cCL.size(); ++i ){
+//	            ColumnPumper cP = cCL.get(i);
+//	            groups.add(cP.getIntervals().get(0));
+//	        }
+//	        
+//	        while( groups.isEmpty() ){
+//	            Interval g = groups.poll();
+//
+//	            // Add intervals with n columns
+//	            for( int i = 0; i < cCL.size(); ++i ){
+//	                ColumnPumper cP = cCL.get(i);           
+//	                Interval curInt = cP.getIntervals().get(0);
+//	                // If this combination has not been considered already
+//	                if( !g.getKey().contains(curInt.getKey()) ){
+//	                    Interval toAdd = utils.obtainIntersectionInterval(g, curInt);
+//	                    utils.checkIfEmpty(toAdd, curInt);
+//	                    utils.addNewIntervalToCPs(toAdd);
+//	                    groups.add(toAdd);
+//	                }
+//	            }
+//	        }
+//	    }
+//	}
 
     /**
 	 * Update the boundaries of those columns in a correlated set
-	 * @param correlatedCols
+	 * @param correlatedCols (It MUST include foreign keys)
 	 * @throws ValueUnsetException 
 	 * @throws BoundariesUnsetException 
 	 * @throws DEBUGEXCEPTION 
+     * @throws InstanceNullException 
+     * @throws SQLException 
 	 */
 	private void updateColumnBoundsWRTCorrelated(
-			List<CorrelatedColumnsList> correlatedCols) throws ValueUnsetException, BoundariesUnsetException, DEBUGEXCEPTION {
+			List<CorrelatedColumnsList> correlatedCols) 
+			        throws ValueUnsetException, BoundariesUnsetException, DEBUGEXCEPTION, SQLException, InstanceNullException {
 		
-		for( CorrelatedColumnsList cCL : correlatedCols ){
-			for( int i = 1; i < cCL.size(); ++i ){
-				setInContiguousInterval(i, cCL);
-				ColumnPumper referenced = cCL.get(i-1);
-				ColumnPumper current = cCL.get(i);
+	    class LocalUtils{
+	        
+	        private DatabasePumperOBDA dbPumperInstance;
+	        
+	        public LocalUtils(
+                    DatabasePumperOBDA databasePumperOBDA) {
+	            dbPumperInstance = databasePumperOBDA;
+	        }
 
-				// Check if there is a fk constraint (all values are shared)
-				QualifiedName refName = new QualifiedName(referenced.getSchema().getTableName(), referenced.getName());
-				if( current.referencesTo().contains(refName) ){ 
-					long minEncoding = referenced.getMinEncoding();
-					// TODO Continua!!
-					continue;
-				}
-//				Statistics.addInt("unskipped_correlated", 1);
-				int numSharedFreshs = findNumSharedFreshsToInsert(current, referenced);
-				long maxEncoding = referenced.getMaxEncoding();	
-				if( maxEncoding != Long.MAX_VALUE){
-					long newMinEncoding = maxEncoding - numSharedFreshs;
-					current.updateMinValueByEncoding(maxEncoding - numSharedFreshs);
-					current.updateMaxValueByEncoding(newMinEncoding + current.getNumFreshsToInsert());
-				}
-				else throw new DEBUGEXCEPTION();
-			}
-		}
+            /**
+	         * Side effect on insertedIntervals and cP and related ColumnPumper objects
+	         * @throws DEBUGEXCEPTION 
+	         * @throws ValueUnsetException 
+             * @throws InstanceNullException 
+             * @throws SQLException 
+	         */
+	        void insert(List<Interval<? extends Object>> insertedIntervals, ColumnPumper cP) 
+	                throws DEBUGEXCEPTION, ValueUnsetException, SQLException, InstanceNullException{
+	            List<Interval<? extends Object>> newIntervals = new LinkedList<Interval<? extends Object>>();
+	            
+	            if( insertedIntervals.isEmpty() ){
+	                insertedIntervals.add(cP.getIntervals().get(0));
+	                
+	                // Assert 
+	                if( cP.getIntervals().size() != 1 ){
+	                    throw new DEBUGEXCEPTION("Intervals size != 1");
+	                }
+	            }
+	            else{
+	                for( Iterator<Interval<? extends Object>> it = insertedIntervals.iterator(); it.hasNext(); ){
+	                    Interval<? extends Object> previouslyInserted = it.next();
+	                    long nToInsertInPreviouslyInserted = makeIntersectionQuery(cP, previouslyInserted);
+	                    
+	                    if( nToInsertInPreviouslyInserted > 0 ){ // Create a new "SubInterval"
+	                        
+	                        // Make sub interval
+	                        Interval<? extends Object> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviouslyInserted);
+	                        
+	                        // Split
+	                        List<Interval<? extends Object>> splits = previouslyInserted.split(toInsert);
+	                        
+	                        // Add
+	                        cP.getIntervals().add(toInsert);
+	                        newIntervals.addAll(insertedIntervals);
+	                        newIntervals.addAll(splits);
+	                        
+	                        // Remove no-longer valid interval
+	                        it.remove();
+	                    }
+	                }
+	                if( cP.getNumFreshsToInsert() > cP.countFreshsInIntervals() ){
+	                    // Add a new Single color interval
+	                    Interval<? extends Object> firstInt = chooseUnallocatedBoundaries(cP.getIntervals().get(0), cP);
+	                    newIntervals.add(firstInt);
+	                }
+	                insertedIntervals.addAll(newIntervals); // Update the result with the new values
+	            }
+	        }
+
+            private Interval<? extends Object> chooseUnallocatedBoundaries(
+                    Interval<? extends Object> interval, ColumnPumper cP) {
+                // TODO Does NOT require access to the database
+                
+                // Go through all the intervals, find min and max and return something outside
+                // OR
+                // keep global(=in the column) min and max updated each time y create intervals
+                return null;
+            }
+
+            /** 
+             *  This methods just makes a new interval <b>E</b>, without
+             *  updating the intervals from which <b>E</b> is born
+             *  
+             * @param previouslyInserted
+             * @param cP
+             * @param nToInsertInPreviouslyInserted
+             * @return
+             */
+            private Interval<? extends Object> makeSubInterval(Interval<? extends Object> previouslyInserted, ColumnPumper cP, long nToInsertInPreviouslyInserted) {
+                // TODO Does NOT require access to the database
+                
+                Interval<? extends Object> result = previouslyInserted.getCopyInstance();
+                
+                return result;
+            }
+
+            private long makeIntersectionQuery(ColumnPumper cP, Interval<?> previouslyInserted) 
+                    throws SQLException, InstanceNullException, ValueUnsetException {
+                
+                long result = 0;
+                
+                List<ColumnPumper> cols = new ArrayList<ColumnPumper>();
+                
+                cols.add(cP);
+                cols.addAll(previouslyInserted.getInvolvedColumnPumpers());
+                this.dbPumperInstance.tStatsFinder.findSharedRatio(cols);
+                
+                return result; 
+            }
+	    }
+	    
+	    LocalUtils utils  = new LocalUtils(this);
+	    
+	    for( CorrelatedColumnsList cCL : correlatedCols){
+	        List<Interval<? extends Object>> insertedIntervals = new LinkedList<Interval<? extends Object>>();
+	        for( int i = 0; i < cCL.size(); ++i ){
+	            ColumnPumper cP = cCL.get(i);
+	            utils.insert(insertedIntervals, cP);
+	        }
+	    }
+	    
+	    
+	    
+//		for( CorrelatedColumnsList cCL : correlatedCols ){
+//			for( int i = 1; i < cCL.size(); ++i ){
+//				setInContiguousInterval(i, cCL);
+//				ColumnPumper referenced = cCL.get(i-1);
+//				ColumnPumper current = cCL.get(i);
+//
+//				// Check if there is a fk constraint (all values are shared)
+//				QualifiedName refName = new QualifiedName(referenced.getSchema().getTableName(), referenced.getName());
+//				if( current.referencesTo().contains(refName) ){ 
+//					long minEncoding = referenced.getMinEncoding();
+//					// TODO Continua!!
+//					continue;
+//				}
+////				Statistics.addInt("unskipped_correlated", 1);
+//				int numSharedFreshs = findNumSharedFreshsToInsert(current, referenced);
+//				long maxEncoding = referenced.getMaxEncoding();	
+//				if( maxEncoding != Long.MAX_VALUE){
+//					long newMinEncoding = maxEncoding - numSharedFreshs;
+//					current.updateMinValueByEncoding(maxEncoding - numSharedFreshs);
+//					current.updateMaxValueByEncoding(newMinEncoding + current.getNumFreshsToInsert());
+//				}
+//				else throw new DEBUGEXCEPTION();
+//			}
+//		}
 		
 	}
 
-	private void setInContiguousInterval(int curIndex,
-			CorrelatedColumnsList cCL) throws ValueUnsetException, BoundariesUnsetException {
-		
-		ColumnPumper current = cCL.get(curIndex);
-		int numFreshs = current.getNumFreshsToInsert();
-		
-		long min = current.getMinEncoding();
-		long max = current.getMaxEncoding();
-		long intervalLength = max - min;
-		
-		// TODO Use an SMT Solver
-	}
+//	private void setInContiguousInterval(int curIndex,
+//			CorrelatedColumnsList cCL) throws ValueUnsetException, BoundariesUnsetException {
+//		
+//		ColumnPumper current = cCL.get(curIndex);
+//		int numFreshs = current.getNumFreshsToInsert();
+//		
+//		long min = current.getMinEncoding();
+//		long max = current.getMaxEncoding();
+//		long intervalLength = max - min;
+//		
+//		// TODO Use an SMT Solver
+//	}
 
 	private int findNumSharedFreshsToInsert(ColumnPumper col, ColumnPumper referenced) {
 		int numSharedFreshs = 0;

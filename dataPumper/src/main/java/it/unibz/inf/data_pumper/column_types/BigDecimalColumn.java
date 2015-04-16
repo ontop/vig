@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
@@ -112,7 +113,9 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		}
 		
 		// Create the single initial interval
-        Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getCode(), this.getType(), this.numFreshsToInsert);
+		List<ColumnPumper> involvedCols = new LinkedList<ColumnPumper>();
+		involvedCols.add(this);
+        Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getCode(), this.getType(), this.numFreshsToInsert, involvedCols);
 		
 		initialInterval.setMinValue(min);
 		initialInterval.setMaxValue(max);

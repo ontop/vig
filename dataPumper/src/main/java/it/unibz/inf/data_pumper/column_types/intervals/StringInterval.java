@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
+import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 
 public class StringInterval extends Interval<String> {
@@ -13,8 +14,8 @@ public class StringInterval extends Interval<String> {
     
     public StringInterval(String key,
             MySqlDatatypes type,
-            long nValues, int datatypeLength) {
-        super(key, type, nValues);
+            long nValues, int datatypeLength, List<ColumnPumper> involvedCols) {
+        super(key, type, nValues, involvedCols);
         this.datatypeLength = datatypeLength;
     }
 
@@ -66,6 +67,18 @@ public class StringInterval extends Interval<String> {
         }
         
         return result.toString();
+    }
+    
+    @Override
+    public Interval<? extends Object> getCopyInstance() {
+        
+        StringInterval result = new StringInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.datatypeLength, this.intervalColumns);
+        result.updateMinValueByEncoding(this.minEncoding);
+        result.updateMaxValueByEncoding(this.maxEncoding);
+        result.minEncoding = this.minEncoding;
+        result.maxEncoding = this.maxEncoding;
+        
+        return result;
     }
 
 }

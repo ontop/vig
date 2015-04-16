@@ -1,8 +1,11 @@
 package it.unibz.inf.data_pumper.column_types.intervals;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
+import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class Interval<T> {
@@ -12,8 +15,8 @@ public abstract class Interval<T> {
     T max;
     T min;
     
-    public long minEncoding;
-    public long maxEncoding;
+    protected long minEncoding;
+    protected long maxEncoding;
     
     protected List<T> domain;
     private int domainIndex;
@@ -22,12 +25,18 @@ public abstract class Interval<T> {
     private final String key;
     public final long nFreshsToInsert;
     
-    public Interval(String key, MySqlDatatypes type, long nValues){
+    // ColumnPumpers in the interval
+    List<ColumnPumper> intervalColumns;
+    
+    
+    public Interval(String key, MySqlDatatypes type, long nValues, List<ColumnPumper> intervalColumns){
         this.domain = null;
         this.domainIndex = 0;
         this.key = key;
         this.type = type;
         this.nFreshsToInsert = nValues;
+        this.intervalColumns = intervalColumns;
+        
     }
     
     public String getKey(){
@@ -89,5 +98,32 @@ public abstract class Interval<T> {
     public abstract void updateMaxValueByEncoding(long newMax);
     
     public abstract long getMinEncoding() throws BoundariesUnsetException;
-    public abstract long getMaxEncoding() throws BoundariesUnsetException; 
+    public abstract long getMaxEncoding() throws BoundariesUnsetException;
+
+    /**
+     * Make space for a new interval while destroying the old one
+     * @param toInsert
+     * @return
+     */
+    public abstract List<Interval<? extends Object>> split(Interval<? extends Object> toInsert);
+
+    /**
+     * 
+     * @return The set of columns for which this interval is generating values
+     */
+    public Collection<? extends ColumnPumper> getInvolvedColumnPumpers() {
+        return Collections.unmodifiableCollection(this.intervalColumns);
+    } 
+    
+    /**
+     * Each interval represents the values in an intersection of one or more columns. This
+     * method adds adds a column to the intersection of the columns.
+     * @param cP
+     */
+    public void addInvolvedColumnPumper(ColumnPumper cP){
+        if( !this.intervalColumns.contains(cP) )
+            this.intervalColumns.add(cP);
+    }
+
+    public abstract Interval<? extends Object> getCopyInstance();
 }

@@ -61,8 +61,7 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 	}
 
 	/**
-	 * AND DISJOINT FROM ANYONE ELSE! e.g., list of length 1 means
-	 * "IS ONLY IN THIS and NOT IN THE OTHERS"
+	 * cols.size() == 1 ? 1
 	 */
     @Override
     public float findSharedRatio(
@@ -70,6 +69,8 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
             throws SQLException,
             InstanceNullException,
             ValueUnsetException {
+        
+        if( cols.size() == 1 ) return 1;
         // TODO Auto-generated method stub
         return 0;
     }

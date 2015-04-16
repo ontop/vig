@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
 
 public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
@@ -132,7 +133,9 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    max = new Timestamp(c.getTimeInMillis());
 	    
 	    // Create the single initial interval
-	    Interval<Timestamp> initialInterval = new DatetimeInterval(this.getCode(), this.getType(), this.numFreshsToInsert);
+	    List<ColumnPumper> involvedCols = new LinkedList<ColumnPumper>();
+	    involvedCols.add(this);
+	    Interval<Timestamp> initialInterval = new DatetimeInterval(this.getCode(), this.getType(), this.numFreshsToInsert, involvedCols);
 
 	    initialInterval.setMinValue(min);
 	    initialInterval.setMaxValue(max);

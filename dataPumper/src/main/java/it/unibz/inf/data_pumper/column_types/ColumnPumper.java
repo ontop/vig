@@ -38,7 +38,7 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	private boolean nullRatioSet;
 	private boolean numRowsToInsertSet;
 	
-	private boolean numDupsNullRowsSet;
+	protected boolean numDupsNullRowsSet;
 	
 	protected CyclicGroupGenerator generator;
 	
@@ -125,4 +125,5 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	public void decrementNumFreshs() {
 		--this.numFreshsToInsert;
 	}
+
 };

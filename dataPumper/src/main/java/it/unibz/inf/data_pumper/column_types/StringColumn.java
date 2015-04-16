@@ -32,6 +32,7 @@ import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class StringColumn extends MultiIntervalColumn<String> {
@@ -153,7 +154,9 @@ public class StringColumn extends MultiIntervalColumn<String> {
 //		}
 		
 		// Create the single initial interval
-        Interval<String> initialInterval = new StringInterval(this.getCode(), this.getType(), this.numFreshsToInsert, this.datatypeLength);
+		List<ColumnPumper> involvedCols = new LinkedList<ColumnPumper>();
+		involvedCols.add(this);
+        Interval<String> initialInterval = new StringInterval(this.getCode(), this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
         
         initialInterval.setMinValue(lowerBoundValue());
         initialInterval.setMaxValue(upperBoundValue());

@@ -68,13 +68,14 @@ public interface ColumnPumperInterface {
 	// TODO Do I really want to guarantee free access to the intervals?
 	// Pro: modular
 	// Contro: I might corrupt the intervals 
-	public <T> List<Interval<T>> getIntervals();
+	public List<Interval<? extends Object>> getIntervals();
 		
 	public void setNumRowsToInsert(int num) throws TooManyValuesException;
 	public long getNumRowsToInsert() throws ValueUnsetException;
 	
-	long getNumFreshsToInsert() throws ValueUnsetException;
-	
+	// N Freshs
+	public long getNumFreshsToInsert() throws ValueUnsetException;
+	public long countFreshsInIntervals() throws ValueUnsetException;
 	
 	public String getNthInDomain(int i);
 	

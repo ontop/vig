@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class IntColumn extends MultiIntervalColumn<Long> {
@@ -117,7 +118,9 @@ public class IntColumn extends MultiIntervalColumn<Long> {
         max = min + this.numFreshsToInsert;  
 
         // Create the single initial interval
-        Interval<Long> interval = new IntInterval(this.getCode(), this.getType(), this.numFreshsToInsert);
+        List<ColumnPumper> involvedCols = new LinkedList<ColumnPumper>();
+        involvedCols.add(this);
+        Interval<Long> interval = new IntInterval(this.getCode(), this.getType(), this.numFreshsToInsert, involvedCols);
 
         interval.setMinValue(min);
         interval.setMaxValue(max);

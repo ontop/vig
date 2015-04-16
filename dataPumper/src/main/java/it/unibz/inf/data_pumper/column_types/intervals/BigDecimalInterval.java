@@ -1,17 +1,19 @@
 package it.unibz.inf.data_pumper.column_types.intervals;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
+import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class BigDecimalInterval extends Interval<BigDecimal> {
 
     public BigDecimalInterval(
             String key,
             MySqlDatatypes type,
-            long nValues) {
-        super(key, type, nValues);
+            long nValues, List<ColumnPumper> involvedColumns) {
+        super(key, type, nValues, involvedColumns);
     }
 
     @Override
@@ -40,4 +42,16 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
         return this.max.longValue();
     }
 
+    @Override
+    public Interval<? extends Object> getCopyInstance() {
+        
+        BigDecimalInterval result = new BigDecimalInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.intervalColumns);
+        result.updateMinValueByEncoding(this.minEncoding);
+        result.updateMaxValueByEncoding(this.maxEncoding);
+        result.minEncoding = this.minEncoding;
+        result.maxEncoding = this.maxEncoding;
+        
+        return result;
+    }
+    
 }

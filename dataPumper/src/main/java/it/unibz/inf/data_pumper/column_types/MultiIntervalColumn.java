@@ -22,6 +22,7 @@ package it.unibz.inf.data_pumper.column_types;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
+import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 
 import java.util.List;
@@ -114,5 +115,18 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper {
 		}
 		return result;
 	}
+	
+	@Override
+    public long countFreshsInIntervals() throws ValueUnsetException {
+        if( !this.numDupsNullRowsSet ) throw new ValueUnsetException();
+        
+        long result = 0;
+        
+        for( Interval<?> i : this.getIntervals() ){
+            result += i.nFreshsToInsert;
+        }
+        
+        return result;
+    }
 }
 
