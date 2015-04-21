@@ -21,10 +21,12 @@ package it.unibz.inf.data_pumper.core.main.table.statistics.aggrclasses;
  */
 
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.basic_datatypes.*;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -148,4 +150,49 @@ public class Distribution {
 					
 		return result;
 	}
+	
+	// mysql> select count(distinct A.wlbNpdidWellbore) from wellbore_shallow_all A join wellbore_development_all B on A.wlbNpdidWellbore = B.wlbNpdidWellbore;
+    public int sharedDistinctRows(List<QualifiedName> qualifiedColNames) throws SQLException{
+        
+        int result = 0;
+        
+        StringBuilder builder = new StringBuilder();
+        
+        String firstColName = qualifiedColNames.get(0).getColName();
+        
+        // Projection
+        String proj = "SELECT COUNT(DISTINCT A."+firstColName+") FROM ";
+        builder.append(proj);
+        
+        // Join clause
+        for( int i = 0; i < qualifiedColNames.size(); ++i ){
+            String tableName = qualifiedColNames.get(i).getTableName();
+            if( i != 0 ){
+                builder.append(", ");
+            }
+            builder.append(tableName + " " + ((char)( 'A' + i )) ); 
+        }
+        
+        builder.append(" WHERE ");
+        
+        // On clause
+        for( int i = 1; i < qualifiedColNames.size(); ++i ){
+            String colName = qualifiedColNames.get(i).getTableName();
+            if( i != 0 ){
+                builder.append(" AND ");
+            }
+            builder.append("A." + firstColName + "=" + ((char)( 'A' + (i + 2) )) + "." + colName); 
+        }
+        
+        String query = builder.toString();
+        
+        PreparedStatement stmt = dbmsConn.getPreparedStatement(query);
+        
+        ResultSet rs = stmt.executeQuery();
+        if( rs.next() ){
+            result = rs.getInt(1);
+        }
+                    
+        return result;
+    }
 };
