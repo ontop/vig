@@ -15,10 +15,12 @@ import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Queue;
 import java.util.Set;
 
@@ -276,24 +278,29 @@ class IntervalsBoundariesFinder<T>{
      */
     void insert(List<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
             throws DEBUGEXCEPTION, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
+             
+        long maxEncodingEncountered = 0;
+        
+        // Assert 
+        if( cP.getIntervals().size() != 1 ){
+            throw new DEBUGEXCEPTION("Intervals size != 1");
+        }
         
         if( insertedIntervals.isEmpty() ){
             insertedIntervals.add(cP.getIntervals().get(0));
-            
-            // Assert 
-            if( cP.getIntervals().size() != 1 ){
-                throw new DEBUGEXCEPTION("Intervals size != 1");
-            }
         }
         else{
-            for( Iterator<Interval<T>> it = insertedIntervals.iterator(); it.hasNext(); ){
+            for( ListIterator<Interval<T>> it = insertedIntervals.listIterator() ; it.hasNext(); ){
                 Interval<T> previouslyInserted = it.next();
-                long nToInsertInPreviouslyInserted = makeIntersectionQuery(cP, previouslyInserted);
                 
-                if( nToInsertInPreviouslyInserted > 0 ){ // Create a new "SubInterval"
+                if( maxEncodingEncountered < previouslyInserted.getMaxEncoding() ) maxEncodingEncountered = previouslyInserted.getMaxEncoding();
+                
+                long nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted); // TODO Some kind of tabu to record useless intersection attempts?
+                
+                if( nToInsertInPreviousInterval > 0 ){ // Create a new "SubInterval"
                     
                     // Make sub interval ( with the right boundaries )
-                    Interval<T> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviouslyInserted);
+                    Interval<T> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviousInterval);
                     
                     // Split
                     boolean killOldInterval = previouslyInserted.adaptBounds(toInsert);
@@ -302,32 +309,23 @@ class IntervalsBoundariesFinder<T>{
                         it.remove();
                         previouslyInserted.suicide(); 
                     }
-                    
-                    // Add
-                    cP.addInterval(toInsert);
+                    insertedIntervals.add(toInsert);
                 }
             }
-            if( cP.getNumFreshsToInsert() > cP.countFreshsInIntervals() ){
-                // Add a new Single color interval
-                Interval<T> firstInt = chooseUnallocatedBoundaries(cP.getIntervals().get(0), cP); // firstInt is the one having ONLY the elements of the column
-                insertedIntervals.add(firstInt);
+            
+            long nFreshsInFirstInterval = cP.getNumFreshsToInsert() - cP.countFreshsInIntersectedIntervals();
+            
+            if( nFreshsInFirstInterval > 0 ){
+                // Find fresh values for cP.getIntervals.get(0);
+                cP.getIntervals().get(0).updateMinEncodingAndValue(maxEncodingEncountered + 1);
+                cP.getIntervals().get(0).updateMaxEncodingAndValue( (maxEncodingEncountered + 1) + nFreshsInFirstInterval );
             }
         }
     }
 
-    private Interval<T> chooseUnallocatedBoundaries(
-            Interval<T> interval, ColumnPumper<T> cP) {
-        // TODO Does NOT require access to the database
-        
-        // Go through all the intervals, find min and max and return something outside
-        // OR
-        // keep global(=in the column) min and max updated each time y create intervals
-        return null;
-    }
-
     /** 
-     *  This methods just makes a new interval <b>E</b>, without
-     *  updating the intervals from which <b>E</b> is born
+     *  It creates a new interval <b>result</b> starting from the boundaries of a given
+     *  <b>previouslyInserted</b> interval. Then, it adds <b>result</b> to <b>cP.getIntervals()</b>.
      *  
      * @param previouslyInserted
      * @param cP
@@ -340,8 +338,7 @@ class IntervalsBoundariesFinder<T>{
                     throws BoundariesUnsetException {
         
         Interval<T> result = previouslyInserted.getCopyInstance();
-        result.updateMaxEncodingAndValue(previouslyInserted.getMaxEncoding() + nToInsertInPreviouslyInserted);
-        
+        result.updateMaxEncodingAndValue(previouslyInserted.getMinEncoding() + nToInsertInPreviouslyInserted);
         result.addInvolvedColumnPumper(cP);
         
         return result;

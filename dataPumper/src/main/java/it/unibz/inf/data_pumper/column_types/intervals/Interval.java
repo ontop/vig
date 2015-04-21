@@ -142,13 +142,17 @@ public abstract class Interval<T> {
     
     /**
      * Each interval represents the values in an intersection of one or more columns. This
-     * method adds adds a column to the intersection of the columns.
+     * method adds adds a column to the intersection of the columns. This method modifies the 
+     * key of <b>this</b> interval with <b>this.getKey() + cP.getQualifiedName()</b>. 
+     * 
+     * As last thing, this method adds <b>this</b> interval to <b>cP.getIntervals()</b>.
      * @param cP
      */
     public void addInvolvedColumnPumper(ColumnPumper<T> cP){
         if( !this.intervalColumns.contains(cP) ){
             this.intervalColumns.add(cP);
             this.key = this.key + cP.getQualifiedName();
+            cP.addInterval(this);
         }
     }
 

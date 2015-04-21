@@ -140,12 +140,12 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 	}
 	
 	@Override
-    public long countFreshsInIntervals() throws ValueUnsetException {
+    public long countFreshsInIntersectedIntervals() throws ValueUnsetException {
         if( !this.numDupsNullRowsSet ) throw new ValueUnsetException();
         
         long result = 0;
         
-        for( Interval<?> i : this.getIntervals() ){
+        for( Interval<T> i : this.getIntervals() ){
             result += i.nFreshsToInsert;
         }
         

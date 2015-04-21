@@ -79,7 +79,7 @@ public interface ColumnPumperInterface<T> {
 	
 	// N Freshs
 	public long getNumFreshsToInsert() throws ValueUnsetException;
-	public long countFreshsInIntervals() throws ValueUnsetException;
+	public long countFreshsInIntersectedIntervals() throws ValueUnsetException;
 	
 	public String getNthInDomain(int i);
 	
