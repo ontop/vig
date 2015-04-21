@@ -25,9 +25,11 @@ import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-public abstract class MultiIntervalColumn<T> extends ColumnPumper {
+public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 	
 	private static final String NULL = "\\N";
 
@@ -43,6 +45,27 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper {
 		this.domainIndex = 0;
 		this.firstIntervalSet = false;
 	}
+	
+	@Override
+	public void addInterval(Interval<T> addInterval){
+	    this.intervals.add(addInterval);
+	}
+	
+    @Override
+    public List<Interval<T>> getIntervals() {
+        return Collections.unmodifiableList(this.intervals);
+    }
+	
+    @Override
+    public void removeIntervalOfKey(String key){
+        for( Iterator<Interval<T>> it = intervals.iterator(); it.hasNext(); ){
+            Interval<T> curInt = it.next();
+            if( curInt.getKey().equals(key) ){
+                it.remove();
+                break;
+            }
+        }
+    }
 	
 	@Override
 	/** This method has to be called whenever information held for the column can be released **/
@@ -93,7 +116,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper {
 //		return min;
 //	}
 	
-	public String getCode(){
+	public String getQualifiedName(){
 	    String result = this.getSchema().getTableName() + "." + this.getName();
 	    return result;
 	}

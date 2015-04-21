@@ -12,20 +12,22 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
     public BigDecimalInterval(
             String key,
             MySqlDatatypes type,
-            long nValues, List<ColumnPumper> involvedColumns) {
+            long nValues, List<ColumnPumper<BigDecimal>> involvedColumns) {
         super(key, type, nValues, involvedColumns);
     }
 
     @Override
-    public void updateMinValueByEncoding(
+    public void updateMinEncodingAndValue(
             long newMin) {
         this.min = new BigDecimal(newMin);
+        this.minEncoding = newMin;
     }
 
     @Override
-    public void updateMaxValueByEncoding(
+    public void updateMaxEncodingAndValue(
             long newMax) {
         this.max = new BigDecimal(newMax);
+        this.maxEncoding = newMax;
     }
 
     @Override
@@ -43,11 +45,11 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
     }
 
     @Override
-    public Interval<? extends Object> getCopyInstance() {
+    public Interval<BigDecimal> getCopyInstance() {
         
         BigDecimalInterval result = new BigDecimalInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.intervalColumns);
-        result.updateMinValueByEncoding(this.minEncoding);
-        result.updateMaxValueByEncoding(this.maxEncoding);
+        result.updateMinEncodingAndValue(this.minEncoding);
+        result.updateMaxEncodingAndValue(this.maxEncoding);
         result.minEncoding = this.minEncoding;
         result.maxEncoding = this.maxEncoding;
         

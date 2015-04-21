@@ -30,7 +30,7 @@ import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
-public interface ColumnPumperInterface {
+public interface ColumnPumperInterface<T> {
 	
 	public String getNextValue();
 	
@@ -60,15 +60,19 @@ public interface ColumnPumperInterface {
 	 * 
 	 * @param newMin
 	 */
-//	public void updateMinValueByEncoding(long newMin);
-//	public void updateMaxValueByEncoding(long newMax);
-//	public long getMaxEncoding() throws BoundariesUnsetException;
-//	public long getMinEncoding() throws BoundariesUnsetException;
 	
-	// TODO Do I really want to guarantee free access to the intervals?
-	// Pro: modular
-	// Contro: I might corrupt the intervals 
-	public List<Interval<? extends Object>> getIntervals();
+	/**
+	 * 
+	 * @return A view of the intervals
+	 */
+	public List<Interval<T>> getIntervals();
+	public void addInterval(Interval<T> addInterval); 
+	
+	/**
+     * Remove the interval with the provided <b>key</b>
+     * @param key
+     */
+    public abstract void removeIntervalOfKey(String key);
 		
 	public void setNumRowsToInsert(int num) throws TooManyValuesException;
 	public long getNumRowsToInsert() throws ValueUnsetException;
@@ -83,10 +87,4 @@ public interface ColumnPumperInterface {
 	public void decrementNumFreshs();
 	
 	public void reset(); // To reset the internal state
-//	int getNumFreshsToInsert() throws ValueUnsetException;
-//	void setNumFreshsToInsert(int numFreshsToInsert);
-//	int getNumDupsToInsert() throws ValueUnsetException;
-//	void setNumDupsToInsert(int numDupsToInsert);
-
-
 }

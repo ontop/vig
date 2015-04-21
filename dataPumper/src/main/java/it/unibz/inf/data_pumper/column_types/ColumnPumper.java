@@ -25,7 +25,7 @@ import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
-public abstract class ColumnPumper extends Column implements ColumnPumperInterface{
+public abstract class ColumnPumper<T> extends Column implements ColumnPumperInterface<T>{
 		
 	private float duplicateRatio;
 	private float nullRatio;
@@ -125,5 +125,4 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	public void decrementNumFreshs() {
 		--this.numFreshsToInsert;
 	}
-
 };

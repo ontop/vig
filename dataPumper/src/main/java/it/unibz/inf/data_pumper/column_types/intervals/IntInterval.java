@@ -1,6 +1,5 @@
 package it.unibz.inf.data_pumper.column_types.intervals;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
@@ -11,18 +10,20 @@ public class IntInterval extends Interval<Long> {
 
     public IntInterval(String key,
             MySqlDatatypes type,
-            long nValues, List<ColumnPumper> involvedCols) {
+            long nValues, List<ColumnPumper<Long>> involvedCols) {
         super(key, type, nValues, involvedCols);
     }
 
     @Override
-    public void updateMinValueByEncoding(long newMin) {
+    public void updateMinEncodingAndValue(long newMin) {
         this.min = newMin;
+        this.minEncoding = newMin;
     }
     
     @Override
-    public void updateMaxValueByEncoding(long newMax) {
+    public void updateMaxEncodingAndValue(long newMax) {
         this.max = newMax;
+        this.maxEncoding = newMax;
     }
     
     @Override
@@ -38,23 +39,14 @@ public class IntInterval extends Interval<Long> {
     }
 
     @Override
-    public Interval<? extends Object> getCopyInstance() {
+    public Interval<Long> getCopyInstance() {
         
         IntInterval result = new IntInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.intervalColumns);
-        result.updateMinValueByEncoding(this.minEncoding);
-        result.updateMaxValueByEncoding(this.maxEncoding);
+        result.updateMinEncodingAndValue(this.minEncoding);
+        result.updateMaxEncodingAndValue(this.maxEncoding);
         result.minEncoding = this.minEncoding;
         result.maxEncoding = this.maxEncoding;
         
-        return result;
-    }
-
-    @Override
-    public List<Interval<? extends Object>> split(
-            Interval<? extends Object> toInsert) {
-        
-        List<Interval<? extends Object>> result = new LinkedList<Interval<? extends Object>>();
-         
         return result;
     }
 }

@@ -36,9 +36,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class Schema{
-	private List<ColumnPumper> columns;
+	private List<ColumnPumper<? extends Object>> columns;
 	private final String tableName;  // Final in order to avoid the well-known "mutability" problem with the <i>equals</i> method.
-	private List<ColumnPumper> primaryKey;
+	private List<ColumnPumper<? extends Object>> primaryKey;
 	
 	// Fields related to the pumping
 	private boolean filledFlag; // It keeps the information whether this schema has been already pumped once
@@ -51,8 +51,8 @@ public class Schema{
 	
 	public Schema(String tableName){
 		this.tableName = tableName;
-		columns = new ArrayList<ColumnPumper>();
-		primaryKey = new ArrayList<ColumnPumper>();
+		columns = new ArrayList<ColumnPumper<? extends Object>>();
+		primaryKey = new ArrayList<ColumnPumper<? extends Object>>();
 		filledFlag = false;
 		maxDupsRepetition = 0;
 		originalSize = 0;
@@ -103,8 +103,8 @@ public class Schema{
 		}
 	}
 	
-	public ColumnPumper getColumn(String colName){
-		for( ColumnPumper col : columns ){
+	public ColumnPumper<? extends Object> getColumn(String colName){
+		for( ColumnPumper<? extends Object> col : columns ){
 			if( col.getName().equals(colName) )
 				return col;
 		}
@@ -114,7 +114,7 @@ public class Schema{
 	 * Returns a list of all columns. Side-effects if the list is changed
 	 * @return
 	 */
-	public List<ColumnPumper> getColumns(){
+	public List<ColumnPumper<? extends Object>> getColumns(){
 		return Collections.unmodifiableList(columns);
 	}	
 	public String getTableName(){
@@ -145,11 +145,11 @@ public class Schema{
 		return this.getTableName().hashCode();
 		
 	}
-	public List<ColumnPumper> getPk(){
+	public List<ColumnPumper<? extends Object>> getPk(){
 		if( primaryKey.size() == 0 ){
 			
 			// INIT
-			for( ColumnPumper c : columns ){
+			for( ColumnPumper<? extends Object> c : columns ){
 				if( c.isPrimary() )
 					primaryKey.add(c);
 			}
@@ -158,9 +158,9 @@ public class Schema{
 	}
 	
 	public void sortColumnsAccordingToDupRatios() {
-		Collections.sort(columns, new Comparator<ColumnPumper>() {
+		Collections.sort(columns, new Comparator<ColumnPumper<? extends Object>>() {
 			  @Override
-			  public int compare(ColumnPumper c1, ColumnPumper c2) { // Descending order
+			  public int compare(ColumnPumper<? extends Object> c1, ColumnPumper<? extends Object> c2) { // Descending order
 				  
 				  int result = 0;
 				  
@@ -178,13 +178,13 @@ public class Schema{
 			});
 		// Update the indexes
 		int index = 0;
-		for( ColumnPumper cP : columns ){
+		for( ColumnPumper<? extends Object> cP : columns ){
 			cP.setIndex(++index);
 		}
 	}
 
 	public void reset() {
-		for( ColumnPumper cP : columns ){
+		for( ColumnPumper<? extends Object> cP : columns ){
 			cP.reset();
 		}
 	}

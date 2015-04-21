@@ -79,7 +79,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		long startTime = System.currentTimeMillis();
 		
 		List<Schema> schemas = new LinkedList<Schema>();
-		List<ColumnPumper> listColumns = new ArrayList<ColumnPumper>();
+		List<ColumnPumper<? extends Object>> listColumns = new ArrayList<ColumnPumper<? extends Object>>();
 		initListAllColumns(listColumns, scaleFactor);
 		
 		
@@ -143,19 +143,19 @@ public class DatabasePumperDB extends DatabasePumper {
 			}
 		}
 
-		List<ColumnPumper> pk = schema.getPk();
+		List<ColumnPumper<? extends Object>> pk = schema.getPk();
 		List<Number> freshs = new ArrayList<Number>();
 		
 		LocalUtils lu = new LocalUtils();
 		
-		for( ColumnPumper cP : pk ){
+		for( ColumnPumper<? extends Object> cP : pk ){
 			freshs.add(cP.getNumFreshsToInsert());
 		}
 		
 		long lcm = UtilsMath.lcm(freshs);
 		
 		boolean violation = false;
-		for( ColumnPumper cP : pk ){
+		for( ColumnPumper<? extends Object> cP : pk ){
 			long nValuesToInsert = cP.getNumRowsToInsert();
 			if( nValuesToInsert > lcm ){
 				violation = true;
@@ -164,7 +164,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		}
 		if( violation ){ // We broke out
 			boolean noneEmpty = true;
-			for( ColumnPumper cP : pk ){
+			for( ColumnPumper<? extends Object> cP : pk ){
 				if( cP.referencesTo().isEmpty() ){
 					if( !lu.isLimit(cP.getNumFreshsToInsert()) ){ 
 						noneEmpty = false;
@@ -176,7 +176,7 @@ public class DatabasePumperDB extends DatabasePumper {
 			}
 			if( noneEmpty ){
 				noneEmpty = true;
-				for( ColumnPumper cP : pk ){
+				for( ColumnPumper<? extends Object> cP : pk ){
 					if( cP.referencedBy().isEmpty() ){
 						noneEmpty = false;
 						cP.decrementNumFreshs();
@@ -197,22 +197,22 @@ public class DatabasePumperDB extends DatabasePumper {
 		}
 	}
 	
-	protected void updateBoundariesWRTForeignKeys(List<ColumnPumper> listColumns) throws InstanceNullException, BoundariesUnsetException {
-		Queue<ColumnPumper> toUpdateBoundaries = new LinkedList<ColumnPumper>();
+	protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException {
+		Queue<ColumnPumper<? extends Object>> toUpdateBoundaries = new LinkedList<ColumnPumper<? extends Object>>();
 		toUpdateBoundaries.addAll(listColumns);
 		
 		while( !toUpdateBoundaries.isEmpty() ){
-			ColumnPumper first = toUpdateBoundaries.remove();
+			ColumnPumper<? extends Object> first = toUpdateBoundaries.remove();
 			long firstMinEncoding = first.getIntervals().get(0).getMinEncoding();
 			for( QualifiedName referredName : first.referencesTo() ){
-				ColumnPumper referred = DBMSConnection.getInstance().getSchema(referredName.getTableName()).getColumn(referredName.getColName());
+				ColumnPumper<? extends Object> referred = DBMSConnection.getInstance().getSchema(referredName.getTableName()).getColumn(referredName.getColName());
 				long refMinEncoding = referred.getIntervals().get(0).getMinEncoding();
 				if( firstMinEncoding > refMinEncoding ){
 					
-					first.getIntervals().get(0).updateMinValueByEncoding(refMinEncoding);
+					first.getIntervals().get(0).updateMinEncodingAndValue(refMinEncoding);
 					// Update the boundaries for all the kids
 					for( QualifiedName kidName : first.referencedBy() ){
-						ColumnPumper kid = DBMSConnection.getInstance().getSchema(kidName.getTableName()).getColumn(kidName.getColName());
+                        ColumnPumper<? extends Object> kid = (ColumnPumper<? extends Object>) DBMSConnection.getInstance().getSchema(kidName.getTableName()).getColumn(kidName.getColName());
 						toUpdateBoundaries.add(kid);
 					}
 				}
@@ -221,7 +221,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	}
 	private void printDomain(Schema schema) {
 				
-		List<ColumnPumper> cols = schema.getColumns();
+		List<ColumnPumper<? extends Object>> cols = schema.getColumns();
 		
 		StringBuilder line = new StringBuilder();
 		try {
@@ -231,7 +231,7 @@ public class DatabasePumperDB extends DatabasePumper {
 				for( int j = 0; j < cols.size(); ++j ){
 					if( j != 0 ) line.append("`");
 					
-					ColumnPumper col = cols.get(j);
+					ColumnPumper<? extends Object> col = cols.get(j);
 					line.append(col.getNthInDomain(i));
 				}
 				
@@ -258,10 +258,10 @@ public class DatabasePumperDB extends DatabasePumper {
 	 * @param listColumns The output
 	 * @param percentage The increment ratio
 	 */
-	private void initListAllColumns(List<ColumnPumper> listColumns, double percentage) {
+	private void initListAllColumns(List<ColumnPumper<? extends Object>> listColumns, double percentage) {
 		for( String tableName : dbOriginal.getAllTableNames()){
 			Schema s = dbOriginal.getSchema(tableName);
-			for( ColumnPumper c : s.getColumns() ){
+			for( ColumnPumper<? extends Object> c : s.getColumns() ){
 				listColumns.add(c);
 				float dupsRatio = tStatsFinder.findDuplicatesRatio(s, c);
 				c.setDuplicatesRatio(dupsRatio);
@@ -282,14 +282,14 @@ public class DatabasePumperDB extends DatabasePumper {
 		}	
 	}
 
-	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException, SQLException{
-		for( ColumnPumper cP : listColumns ){
+	protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException, SQLException{
+		for( ColumnPumper<? extends Object> cP : listColumns ){
 			cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 		}
 	}
 	
 	private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
-		for( ColumnPumper column : schema.getColumns() ){
+		for( ColumnPumper<? extends Object> column : schema.getColumns() ){
 			try {
 				column.generateValues(schema, originalDb);
 			} catch (BoundariesUnsetException | ValueUnsetException e) {

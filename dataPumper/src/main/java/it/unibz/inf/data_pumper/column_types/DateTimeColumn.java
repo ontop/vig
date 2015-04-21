@@ -133,9 +133,9 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    max = new Timestamp(c.getTimeInMillis());
 	    
 	    // Create the single initial interval
-	    List<ColumnPumper> involvedCols = new LinkedList<ColumnPumper>();
+	    List<ColumnPumper<Timestamp>> involvedCols = new LinkedList<ColumnPumper<Timestamp>>();
 	    involvedCols.add(this);
-	    Interval<Timestamp> initialInterval = new DatetimeInterval(this.getCode(), this.getType(), this.numFreshsToInsert, involvedCols);
+	    Interval<Timestamp> initialInterval = new DatetimeInterval(this.getQualifiedName(), this.getType(), this.numFreshsToInsert, involvedCols);
 
 	    initialInterval.setMinValue(min);
 	    initialInterval.setMaxValue(max);
@@ -144,10 +144,4 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    
 	    this.firstIntervalSet = true;
 	}
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<Interval<Timestamp>> getIntervals() {
-        return this.intervals;
-    }
 };

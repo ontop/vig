@@ -14,18 +14,20 @@ public class StringInterval extends Interval<String> {
     
     public StringInterval(String key,
             MySqlDatatypes type,
-            long nValues, int datatypeLength, List<ColumnPumper> involvedCols) {
+            long nValues, int datatypeLength, List<ColumnPumper<String>> involvedCols) {
         super(key, type, nValues, involvedCols);
         this.datatypeLength = datatypeLength;
     }
 
     @Override
-    public void updateMinValueByEncoding(long newMin) {
+    public void updateMinEncodingAndValue(long newMin) {
         this.minEncoding = newMin;
+        this.min = encode(newMin); 
     }
     
     @Override
-    public void updateMaxValueByEncoding(long newMax) {
+    public void updateMaxEncodingAndValue(long newMax) {
+        this.maxEncoding = newMax;
         this.max = encode(newMax);
     }
 
@@ -70,11 +72,11 @@ public class StringInterval extends Interval<String> {
     }
     
     @Override
-    public Interval<? extends Object> getCopyInstance() {
+    public Interval<String> getCopyInstance() {
         
         StringInterval result = new StringInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.datatypeLength, this.intervalColumns);
-        result.updateMinValueByEncoding(this.minEncoding);
-        result.updateMaxValueByEncoding(this.maxEncoding);
+        result.updateMinEncodingAndValue(this.minEncoding);
+        result.updateMaxEncodingAndValue(this.maxEncoding);
         result.minEncoding = this.minEncoding;
         result.maxEncoding = this.maxEncoding;
         

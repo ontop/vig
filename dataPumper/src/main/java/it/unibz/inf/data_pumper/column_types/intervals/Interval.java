@@ -3,6 +3,7 @@ package it.unibz.inf.data_pumper.column_types.intervals;
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
+import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,14 +23,14 @@ public abstract class Interval<T> {
     private int domainIndex;
     private final MySqlDatatypes type;
     
-    private final String key;
+    private String key;
     public final long nFreshsToInsert;
     
     // ColumnPumpers in the interval
-    List<ColumnPumper> intervalColumns;
+    List<ColumnPumper<T>> intervalColumns;
     
     
-    public Interval(String key, MySqlDatatypes type, long nValues, List<ColumnPumper> intervalColumns){
+    public Interval(String key, MySqlDatatypes type, long nValues, List<ColumnPumper<T>> intervalColumns){
         this.domain = null;
         this.domainIndex = 0;
         this.key = key;
@@ -94,24 +95,48 @@ public abstract class Interval<T> {
     }
 
     // Public updatable interface
-    public abstract void updateMinValueByEncoding(long newMin);
-    public abstract void updateMaxValueByEncoding(long newMax);
+    public abstract void updateMinEncodingAndValue(long newMin);
+    public abstract void updateMaxEncodingAndValue(long newMax);
     
     public abstract long getMinEncoding() throws BoundariesUnsetException;
     public abstract long getMaxEncoding() throws BoundariesUnsetException;
 
     /**
-     * Make space for a new interval while destroying the old one
+     * It adapts the boundaries of <b>this</b> interval
      * @param toInsert
      * @return
+     * @throws DEBUGEXCEPTION 
+     * @throws BoundariesUnsetException 
      */
-    public abstract List<Interval<? extends Object>> split(Interval<? extends Object> toInsert);
+    public boolean adaptBounds(Interval<T> toInsert) throws DEBUGEXCEPTION, BoundariesUnsetException {
+        
+        boolean killMe = false;
+        
+        long splitterMaxEncoding = toInsert.maxEncoding;
+        long splitterMinEncoding = toInsert.minEncoding;
+        
+        if( this.getMinEncoding() < splitterMinEncoding ){
+            throw new DEBUGEXCEPTION("The splitter minimum is not equal to the minimum of the to-be-splitted interval");
+        }
+        
+        if( this.getMaxEncoding() > splitterMaxEncoding ){
+            // Shrink
+            this.minEncoding = splitterMaxEncoding + 1;
+        }
+        else{
+            // this.getMaxEncoding == splitterMaxEncoding
+            // This interval HAS TO DIE!
+            killMe/*please*/ = true;
+            /*++evilLaugh*/
+        }
+        return killMe;
+    }
 
     /**
      * 
      * @return The set of columns for which this interval is generating values
      */
-    public Collection<? extends ColumnPumper> getInvolvedColumnPumpers() {
+    public Collection<? extends ColumnPumper<T>> getInvolvedColumnPumpers() {
         return Collections.unmodifiableCollection(this.intervalColumns);
     } 
     
@@ -120,10 +145,22 @@ public abstract class Interval<T> {
      * method adds adds a column to the intersection of the columns.
      * @param cP
      */
-    public void addInvolvedColumnPumper(ColumnPumper cP){
-        if( !this.intervalColumns.contains(cP) )
+    public void addInvolvedColumnPumper(ColumnPumper<T> cP){
+        if( !this.intervalColumns.contains(cP) ){
             this.intervalColumns.add(cP);
+            this.key = this.key + cP.getQualifiedName();
+        }
     }
 
-    public abstract Interval<? extends Object> getCopyInstance();
+    public abstract Interval<T> getCopyInstance();
+
+    /**
+     * It removes all the stable references to <b>this</b> interval.
+     */
+    public void suicide() {
+        // For each involved column pumper, remove me from their lists of intervals
+        for( ColumnPumper<T> cP : this.intervalColumns ){
+            cP.removeIntervalOfKey(this.getKey());
+        }   
+    }
 }

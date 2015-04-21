@@ -43,8 +43,8 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	}
 	
 	@Override
-	protected void establishColumnBounds(List<ColumnPumper> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException, SQLException{
-		for( ColumnPumper cP : listColumns ){
+	protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException, SQLException{
+		for( ColumnPumper<? extends Object> cP : listColumns ){
 			cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 		}
 		// At this point, each column is initialized with statistical information
@@ -52,7 +52,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		
 		
 		// search for correlated columns and order them by fresh values to insert
-		List<CorrelatedColumnsList> correlatedCols = this.cCE.extractCorrelatedColumns();
+		List<CorrelatedColumnsList<T>> correlatedCols = this.cCE.extractCorrelatedColumns();
 		
 		// Now, correlatedCols contains sets of correlated columns (closed under referencesTo and referredBy). :) :) :) :)
 //		// I need to identify the intervals, now.
@@ -185,117 +185,17 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
      * @throws InstanceNullException 
      * @throws SQLException 
 	 */
-	private void updateColumnBoundsWRTCorrelated(
-			List<CorrelatedColumnsList> correlatedCols) 
+	private <T> void updateColumnBoundsWRTCorrelated(
+			List<CorrelatedColumnsList<T>> correlatedCols) 
 			        throws ValueUnsetException, BoundariesUnsetException, DEBUGEXCEPTION, SQLException, InstanceNullException {
 		
-	    class LocalUtils{
-	        
-	        private DatabasePumperOBDA dbPumperInstance;
-	        
-	        public LocalUtils(
-                    DatabasePumperOBDA databasePumperOBDA) {
-	            dbPumperInstance = databasePumperOBDA;
-	        }
-
-            /**
-	         * Side effect on insertedIntervals and cP and related ColumnPumper objects
-	         * @throws DEBUGEXCEPTION 
-	         * @throws ValueUnsetException 
-             * @throws InstanceNullException 
-             * @throws SQLException 
-	         */
-	        void insert(List<Interval<? extends Object>> insertedIntervals, ColumnPumper cP) 
-	                throws DEBUGEXCEPTION, ValueUnsetException, SQLException, InstanceNullException{
-	            List<Interval<? extends Object>> newIntervals = new LinkedList<Interval<? extends Object>>();
-	            
-	            if( insertedIntervals.isEmpty() ){
-	                insertedIntervals.add(cP.getIntervals().get(0));
-	                
-	                // Assert 
-	                if( cP.getIntervals().size() != 1 ){
-	                    throw new DEBUGEXCEPTION("Intervals size != 1");
-	                }
-	            }
-	            else{
-	                for( Iterator<Interval<? extends Object>> it = insertedIntervals.iterator(); it.hasNext(); ){
-	                    Interval<? extends Object> previouslyInserted = it.next();
-	                    long nToInsertInPreviouslyInserted = makeIntersectionQuery(cP, previouslyInserted);
-	                    
-	                    if( nToInsertInPreviouslyInserted > 0 ){ // Create a new "SubInterval"
-	                        
-	                        // Make sub interval
-	                        Interval<? extends Object> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviouslyInserted);
-	                        
-	                        // Split
-	                        List<Interval<? extends Object>> splits = previouslyInserted.split(toInsert);
-	                        
-	                        // Add
-	                        cP.getIntervals().add(toInsert);
-	                        newIntervals.addAll(insertedIntervals);
-	                        newIntervals.addAll(splits);
-	                        
-	                        // Remove no-longer valid interval
-	                        it.remove();
-	                    }
-	                }
-	                if( cP.getNumFreshsToInsert() > cP.countFreshsInIntervals() ){
-	                    // Add a new Single color interval
-	                    Interval<? extends Object> firstInt = chooseUnallocatedBoundaries(cP.getIntervals().get(0), cP);
-	                    newIntervals.add(firstInt);
-	                }
-	                insertedIntervals.addAll(newIntervals); // Update the result with the new values
-	            }
-	        }
-
-            private Interval<? extends Object> chooseUnallocatedBoundaries(
-                    Interval<? extends Object> interval, ColumnPumper cP) {
-                // TODO Does NOT require access to the database
-                
-                // Go through all the intervals, find min and max and return something outside
-                // OR
-                // keep global(=in the column) min and max updated each time y create intervals
-                return null;
-            }
-
-            /** 
-             *  This methods just makes a new interval <b>E</b>, without
-             *  updating the intervals from which <b>E</b> is born
-             *  
-             * @param previouslyInserted
-             * @param cP
-             * @param nToInsertInPreviouslyInserted
-             * @return
-             */
-            private Interval<? extends Object> makeSubInterval(Interval<? extends Object> previouslyInserted, ColumnPumper cP, long nToInsertInPreviouslyInserted) {
-                // TODO Does NOT require access to the database
-                
-                Interval<? extends Object> result = previouslyInserted.getCopyInstance();
-                
-                return result;
-            }
-
-            private long makeIntersectionQuery(ColumnPumper cP, Interval<?> previouslyInserted) 
-                    throws SQLException, InstanceNullException, ValueUnsetException {
-                
-                long result = 0;
-                
-                List<ColumnPumper> cols = new ArrayList<ColumnPumper>();
-                
-                cols.add(cP);
-                cols.addAll(previouslyInserted.getInvolvedColumnPumpers());
-                this.dbPumperInstance.tStatsFinder.findSharedRatio(cols);
-                
-                return result; 
-            }
-	    }
+//	    LocalUtils utils  = new LocalUtils(this);
 	    
-	    LocalUtils utils  = new LocalUtils(this);
-	    
-	    for( CorrelatedColumnsList cCL : correlatedCols){
-	        List<Interval<? extends Object>> insertedIntervals = new LinkedList<Interval<? extends Object>>();
+	    for( CorrelatedColumnsList<T> cCL : correlatedCols){
+	        IntervalsBoundariesFinder<T> utils = new IntervalsBoundariesFinder<T>(this);
+	        List<Interval<T>> insertedIntervals = new LinkedList<Interval<T>>();
 	        for( int i = 0; i < cCL.size(); ++i ){
-	            ColumnPumper cP = cCL.get(i);
+	            ColumnPumper<T> cP = cCL.get(i);
 	            utils.insert(insertedIntervals, cP);
 	        }
 	    }
@@ -342,35 +242,141 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 //		// TODO Use an SMT Solver
 //	}
 
-	private int findNumSharedFreshsToInsert(ColumnPumper col, ColumnPumper referenced) {
-		int numSharedFreshs = 0;
-		try {
-			float sharedRatio = this.tStatsFinder.findSharedRatio(col, referenced);
-			numSharedFreshs = (int) (col.getNumFreshsToInsert() * sharedRatio);
-		} catch (SQLException | ValueUnsetException | InstanceNullException e) {
-			e.printStackTrace();
-			DatabasePumper.closeEverything();
-			System.exit(1);
-		}
-		return numSharedFreshs;
-	}
+//	private int findNumSharedFreshsToInsert(ColumnPumper col, ColumnPumper referenced) {
+//		int numSharedFreshs = 0;
+//		try {
+//			float sharedRatio = this.tStatsFinder.findSharedRatio(col, referenced);
+//			numSharedFreshs = (int) (col.getNumFreshsToInsert() * sharedRatio);
+//		} catch (SQLException | ValueUnsetException | InstanceNullException e) {
+//			e.printStackTrace();
+//			DatabasePumper.closeEverything();
+//			System.exit(1);
+//		}
+//		return numSharedFreshs;
+//	}
 	
 }
 
-class CorrelatedColumnsList{
+class IntervalsBoundariesFinder<T>{
+    
+    private DatabasePumperOBDA dbPumperInstance;
+    
+    public IntervalsBoundariesFinder(
+            DatabasePumperOBDA databasePumperOBDA) {
+        dbPumperInstance = databasePumperOBDA;
+    }
+
+    /**
+     * Side effect on insertedIntervals and cP and related ColumnPumper objects
+     * @throws DEBUGEXCEPTION 
+     * @throws ValueUnsetException 
+     * @throws InstanceNullException 
+     * @throws SQLException 
+     * @throws BoundariesUnsetException 
+     */
+    void insert(List<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
+            throws DEBUGEXCEPTION, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
+        
+        if( insertedIntervals.isEmpty() ){
+            insertedIntervals.add(cP.getIntervals().get(0));
+            
+            // Assert 
+            if( cP.getIntervals().size() != 1 ){
+                throw new DEBUGEXCEPTION("Intervals size != 1");
+            }
+        }
+        else{
+            for( Iterator<Interval<T>> it = insertedIntervals.iterator(); it.hasNext(); ){
+                Interval<T> previouslyInserted = it.next();
+                long nToInsertInPreviouslyInserted = makeIntersectionQuery(cP, previouslyInserted);
+                
+                if( nToInsertInPreviouslyInserted > 0 ){ // Create a new "SubInterval"
+                    
+                    // Make sub interval ( with the right boundaries )
+                    Interval<T> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviouslyInserted);
+                    
+                    // Split
+                    boolean killOldInterval = previouslyInserted.adaptBounds(toInsert);
+                    
+                    if( killOldInterval ){
+                        it.remove();
+                        previouslyInserted.suicide(); 
+                    }
+                    
+                    // Add
+                    cP.addInterval(toInsert);
+                }
+            }
+            if( cP.getNumFreshsToInsert() > cP.countFreshsInIntervals() ){
+                // Add a new Single color interval
+                Interval<T> firstInt = chooseUnallocatedBoundaries(cP.getIntervals().get(0), cP); // firstInt is the one having ONLY the elements of the column
+                insertedIntervals.add(firstInt);
+            }
+        }
+    }
+
+    private Interval<T> chooseUnallocatedBoundaries(
+            Interval<T> interval, ColumnPumper<T> cP) {
+        // TODO Does NOT require access to the database
+        
+        // Go through all the intervals, find min and max and return something outside
+        // OR
+        // keep global(=in the column) min and max updated each time y create intervals
+        return null;
+    }
+
+    /** 
+     *  This methods just makes a new interval <b>E</b>, without
+     *  updating the intervals from which <b>E</b> is born
+     *  
+     * @param previouslyInserted
+     * @param cP
+     * @param nToInsertInPreviouslyInserted
+     * @return
+     * @throws BoundariesUnsetException 
+     */
+    private Interval<T> makeSubInterval(
+            Interval<T> previouslyInserted, ColumnPumper<T> cP, long nToInsertInPreviouslyInserted) 
+                    throws BoundariesUnsetException {
+        
+        Interval<T> result = previouslyInserted.getCopyInstance();
+        result.updateMaxEncodingAndValue(previouslyInserted.getMaxEncoding() + nToInsertInPreviouslyInserted);
+        
+        result.addInvolvedColumnPumper(cP);
+        
+        return result;
+    }
+
+    private long makeIntersectionQuery(ColumnPumper<T> cP, Interval<T> previouslyInserted) 
+            throws SQLException, InstanceNullException, ValueUnsetException {
+        
+        long result = 0;
+        
+        List<ColumnPumper<T>> cols = new ArrayList<ColumnPumper<T>>();
+        
+        cols.add(cP);
+        cols.addAll(previouslyInserted.getInvolvedColumnPumpers());
+        this.dbPumperInstance.tStatsFinder.findSharedRatio(cols);
+        
+        return result; 
+    }
+};
+
+
+class CorrelatedColumnsList<T>{
 	
 	// This is always sorted w.r.t. the number of fresh values to insert
-	private LinkedList<ColumnPumper> columns;
+	private LinkedList<ColumnPumper<T>> columns;
 	
 	public CorrelatedColumnsList(){
-		this.columns = new LinkedList<ColumnPumper>();
+		this.columns = new LinkedList<ColumnPumper<T>>();
 	}
 	
 	public int size(){
 		return columns.size();
 	}
 	
-	public ColumnPumper get(int index){
+	public ColumnPumper<T> get(int index){
 		return this.columns.get(index);
 	}
 	
@@ -379,14 +385,14 @@ class CorrelatedColumnsList{
 	 * satisfying the ordering constraint on this.columns
 	 * @param cP
 	 */
-	public void insert(ColumnPumper cP){
+	public void insert(ColumnPumper<T> cP){
 		try{
 			long nFreshs = cP.getNumFreshsToInsert();
 			if( this.columns.size() == 0 ){
 				this.columns.add(cP);
 			}
 			for( int i = 0; i < this.columns.size(); ++i ){
-				ColumnPumper el = this.columns.get(i);
+				ColumnPumper<T> el = this.columns.get(i);
 				long elNFreshs = el.getNumFreshsToInsert();
 				if( nFreshs > elNFreshs ){
 					this.columns.add(i, cP);
@@ -399,7 +405,7 @@ class CorrelatedColumnsList{
 		}
 	}
 	
-	public boolean isInCorrelated(ColumnPumper cP){
+	public boolean isInCorrelated(ColumnPumper<T> cP){
 		if( columns.contains(cP) ){
 			return true;
 		}
@@ -421,8 +427,8 @@ class CorrelatedColumnsExtractor{
 		this.jCF = jCF;
 	}
 	
-	List<CorrelatedColumnsList> extractCorrelatedColumns() {
-		List<CorrelatedColumnsList> result = null;
+	<T> List<CorrelatedColumnsList<T>> extractCorrelatedColumns() {
+		List<CorrelatedColumnsList<T>> result = null;
 		try {
 			
 			List<FunctionTemplate> templates = jCF.findFunctionTemplates();
@@ -495,7 +501,7 @@ class CorrelatedColumnsExtractor{
             correlatedThroughForeignKeys(correlated, result);  // Recursion
         }
         else{
-            ColumnPumper cP = DBMSConnection.getInstance().getSchema(current.getTableName()).getColumn(current.getColName());
+            ColumnPumper<? extends Object> cP = DBMSConnection.getInstance().getSchema(current.getTableName()).getColumn(current.getColName());
             correlated.addAll(cP.referencedBy());
             correlated.addAll(cP.referencesTo());
             result.add(current);
@@ -503,17 +509,17 @@ class CorrelatedColumnsExtractor{
         }
     }
 
-    private List<CorrelatedColumnsList> constructCorrelatedColumnsList(List<Set<Field>> maximalMerge) {
+    private <T> List<CorrelatedColumnsList<T>> constructCorrelatedColumnsList(List<Set<Field>> maximalMerge) {
 		
-		List<CorrelatedColumnsList> result = new ArrayList<CorrelatedColumnsList>();
+		List<CorrelatedColumnsList<T>> result = new ArrayList<CorrelatedColumnsList<T>>();
 		
 		for( Set<Field> correlatedColsList : maximalMerge ){
-			CorrelatedColumnsList cCL = new CorrelatedColumnsList();
+			CorrelatedColumnsList<T> cCL = new CorrelatedColumnsList<T>();
 			for( Field f : correlatedColsList ){
 				try {
-					ColumnPumper cP = DBMSConnection.getInstance().getSchema(f.tableName).getColumn(f.colName);
+					@SuppressWarnings("unchecked")
+                    ColumnPumper<T> cP = (ColumnPumper<T>) DBMSConnection.getInstance().getSchema(f.tableName).getColumn(f.colName);
 					cCL.insert(cP);
-					
 				} catch (InstanceNullException e) {
 					e.printStackTrace();
 					DatabasePumperOBDA.closeEverything();

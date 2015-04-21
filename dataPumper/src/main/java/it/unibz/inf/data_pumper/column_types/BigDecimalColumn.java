@@ -113,9 +113,9 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		}
 		
 		// Create the single initial interval
-		List<ColumnPumper> involvedCols = new LinkedList<ColumnPumper>();
+		List<ColumnPumper<BigDecimal>> involvedCols = new LinkedList<ColumnPumper<BigDecimal>>();
 		involvedCols.add(this);
-        Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getCode(), this.getType(), this.numFreshsToInsert, involvedCols);
+        Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getQualifiedName(), this.getType(), this.numFreshsToInsert, involvedCols);
 		
 		initialInterval.setMinValue(min);
 		initialInterval.setMaxValue(max);
@@ -124,11 +124,4 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		
 		this.firstIntervalSet = true;
 	}
-	
-	@SuppressWarnings("unchecked")
-    @Override
-    public List<Interval<BigDecimal>> getIntervals() {
-        return this.intervals;
-    }
-
 }

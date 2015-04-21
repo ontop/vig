@@ -18,17 +18,18 @@ public class DatetimeInterval extends Interval<Timestamp> {
 
     public DatetimeInterval(String key,
             MySqlDatatypes type,
-            long nValues, List<ColumnPumper> involvedCols ) {
+            long nValues, List<ColumnPumper<Timestamp>> involvedCols ) {
         super(key, type, nValues, involvedCols);
     }
     
     @Override
-    public void updateMinValueByEncoding(long newMin) {
+    public void updateMinEncodingAndValue(long newMin) {
         min = new Timestamp(newMin * MILLISECONDS_PER_DAY);
+        this.minEncoding = newMin;
     }
 
     @Override
-    public void updateMaxValueByEncoding(long newMax) {
+    public void updateMaxEncodingAndValue(long newMax) {
 
         Calendar upperBound = Calendar.getInstance();
         upperBound.set(9999,11,31);
@@ -44,6 +45,7 @@ public class DatetimeInterval extends Interval<Timestamp> {
                 System.exit(1);
             }
         }
+        this.maxEncoding = newMax;
     }
     
     @Override
@@ -59,11 +61,11 @@ public class DatetimeInterval extends Interval<Timestamp> {
     }
     
     @Override
-    public Interval<? extends Object> getCopyInstance() {
+    public Interval<Timestamp> getCopyInstance() {
         
         DatetimeInterval result = new DatetimeInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.intervalColumns);
-        result.updateMinValueByEncoding(this.minEncoding);
-        result.updateMaxValueByEncoding(this.maxEncoding);
+        result.updateMinEncodingAndValue(this.minEncoding);
+        result.updateMaxEncodingAndValue(this.maxEncoding);
         result.minEncoding = this.minEncoding;
         result.maxEncoding = this.maxEncoding;
         

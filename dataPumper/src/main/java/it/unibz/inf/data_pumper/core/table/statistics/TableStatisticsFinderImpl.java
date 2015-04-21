@@ -36,8 +36,8 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 	}
 
 	@Override
-	public float findSharedRatio(ColumnPumper col,
-			ColumnPumper referenced) throws SQLException, InstanceNullException, ValueUnsetException {
+	public <T> float findSharedRatio(ColumnPumper<T> col,
+			ColumnPumper<T> referenced) throws SQLException, InstanceNullException, ValueUnsetException {
 		
 		float sharedRatio = 0;
 		
@@ -64,8 +64,8 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 	 * cols.size() == 1 ? 1
 	 */
     @Override
-    public float findSharedRatio(
-            List<ColumnPumper> cols)
+    public <T> float findSharedRatio(
+            List<ColumnPumper<T>> cols)
             throws SQLException,
             InstanceNullException,
             ValueUnsetException {

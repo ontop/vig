@@ -129,6 +129,14 @@ public abstract class Column {
 		return name;
 	}
 	
+	/**
+	 * 
+	 * @return String of the form <b>TableName.ColName</b>
+	 */
+	public String getQualifiedName(){
+	    return (this.getSchema().getTableName() + "." + this.getName());
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 	    boolean result = false;

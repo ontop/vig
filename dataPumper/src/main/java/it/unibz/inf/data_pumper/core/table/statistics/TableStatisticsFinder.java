@@ -11,6 +11,6 @@ import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
 public interface TableStatisticsFinder {
 	public float findDuplicatesRatio(Schema s, ColumnPumper column);
 	public float findNullRatio(Schema s, ColumnPumper column);
-	public float findSharedRatio(ColumnPumper col, ColumnPumper referenced) throws SQLException, InstanceNullException, ValueUnsetException;
-	public float findSharedRatio(List<ColumnPumper> cols) throws SQLException, InstanceNullException, ValueUnsetException;
+	public <T> float findSharedRatio(ColumnPumper<T> col, ColumnPumper<T> referenced) throws SQLException, InstanceNullException, ValueUnsetException;
+	public <T> float findSharedRatio(List<ColumnPumper<T>> cols) throws SQLException, InstanceNullException, ValueUnsetException;
 }
