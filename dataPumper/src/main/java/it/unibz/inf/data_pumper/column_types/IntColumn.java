@@ -126,9 +126,7 @@ public class IntColumn extends MultiIntervalColumn<Long> {
                         this.getQualifiedName().toString(), this.getType(), 
                         this.numFreshsToInsert, involvedCols);
 
-        interval.setMinValue(min);
         interval.updateMinEncodingAndValue(min);
-        interval.setMaxValue(max);
         interval.updateMaxEncodingAndValue(max);
 
         this.intervals.add(interval);

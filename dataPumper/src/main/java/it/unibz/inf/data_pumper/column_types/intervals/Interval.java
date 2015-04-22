@@ -7,14 +7,16 @@ import it.unibz.inf.data_pumper.core.main.DebugException;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public abstract class Interval<T> {
     
     private static final String NULL = "\\N";
     
-    T max;
-    T min;
+    protected T max;
+    protected T min;
     
     protected long minEncoding;
     protected long maxEncoding;
@@ -64,17 +66,17 @@ public abstract class Interval<T> {
         return result;
     }
         
-    public void setMaxValue(T max){
-        this.max = max;
-    }
+//    public void setMaxValue(T max){
+//        this.max = max;
+//    }
     
     public T getMaxValue(){
         return max;
     }
     
-    public void setMinValue(T min){
-        this.min = min;
-    }
+//    public void setMinValue(T min){
+//        this.min = min;
+//    }
     
     public T getMinValue(){
         return min;
@@ -106,8 +108,8 @@ public abstract class Interval<T> {
     public abstract void updateMinEncodingAndValue(long newMin);
     public abstract void updateMaxEncodingAndValue(long newMax);
     
-    public abstract long getMinEncoding() throws BoundariesUnsetException;
-    public abstract long getMaxEncoding() throws BoundariesUnsetException;
+    public abstract long getMinEncoding() throws BoundariesUnsetException, DebugException;
+    public abstract long getMaxEncoding() throws BoundariesUnsetException, DebugException;
 
     /**
      * It adapts the boundaries of <b>this</b> interval
@@ -134,7 +136,7 @@ public abstract class Interval<T> {
         
         if( this.getMaxEncoding() > splitterMaxEncoding ){
             // Shrink
-            this.minEncoding = splitterMaxEncoding;
+            this.updateMinEncodingAndValue(splitterMaxEncoding);
         }
         else{
             // this.getMaxEncoding == splitterMaxEncoding
@@ -177,6 +179,22 @@ public abstract class Interval<T> {
         for( ColumnPumper<T> cP : this.intervalColumns ){
             cP.removeIntervalOfKey(this.getKey());
         }   
+    }
+    
+    public int sizeIntersection(){
+        return this.getInvolvedColumnPumpers().size();
+    }
+    
+    public Set<String> getKeysSet(){
+        
+        Set<String> result = new HashSet<String>();
+        
+        String[] splits = this.getKey().split("---");
+        for( String s : splits ){
+            result.add(s);
+        }
+        
+        return result;
     }
     
     @Override

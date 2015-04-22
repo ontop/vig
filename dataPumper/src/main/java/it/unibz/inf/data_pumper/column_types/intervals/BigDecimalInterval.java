@@ -55,8 +55,6 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
                         new LinkedList<ColumnPumper<BigDecimal>>(this.intervalColumns));
         result.updateMinEncodingAndValue(this.minEncoding);
         result.updateMaxEncodingAndValue(this.maxEncoding);
-        result.minEncoding = this.minEncoding;
-        result.maxEncoding = this.maxEncoding;
         
         return result;
     }

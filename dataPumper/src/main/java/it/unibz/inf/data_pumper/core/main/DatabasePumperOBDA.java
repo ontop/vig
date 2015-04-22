@@ -78,7 +78,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 			    
 	    for( CorrelatedColumnsList<T> cCL : correlatedCols){
 	        IntervalsBoundariesFinder<T> utils = new IntervalsBoundariesFinder<T>(this);
-	        List<Interval<T>> insertedIntervals = new LinkedList<Interval<T>>();
+	        LinkedList<Interval<T>> insertedIntervals = new LinkedList<Interval<T>>();
 	        for( int i = 0; i < cCL.size(); ++i ){
 	            ColumnPumper<T> cP = cCL.get(i);
 	            utils.insert(insertedIntervals, cP);
@@ -109,43 +109,57 @@ class IntervalsBoundariesFinder<T>{
      * @throws SQLException 
      * @throws BoundariesUnsetException 
      */
-    void insert(List<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
+    void insert(LinkedList<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
             throws DebugException, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
-             
+
         long maxEncodingEncountered = 0;
-        
+
         // Assert 
         if( cP.getIntervals().size() != 1 ){
             throw new DebugException("Intervals size != 1");
         }
-        
+
         if( insertedIntervals.isEmpty() ){
             insertedIntervals.add(cP.getIntervals().get(0));
         }
         else{
-            int lastIndex = insertedIntervals.size();
-            for( ListIterator<Interval<T>> it = insertedIntervals.listIterator() ; it.hasNext(); ){
-                if( lastIndex-- == 0 ) break;
-                Interval<T> previouslyInserted = it.next();
-                
+//            int lastIndex = insertedIntervals.size();
+            int count = insertedIntervals.size();
+            LinkedList<Interval<T>> newIntervals = new LinkedList<Interval<T>>();
+            for( ListIterator<Interval<T>> it = insertedIntervals.listIterator(count) ; it.hasPrevious(); ){
+                Interval<T> previouslyInserted = it.previous();
+
                 if( maxEncodingEncountered < previouslyInserted.getMaxEncoding() ) maxEncodingEncountered = previouslyInserted.getMaxEncoding();
-                
+
+                if( cP.getSchema().getTableName().equals("wellbore_core")){
+                    System.out.println("debug");
+                }
                 long nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
-                
+
+                // For all superIntervals Reduce (ABC is superInterval of AB is superInterval of B)
+                long insertedInSuperIntervals = countInsertedInSuperIntervals(cP, previouslyInserted, newIntervals);
+                nToInsertInPreviousInterval -= insertedInSuperIntervals;
+
+                // Assert
+                if( !( nToInsertInPreviousInterval >= 0) ){
+                    throw new DebugException("Assertion failed: nToInsertInPreviousInterval >= 0");
+                }
+
                 if( nToInsertInPreviousInterval > 0 ){ // Create a new "SubInterval"
-                    
+
                     // Make sub interval ( with the right boundaries )
                     Interval<T> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviousInterval);
-                    
+
                     // Split
                     boolean killOldInterval = previouslyInserted.adaptBounds(toInsert);
-                    
+
                     if( killOldInterval ){
                         it.remove();
                         previouslyInserted.suicide(); 
                     }
-                    insertedIntervals.add(toInsert);
-                    
+
+                    newIntervals.add(toInsert);
+
                     // Add the new interval to the involved cPs' intervals lists
                     for( ColumnPumper<T> toUpdateCp : toInsert.getInvolvedColumnPumpers() ){
                         toUpdateCp.addInterval(toInsert);
@@ -163,13 +177,63 @@ class IntervalsBoundariesFinder<T>{
                 // Find fresh values for cP.getIntervals.get(0);
                 cP.getIntervals().get(0).updateMinEncodingAndValue(maxEncodingEncountered);
                 cP.getIntervals().get(0).updateMaxEncodingAndValue( (maxEncodingEncountered) + nFreshsInFirstInterval );
-                insertedIntervals.add(cP.getIntervals().get(0));
+                insertedIntervals.addFirst(cP.getIntervals().get(0));
             }
             else{
                 // Remove the first interval!
                 cP.removeIntervalOfKey(cP.getIntervals().get(0).getKey());
             }
+            
+            // Add in reverse order
+            for( Interval<T> toInsert : newIntervals ){ 
+                for( ListIterator<Interval<T>> it = insertedIntervals.listIterator(); it.hasNext(); ){
+                    Interval<T> curInt = it.next();
+                    if( curInt.sizeIntersection() > toInsert.sizeIntersection() ){
+                        it.previous();
+                        it.add(toInsert);
+                        break;
+                    }
+                    else if( !it.hasNext() ){
+                        it.add(toInsert);
+                        break;
+                    }
+                }
+            }
         }
+    }
+    
+    /**
+     * A superInterval of toInsert is every other interval I s.t. 
+     * I.getInvolvedColumnPumpers().contains(toInsert.getInvolvedColumnPumpers())
+     * @param previouslyInserted 
+     * 
+     * @param toInsert
+     * @param insertedIntervals
+     * @param lookUntilIndex
+     * @return The sum of the values to be inserted in the super-intervals of toInsert
+     */
+    private long countInsertedInSuperIntervals(
+            ColumnPumper<T> cP,
+            Interval<T> previouslyInserted, 
+            List<Interval<T>> newIntervals) {
+        
+        long result = 0;
+        
+        Set<String> toInsertKeySet = previouslyInserted.getKeysSet();
+        
+        for( int i = newIntervals.size() -1; i >= 0 ; --i ){
+            // Assumption: SuperIntervals can only be in the indexes from insertedIntervals.size() to lookUntilIndex
+            
+            Interval<T> curInterval = newIntervals.get(i);
+            Set<String> curKeysSet = curInterval.getKeysSet();
+            
+            if( curKeysSet.contains(toInsertKeySet) ){ 
+                // SuperInterval
+                result += curInterval.getNFreshsToInsert();
+            }
+        }
+        
+        return result;
     }
 
     /** 
@@ -181,10 +245,11 @@ class IntervalsBoundariesFinder<T>{
      * @param nToInsertInPreviouslyInserted
      * @return
      * @throws BoundariesUnsetException 
+     * @throws DebugException 
      */
     private Interval<T> makeSubInterval(
             Interval<T> previouslyInserted, ColumnPumper<T> cP, long nToInsertInPreviouslyInserted) 
-                    throws BoundariesUnsetException {
+                    throws BoundariesUnsetException, DebugException {
         
         Interval<T> result = previouslyInserted.getCopyInstance();
         result.updateMaxEncodingAndValue(previouslyInserted.getMinEncoding() + nToInsertInPreviouslyInserted);
@@ -220,7 +285,7 @@ class IntervalsBoundariesFinder<T>{
         }
         float sharedRatio = this.dbPumperInstance.tStatsFinder.findSharedRatio(cols);
         
-        result = (long) (cP.getNumRowsToInsert() * sharedRatio);
+        result = (long) (cP.getNumFreshsToInsert() * sharedRatio);
         
         return result; 
     }

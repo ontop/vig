@@ -131,14 +131,14 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    }
 
 	    max = new Timestamp(c.getTimeInMillis());
-	    
+
 	    // Create the single initial interval
 	    List<ColumnPumper<Timestamp>> involvedCols = new LinkedList<ColumnPumper<Timestamp>>();
 	    involvedCols.add(this);
 	    Interval<Timestamp> initialInterval = new DatetimeInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
 
-	    initialInterval.setMinValue(min);
-	    initialInterval.setMaxValue(max);
+	    initialInterval.updateMinEncodingAndValue(min.getTime() / DatetimeInterval.MILLISECONDS_PER_DAY);
+	    initialInterval.updateMaxEncodingAndValue(max.getTime() / DatetimeInterval.MILLISECONDS_PER_DAY);
 	    
 	    this.intervals.add(initialInterval);	    
 	    

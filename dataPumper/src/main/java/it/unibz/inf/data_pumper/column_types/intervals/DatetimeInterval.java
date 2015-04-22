@@ -70,8 +70,6 @@ public class DatetimeInterval extends Interval<Timestamp> {
                         this.nFreshsToInsert, new LinkedList<>(this.intervalColumns));
         result.updateMinEncodingAndValue(this.minEncoding);
         result.updateMaxEncodingAndValue(this.maxEncoding);
-        result.minEncoding = this.minEncoding;
-        result.maxEncoding = this.maxEncoding;
         
         return result;
     }

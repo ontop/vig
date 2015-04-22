@@ -117,9 +117,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 		involvedCols.add(this);
         Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
 		
-		initialInterval.setMinValue(min);
 		initialInterval.updateMinEncodingAndValue(min.longValue());
-		initialInterval.setMaxValue(max);
 		initialInterval.updateMaxEncodingAndValue(max.longValue());
 		
 		this.intervals.add(initialInterval);

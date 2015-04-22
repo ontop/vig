@@ -28,6 +28,7 @@ import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
 public interface ColumnPumperInterface<T> {
@@ -42,9 +43,10 @@ public interface ColumnPumperInterface<T> {
 	 * @param db
 	 * @throws BoundariesUnsetException
 	 * @throws ValueUnsetException
+	 * @throws DebugException 
 	 *
 	 */
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException;
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException;
 	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException;
 	
 	public void setDuplicatesRatio(float ratio);

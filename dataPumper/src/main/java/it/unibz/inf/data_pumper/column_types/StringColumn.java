@@ -75,7 +75,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	}
 	
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException {
 
 	    if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 
@@ -158,33 +158,35 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		involvedCols.add(this);
         Interval<String> initialInterval = new StringInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
         
-        initialInterval.setMinValue(lowerBoundValue());
-        initialInterval.setMaxValue(upperBoundValue());
+        initialInterval.updateMinEncodingAndValue(0);
+        initialInterval.updateMaxEncodingAndValue(Integer.MAX_VALUE);
+//        initialInterval.setMinValue(lowerBoundValue());
+//        initialInterval.setMaxValue(upperBoundValue());
         
         this.intervals.add(initialInterval);
 		
 		this.firstIntervalSet = true;
 	}
 	
-	private String lowerBoundValue(){
-		StringBuilder builder = new StringBuilder();
-		
-		for( int i = 0; i < datatypeLength; ++i ){
-			builder.append(characters.charAt(0)); // Minimum
-		}
-		
-		return builder.toString();
-	}
-	
-	private String upperBoundValue(){
-		StringBuilder builder = new StringBuilder();
-		
-		for( int i = 0; i < (datatypeLength > MAX_LENGTH ? MAX_LENGTH : datatypeLength); ++i ){
-			builder.append(characters.charAt(characters.length()-1)); // Maximum
-		}
-		
-		return builder.toString();
-	}
+//	private String lowerBoundValue(){
+//		StringBuilder builder = new StringBuilder();
+//		
+//		for( int i = 0; i < datatypeLength; ++i ){
+//			builder.append(characters.charAt(0)); // Minimum
+//		}
+//		
+//		return builder.toString();
+//	}
+//	
+//	private String upperBoundValue(){
+//		StringBuilder builder = new StringBuilder();
+//		
+//		for( int i = 0; i < (datatypeLength > MAX_LENGTH ? MAX_LENGTH : datatypeLength); ++i ){
+//			builder.append(characters.charAt(characters.length()-1)); // Maximum
+//		}
+//		
+//		return builder.toString();
+//	}
 };
 
 //private String increment(String toIncrement) {

@@ -197,7 +197,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		}
 	}
 	
-	protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException {
+	protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException, DebugException {
 		Queue<ColumnPumper<? extends Object>> toUpdateBoundaries = new LinkedList<ColumnPumper<? extends Object>>();
 		toUpdateBoundaries.addAll(listColumns);
 		
@@ -292,7 +292,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		for( ColumnPumper<? extends Object> column : schema.getColumns() ){
 			try {
 				column.generateValues(schema, originalDb);
-			} catch (BoundariesUnsetException | ValueUnsetException e) {
+			} catch (BoundariesUnsetException | ValueUnsetException | DebugException e) {
 				e.printStackTrace();
 				DatabasePumper.closeEverything();
 				System.exit(1);

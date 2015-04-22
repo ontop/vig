@@ -82,10 +82,7 @@ public class StringInterval extends Interval<String> {
                         new LinkedList<>(this.intervalColumns));
         result.updateMinEncodingAndValue(this.minEncoding);
         result.updateMaxEncodingAndValue(this.maxEncoding);
-        result.minEncoding = this.minEncoding;
-        result.maxEncoding = this.maxEncoding;
         
         return result;
     }
-
-}
+};

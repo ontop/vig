@@ -6,6 +6,7 @@ import java.util.List;
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 
 public class IntInterval extends Interval<Long> {
 
@@ -28,15 +29,23 @@ public class IntInterval extends Interval<Long> {
     }
     
     @Override
-    public long getMinEncoding() throws BoundariesUnsetException {
+    public long getMinEncoding() throws BoundariesUnsetException, DebugException {
         if( this.min == this.max ) throw new BoundariesUnsetException("Undefined interval boundaries");
-        return min.longValue();
+        
+        // Assert
+        if( !(this.min == this.minEncoding) ){ throw new DebugException("Assertion failed: " + !(this.min == this.minEncoding)); }
+        
+        return minEncoding;
     }
     
     @Override
-    public long getMaxEncoding() throws BoundariesUnsetException {
+    public long getMaxEncoding() throws BoundariesUnsetException, DebugException {
         if( this.min == this.max ) throw new BoundariesUnsetException("Undefined interval boundaries");
-        return this.max.longValue();
+        
+        // Assert
+        if( !(this.max == this.maxEncoding) ){ throw new DebugException("Assertion failed: " + !(this.max == this.maxEncoding)); }
+        
+        return this.maxEncoding;
     }
 
     @Override
@@ -48,8 +57,6 @@ public class IntInterval extends Interval<Long> {
                         this.nFreshsToInsert, new LinkedList<>(this.intervalColumns));
         result.updateMinEncodingAndValue(this.minEncoding);
         result.updateMaxEncodingAndValue(this.maxEncoding);
-        result.minEncoding = this.minEncoding;
-        result.maxEncoding = this.maxEncoding;
         
         return result;
     }
