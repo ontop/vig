@@ -83,6 +83,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	            ColumnPumper<T> cP = cCL.get(i);
 	            utils.insert(insertedIntervals, cP);
 	        }
+	        // All interval boundaries are set
 	    }
 	}
 };
@@ -97,10 +98,10 @@ class IntervalsBoundariesFinder<T>{
     }
 
     /**
-     * Side effect on insertedIntervals and cP and related ColumnPumper objects
+     * Side effect on insertedIntervals and cP and related ColumnPumper objects. <br>
      * 
-     * Insert intervals of cP in every of the insertedIntervals (so as to
-     * try out all the combinations of columns)
+     * This method inserts intervals of cP in every of the insertedIntervals (so as to
+     * try out all the intersections of columns)
      * 
      * @throws DEBUGEXCEPTION 
      * @throws ValueUnsetException 

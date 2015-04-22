@@ -38,6 +38,7 @@ import java.util.List;
 
 public class IntColumn extends MultiIntervalColumn<Long> {
 
+
     private int datatypeLengthFirstArgument;
     private int datatypeLengthSecondArgument;
 
