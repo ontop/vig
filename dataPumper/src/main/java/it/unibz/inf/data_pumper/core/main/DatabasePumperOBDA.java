@@ -227,7 +227,7 @@ class IntervalsBoundariesFinder<T>{
             Interval<T> curInterval = newIntervals.get(i);
             Set<String> curKeysSet = curInterval.getKeysSet();
             
-            if( curKeysSet.contains(toInsertKeySet) ){ 
+            if( curKeysSet.containsAll(toInsertKeySet) ){ 
                 // SuperInterval
                 result += curInterval.getNFreshsToInsert();
             }
