@@ -5,6 +5,7 @@ import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
 
 public class BigDecimalInterval extends Interval<BigDecimal> {
@@ -47,7 +48,11 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
     @Override
     public Interval<BigDecimal> getCopyInstance() {
         
-        BigDecimalInterval result = new BigDecimalInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.intervalColumns);
+        BigDecimalInterval result = 
+                new BigDecimalInterval(
+                        this.getKey(), this.getType(), 
+                        this.nFreshsToInsert, 
+                        new LinkedList<ColumnPumper<BigDecimal>>(this.intervalColumns));
         result.updateMinEncodingAndValue(this.minEncoding);
         result.updateMaxEncodingAndValue(this.maxEncoding);
         result.minEncoding = this.minEncoding;

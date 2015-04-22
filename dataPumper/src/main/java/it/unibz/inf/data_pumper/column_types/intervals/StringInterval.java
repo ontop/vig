@@ -1,6 +1,7 @@
 package it.unibz.inf.data_pumper.column_types.intervals;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
@@ -74,7 +75,11 @@ public class StringInterval extends Interval<String> {
     @Override
     public Interval<String> getCopyInstance() {
         
-        StringInterval result = new StringInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.datatypeLength, this.intervalColumns);
+        StringInterval result =
+                new StringInterval(
+                        this.getKey(), this.getType(), 
+                        this.nFreshsToInsert, this.datatypeLength, 
+                        new LinkedList<>(this.intervalColumns));
         result.updateMinEncodingAndValue(this.minEncoding);
         result.updateMaxEncodingAndValue(this.maxEncoding);
         result.minEncoding = this.minEncoding;

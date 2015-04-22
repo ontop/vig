@@ -10,7 +10,7 @@ import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
-import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.core.main.table.statistics.aggrclasses.Distribution;
 
 public class TableStatisticsFinderImpl implements TableStatisticsFinder{
@@ -65,17 +65,17 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 
 	/**
 	 * cols.size() == 1 ? 1
-	 * @throws DEBUGEXCEPTION 
+	 * @throws DebugException 
 	 */
     @Override
     public <T> float findSharedRatio(
             List<ColumnPumper<T>> cols)
             throws SQLException,
             InstanceNullException,
-            ValueUnsetException, DEBUGEXCEPTION {
+            ValueUnsetException, DebugException {
                 
         if( ! (cols.size() > 1) ){
-            throw new DEBUGEXCEPTION("Violated assertion cols.size() > 1");
+            throw new DebugException("Violated assertion cols.size() > 1");
         }
         
         float sharedRatio = 0;

@@ -1,5 +1,6 @@
 package it.unibz.inf.data_pumper.column_types.intervals;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
@@ -41,7 +42,10 @@ public class IntInterval extends Interval<Long> {
     @Override
     public Interval<Long> getCopyInstance() {
         
-        IntInterval result = new IntInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.intervalColumns);
+        IntInterval result = 
+                new IntInterval(
+                        this.getKey(), this.getType(), 
+                        this.nFreshsToInsert, new LinkedList<>(this.intervalColumns));
         result.updateMinEncodingAndValue(this.minEncoding);
         result.updateMaxEncodingAndValue(this.maxEncoding);
         result.minEncoding = this.minEncoding;

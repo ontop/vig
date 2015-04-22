@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.core.main;
 
-public class DEBUGEXCEPTION extends Exception {
+public class DebugException extends Exception {
 
     /**
      * 
@@ -8,11 +8,11 @@ public class DEBUGEXCEPTION extends Exception {
     private static final long serialVersionUID = 3656607310489186723L;
     
     
-    public DEBUGEXCEPTION(String msg){
+    public DebugException(String msg){
         super(msg);
     }
     
-    public DEBUGEXCEPTION(){
+    public DebugException(){
         super();
     }
 }

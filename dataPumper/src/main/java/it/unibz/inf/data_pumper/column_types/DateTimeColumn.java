@@ -72,7 +72,7 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 			    
 			    ++insertedInInterval;
 			    
-			    if( insertedInInterval >= interval.nFreshsToInsert && (intervalIndex < intervals.size() - 1) ){
+			    if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
                     if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
                         insertedInInterval = 0;
                         ++intervalIndex;

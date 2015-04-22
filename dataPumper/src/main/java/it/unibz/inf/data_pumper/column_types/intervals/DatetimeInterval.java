@@ -2,6 +2,7 @@ package it.unibz.inf.data_pumper.column_types.intervals;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -63,7 +64,10 @@ public class DatetimeInterval extends Interval<Timestamp> {
     @Override
     public Interval<Timestamp> getCopyInstance() {
         
-        DatetimeInterval result = new DatetimeInterval(this.getKey(), this.getType(), this.nFreshsToInsert, this.intervalColumns);
+        DatetimeInterval result = 
+                new DatetimeInterval(
+                        this.getKey(), this.getType(), 
+                        this.nFreshsToInsert, new LinkedList<>(this.intervalColumns));
         result.updateMinEncodingAndValue(this.minEncoding);
         result.updateMaxEncodingAndValue(this.maxEncoding);
         result.minEncoding = this.minEncoding;

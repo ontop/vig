@@ -81,7 +81,7 @@ public class IntColumn extends MultiIntervalColumn<Long> {
 
                 ++insertedInInterval;
 
-                if( insertedInInterval >= interval.nFreshsToInsert && (intervalIndex < intervals.size() - 1) ){
+                if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
                     if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
                         insertedInInterval = 0;
                         ++intervalIndex;
@@ -121,10 +121,15 @@ public class IntColumn extends MultiIntervalColumn<Long> {
         // Create the single initial interval
         List<ColumnPumper<Long>> involvedCols = new LinkedList<ColumnPumper<Long>>();
         involvedCols.add(this);
-        Interval<Long> interval = new IntInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
+        Interval<Long> interval = 
+                new IntInterval(
+                        this.getQualifiedName().toString(), this.getType(), 
+                        this.numFreshsToInsert, involvedCols);
 
         interval.setMinValue(min);
+        interval.updateMinEncodingAndValue(min);
         interval.setMaxValue(max);
+        interval.updateMaxEncodingAndValue(max);
 
         this.intervals.add(interval);
 

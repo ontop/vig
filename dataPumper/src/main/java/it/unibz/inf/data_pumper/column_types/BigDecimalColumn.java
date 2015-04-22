@@ -66,7 +66,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 
 		        ++insertedInInterval;
 		        
-                if( insertedInInterval >= interval.nFreshsToInsert && (intervalIndex < intervals.size() - 1) ){
+                if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
                     if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
                         insertedInInterval = 0;
                         ++intervalIndex;
@@ -118,7 +118,9 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
         Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
 		
 		initialInterval.setMinValue(min);
+		initialInterval.updateMinEncodingAndValue(min.longValue());
 		initialInterval.setMaxValue(max);
+		initialInterval.updateMaxEncodingAndValue(max.longValue());
 		
 		this.intervals.add(initialInterval);
 		

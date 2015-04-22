@@ -44,7 +44,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	}
 	
 	@Override
-	protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException, SQLException{
+	protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws ValueUnsetException, DebugException, InstanceNullException, SQLException{
 		for( ColumnPumper<? extends Object> cP : listColumns ){
 			cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 		}
@@ -56,7 +56,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		
 		try {
 			updateColumnBoundsWRTCorrelated(correlatedCols);
-		} catch (BoundariesUnsetException | DEBUGEXCEPTION e) {
+		} catch (BoundariesUnsetException | DebugException e) {
 			e.printStackTrace();
 			DatabasePumper.closeEverything();
 			System.exit(1);
@@ -68,13 +68,13 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	 * @param correlatedCols (It MUST include foreign keys)
 	 * @throws ValueUnsetException 
 	 * @throws BoundariesUnsetException 
-	 * @throws DEBUGEXCEPTION 
+	 * @throws DebugException 
      * @throws InstanceNullException 
      * @throws SQLException 
 	 */
 	private <T> void updateColumnBoundsWRTCorrelated(
 			List<CorrelatedColumnsList<T>> correlatedCols) 
-			        throws ValueUnsetException, BoundariesUnsetException, DEBUGEXCEPTION, SQLException, InstanceNullException {
+			        throws ValueUnsetException, BoundariesUnsetException, DebugException, SQLException, InstanceNullException {
 			    
 	    for( CorrelatedColumnsList<T> cCL : correlatedCols){
 	        IntervalsBoundariesFinder<T> utils = new IntervalsBoundariesFinder<T>(this);
@@ -103,27 +103,29 @@ class IntervalsBoundariesFinder<T>{
      * This method inserts intervals of cP in every of the insertedIntervals (so as to
      * try out all the intersections of columns)
      * 
-     * @throws DEBUGEXCEPTION 
+     * @throws DebugException 
      * @throws ValueUnsetException 
      * @throws InstanceNullException 
      * @throws SQLException 
      * @throws BoundariesUnsetException 
      */
     void insert(List<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
-            throws DEBUGEXCEPTION, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
+            throws DebugException, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
              
         long maxEncodingEncountered = 0;
         
         // Assert 
         if( cP.getIntervals().size() != 1 ){
-            throw new DEBUGEXCEPTION("Intervals size != 1");
+            throw new DebugException("Intervals size != 1");
         }
         
         if( insertedIntervals.isEmpty() ){
             insertedIntervals.add(cP.getIntervals().get(0));
         }
         else{
+            int lastIndex = insertedIntervals.size();
             for( ListIterator<Interval<T>> it = insertedIntervals.listIterator() ; it.hasNext(); ){
+                if( lastIndex-- == 0 ) break;
                 Interval<T> previouslyInserted = it.next();
                 
                 if( maxEncodingEncountered < previouslyInserted.getMaxEncoding() ) maxEncodingEncountered = previouslyInserted.getMaxEncoding();
@@ -143,15 +145,29 @@ class IntervalsBoundariesFinder<T>{
                         previouslyInserted.suicide(); 
                     }
                     insertedIntervals.add(toInsert);
+                    
+                    // Add the new interval to the involved cPs' intervals lists
+                    for( ColumnPumper<T> toUpdateCp : toInsert.getInvolvedColumnPumpers() ){
+                        toUpdateCp.addInterval(toInsert);
+                    }
                 }
             }
-            
             long nFreshsInFirstInterval = cP.getNumFreshsToInsert() - cP.countFreshsInIntersectedIntervals();
-            
+
+            // Assert
+            if( nFreshsInFirstInterval < 0 ){
+                throw new DebugException("Assertion failed: nFreshsInFirstInterval < 0");
+            }
+
             if( nFreshsInFirstInterval > 0 ){
                 // Find fresh values for cP.getIntervals.get(0);
                 cP.getIntervals().get(0).updateMinEncodingAndValue(maxEncodingEncountered);
                 cP.getIntervals().get(0).updateMaxEncodingAndValue( (maxEncodingEncountered) + nFreshsInFirstInterval );
+                insertedIntervals.add(cP.getIntervals().get(0));
+            }
+            else{
+                // Remove the first interval!
+                cP.removeIntervalOfKey(cP.getIntervals().get(0).getKey());
             }
         }
     }
@@ -172,6 +188,7 @@ class IntervalsBoundariesFinder<T>{
         
         Interval<T> result = previouslyInserted.getCopyInstance();
         result.updateMaxEncodingAndValue(previouslyInserted.getMinEncoding() + nToInsertInPreviouslyInserted);
+        result.setNFreshsToInsert(nToInsertInPreviouslyInserted);
         result.addInvolvedColumnPumper(cP);
         
         return result;
@@ -185,10 +202,10 @@ class IntervalsBoundariesFinder<T>{
      * @throws SQLException
      * @throws InstanceNullException
      * @throws ValueUnsetException
-     * @throws DEBUGEXCEPTION 
+     * @throws DebugException 
      */
     private long makeIntersectionQuery(ColumnPumper<T> cP, Interval<T> previouslyInserted) 
-            throws SQLException, InstanceNullException, ValueUnsetException, DEBUGEXCEPTION {
+            throws SQLException, InstanceNullException, ValueUnsetException, DebugException {
         
         long result = 0;
         
@@ -199,7 +216,7 @@ class IntervalsBoundariesFinder<T>{
         
         // Assert
         if( ! cols.get(0).getQualifiedName().equals(cP.getQualifiedName()) ){
-            throw new DEBUGEXCEPTION("The being inserted column HAS TO BE IN FIRST POSITION");
+            throw new DebugException("The being inserted column HAS TO BE IN FIRST POSITION");
         }
         float sharedRatio = this.dbPumperInstance.tStatsFinder.findSharedRatio(cols);
         

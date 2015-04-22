@@ -3,7 +3,7 @@ package it.unibz.inf.data_pumper.column_types.intervals;
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +24,7 @@ public abstract class Interval<T> {
     private final MySqlDatatypes type;
     
     private String key;
-    public final long nFreshsToInsert;
+    protected long nFreshsToInsert;
     
     // ColumnPumpers in the interval
     List<ColumnPumper<T>> intervalColumns;
@@ -38,6 +38,14 @@ public abstract class Interval<T> {
         this.nFreshsToInsert = nValues;
         this.intervalColumns = intervalColumns;
         
+    }
+    
+    public void setNFreshsToInsert(long nFreshsToInsert){
+        this.nFreshsToInsert = nFreshsToInsert;
+    }
+    
+    public long getNFreshsToInsert(){
+        return this.nFreshsToInsert;
     }
     
     public String getKey(){
@@ -105,18 +113,23 @@ public abstract class Interval<T> {
      * It adapts the boundaries of <b>this</b> interval
      * @param toInsert
      * @return
-     * @throws DEBUGEXCEPTION 
+     * @throws DebugException 
      * @throws BoundariesUnsetException 
      */
-    public boolean adaptBounds(Interval<T> toInsert) throws DEBUGEXCEPTION, BoundariesUnsetException {
+    public boolean adaptBounds(Interval<T> toInsert) throws DebugException, BoundariesUnsetException {
         
         boolean killMe = false;
         
         long splitterMaxEncoding = toInsert.maxEncoding;
         long splitterMinEncoding = toInsert.minEncoding;
         
+        // Assert
+        if( splitterMaxEncoding <= splitterMinEncoding ){
+            throw new DebugException("Assertion failed: splitterMaxEncoding <= splitterMinEncoding");
+        }
+        // Assert
         if( this.getMinEncoding() < splitterMinEncoding ){
-            throw new DEBUGEXCEPTION("The splitter minimum is not equal to the minimum of the to-be-splitted interval");
+            throw new DebugException("The splitter minimum is not equal to the minimum of the to-be-splitted interval");
         }
         
         if( this.getMaxEncoding() > splitterMaxEncoding ){
@@ -145,14 +158,12 @@ public abstract class Interval<T> {
      * method adds adds a column to the intersection of the columns. This method modifies the 
      * key of <b>this</b> interval with <b>this.getKey() + cP.getQualifiedName()</b>. 
      * 
-     * As last thing, this method adds <b>this</b> interval to <b>cP.getIntervals()</b>.
      * @param cP
      */
     public void addInvolvedColumnPumper(ColumnPumper<T> cP){
         if( !this.intervalColumns.contains(cP) ){
             this.intervalColumns.add(cP);
-            this.key = this.key + cP.getQualifiedName().toString();
-            cP.addInterval(this);
+            this.key = this.key + "---" + cP.getQualifiedName().toString();
         }
     }
 
@@ -166,5 +177,14 @@ public abstract class Interval<T> {
         for( ColumnPumper<T> cP : this.intervalColumns ){
             cP.removeIntervalOfKey(this.getKey());
         }   
+    }
+    
+    @Override
+    public String toString(){
+        StringBuilder builder = new StringBuilder();
+        builder.append(this.key + "\n");
+        builder.append("Min Encoding = " + this.minEncoding + "\n");
+        builder.append("Max encoding = " + this.maxEncoding + "\n");
+        return builder.toString();
     }
 }

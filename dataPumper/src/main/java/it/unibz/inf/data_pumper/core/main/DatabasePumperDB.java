@@ -86,7 +86,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		try {
 			establishColumnBounds(listColumns);
 			updateBoundariesWRTForeignKeys(listColumns);
-		} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException | DEBUGEXCEPTION | SQLException e) {
+		} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException | DebugException | SQLException e) {
 			e.printStackTrace();
 			DatabasePumper.closeEverything();
 			System.exit(1);
@@ -282,7 +282,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		}	
 	}
 
-	protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws ValueUnsetException, DEBUGEXCEPTION, InstanceNullException, SQLException{
+	protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws ValueUnsetException, DebugException, InstanceNullException, SQLException{
 		for( ColumnPumper<? extends Object> cP : listColumns ){
 			cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 		}

@@ -177,11 +177,11 @@ public class Distribution {
         
         // On clause
         for( int i = 1; i < qualifiedColNames.size(); ++i ){
-            String colName = qualifiedColNames.get(i).getTableName();
-            if( i != 0 ){
+            String colName = qualifiedColNames.get(i).getColName();
+            if( i != 1 ){
                 builder.append(" AND ");
             }
-            builder.append("A." + firstColName + "=" + ((char)( 'A' + (i + 2) )) + "." + colName); 
+            builder.append("A." + firstColName + "=" + ((char)( 'A' + i )) + "." + colName); 
         }
         
         String query = builder.toString();

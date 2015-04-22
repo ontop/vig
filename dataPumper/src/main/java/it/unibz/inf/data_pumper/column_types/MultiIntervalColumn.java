@@ -91,7 +91,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
         long totFreshsToInsert = this.numFreshsToInsert;
         long totDupsToInsert = this.numDupsToInsert;
         
-        long intervalFreshs = this.intervals.get(intervalIndex).nFreshsToInsert;
+        long intervalFreshs = this.intervals.get(intervalIndex).getNFreshsToInsert();
         
         float ratioFreshsInInterval = intervalFreshs / totFreshsToInsert;
         
@@ -142,7 +142,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
         
         // The first interval is NOT intersected with any other column
         for( int i = 1; i < this.getIntervals().size(); ++i ){
-            result += this.getIntervals().get(i).nFreshsToInsert;
+            result += this.getIntervals().get(i).getNFreshsToInsert();
         }        
         
         return result;
