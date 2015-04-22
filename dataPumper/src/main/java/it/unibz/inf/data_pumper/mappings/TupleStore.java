@@ -44,6 +44,7 @@ import core.CSVPlayer;
  * @author tir
  * @note This is a <b>singleton</b> class.
  */
+@Deprecated
 public class TupleStore {
 	
 	private static TupleStore store = null;

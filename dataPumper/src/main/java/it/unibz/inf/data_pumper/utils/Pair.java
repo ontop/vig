@@ -32,8 +32,8 @@ public class Pair<T,S> {
 	@Override 
 	public boolean equals(Object other) {
 		boolean result = false;
-		if (other instanceof Pair) {
-			Pair that = (Pair) other;
+		if (other instanceof Pair<?,?>) {
+			Pair<?,?> that = (Pair<?,?>) other;
 			result = (this.first == that.first && this.second == that.second);
 		}
 		return result;

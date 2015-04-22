@@ -120,7 +120,7 @@ public class IntColumn extends MultiIntervalColumn<Long> {
         // Create the single initial interval
         List<ColumnPumper<Long>> involvedCols = new LinkedList<ColumnPumper<Long>>();
         involvedCols.add(this);
-        Interval<Long> interval = new IntInterval(this.getQualifiedName(), this.getType(), this.numFreshsToInsert, involvedCols);
+        Interval<Long> interval = new IntInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
 
         interval.setMinValue(min);
         interval.setMaxValue(max);

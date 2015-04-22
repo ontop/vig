@@ -131,10 +131,11 @@ public abstract class Column {
 	
 	/**
 	 * 
-	 * @return String of the form <b>TableName.ColName</b>
+	 * @return The QualifiedName object related to <b>this</b> column
 	 */
-	public String getQualifiedName(){
-	    return (this.getSchema().getTableName() + "." + this.getName());
+	public QualifiedName getQualifiedName(){
+	    QualifiedName result = new QualifiedName(this.schema.getTableName(), this.getName());
+	    return result;
 	}
 	
 	@Override

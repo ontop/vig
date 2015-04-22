@@ -31,6 +31,7 @@ import java.util.Set;
  * @author tir
  *
  */
+@Deprecated
 public class TupleTemplateDecorator extends TupleTemplate{
 	private Map<String, Float> mTableName_inDupR;
 	private float dupR;

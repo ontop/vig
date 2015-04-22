@@ -24,9 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import ch.qos.logback.classic.Logger;
 import utils.MyHashMapList;
 
+@Deprecated
 public class TupleTemplateImpl extends TupleTemplate{
 	private final int id;
 	private final String templatesString;

@@ -116,11 +116,6 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 //		return min;
 //	}
 	
-	public String getQualifiedName(){
-	    String result = this.getSchema().getTableName() + "." + this.getName();
-	    return result;
-	}
-	
 	public void setDomain(List<T> newDomain){
 		if( domain == null ){
 			domain = newDomain;
@@ -145,9 +140,10 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
         
         long result = 0;
         
-        for( Interval<T> i : this.getIntervals() ){
-            result += i.nFreshsToInsert;
-        }
+        // The first interval is NOT intersected with any other column
+        for( int i = 1; i < this.getIntervals().size(); ++i ){
+            result += this.getIntervals().get(i).nFreshsToInsert;
+        }        
         
         return result;
     }

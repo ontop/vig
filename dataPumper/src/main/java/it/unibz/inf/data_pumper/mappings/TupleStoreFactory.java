@@ -35,6 +35,7 @@ import core.TuplesToCSV;
  * @author tir
  * @note This is a singleton class
  */
+@Deprecated
 public class TupleStoreFactory {
 	private final String obdaFile;
 	private final TupleStore store;

@@ -39,6 +39,7 @@ import org.apache.log4j.Logger;
  * @author tir
  *
  */
+@Deprecated
 public class TuplesPicker {
 	
 	private static TuplesPicker picker = null;

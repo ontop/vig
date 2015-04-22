@@ -121,7 +121,7 @@ public abstract class Interval<T> {
         
         if( this.getMaxEncoding() > splitterMaxEncoding ){
             // Shrink
-            this.minEncoding = splitterMaxEncoding + 1;
+            this.minEncoding = splitterMaxEncoding;
         }
         else{
             // this.getMaxEncoding == splitterMaxEncoding
@@ -151,7 +151,7 @@ public abstract class Interval<T> {
     public void addInvolvedColumnPumper(ColumnPumper<T> cP){
         if( !this.intervalColumns.contains(cP) ){
             this.intervalColumns.add(cP);
-            this.key = this.key + cP.getQualifiedName();
+            this.key = this.key + cP.getQualifiedName().toString();
             cP.addInterval(this);
         }
     }

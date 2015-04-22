@@ -33,6 +33,7 @@ import utils.MyHashMapList;
  * @author tir
  *
  */
+@Deprecated
 public class Tuple {
 	private final String functName;
 	

@@ -79,6 +79,13 @@ public interface ColumnPumperInterface<T> {
 	
 	// N Freshs
 	public long getNumFreshsToInsert() throws ValueUnsetException;
+	/**
+	 * // The first interval is NOT intersected with any other column
+	 * <br>
+        for( int i = 1; i < this.getIntervals().size(); ++i ){ 
+            result += this.getIntervals().get(i).nFreshsToInsert;
+        }        
+     */
 	public long countFreshsInIntersectedIntervals() throws ValueUnsetException;
 	
 	public String getNthInDomain(int i);

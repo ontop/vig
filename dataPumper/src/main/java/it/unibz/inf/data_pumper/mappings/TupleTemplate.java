@@ -23,6 +23,7 @@ package it.unibz.inf.data_pumper.mappings;
 import java.util.List;
 import java.util.Set;
 
+@Deprecated
 public abstract class TupleTemplate {
 	
 	public abstract int getID();
