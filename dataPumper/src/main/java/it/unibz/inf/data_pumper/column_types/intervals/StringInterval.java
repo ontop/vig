@@ -12,7 +12,7 @@ import it.unibz.inf.data_pumper.core.main.DebugException;
 public class StringInterval extends Interval<String> {
     
     public static String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILMNOPKRSTUVWXYZ"; // Ordered from the least to the bigger (String.compareTo)
-    private final int datatypeLength;
+    protected final int datatypeLength;
         
     public StringInterval(String key,
             MySqlDatatypes type,

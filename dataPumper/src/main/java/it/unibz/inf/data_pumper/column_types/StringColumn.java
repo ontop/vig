@@ -156,7 +156,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	// Create the single initial interval
 	List<ColumnPumper<String>> involvedCols = new LinkedList<ColumnPumper<String>>();
 	involvedCols.add(this);
-	Interval<String> initialInterval = new StringInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
+	Interval<String> initialInterval = getIntervalInstance(this.getQualifiedName().toString(), involvedCols);
 
 	initialInterval.updateMinEncodingAndValue(0);
 	initialInterval.updateMaxEncodingAndValue(this.numFreshsToInsert);
@@ -166,6 +166,12 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	this.firstIntervalSet = true;
     }
 
+    protected Interval<String> getIntervalInstance(
+	    String qualifiedName, List<ColumnPumper<String>> involvedCols){
+	Interval<String> interval = new StringInterval(qualifiedName, this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
+	return interval;
+    }
+    
     //	private String lowerBoundValue(){
     //		StringBuilder builder = new StringBuilder();
     //		
