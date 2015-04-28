@@ -38,8 +38,8 @@
 
 	<modules>
 		<module>dataPumper</module>
-		<module>csvPlayer</module>
-		<module>tupleSchemaExtractor</module>
+		<!--  <module>csvPlayer</module> -->
+		<!--  <module>tupleSchemaExtractor</module> -->
 		<module>vig-options</module>
 		<module>vig-distribution</module>
 		<module>vig-mappings-analyzer-2</module>
