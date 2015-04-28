@@ -47,7 +47,7 @@ public interface ColumnPumperInterface<T> {
 	 *
 	 */
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException;
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException;
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException;
 	
 	public void setDuplicatesRatio(float ratio);
 	public float getDuplicateRatio() throws ValueUnsetException;

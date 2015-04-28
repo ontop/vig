@@ -36,157 +36,155 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class StringColumn extends MultiIntervalColumn<String> {
-	
-	// Constants
-	private static final int MAX_LENGTH = 20;
-	
-	// Characters out of which Strings will be formed
-	String characters = StringInterval.characters;
-		
-	public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
-		super(name, type, index, schema);
 
-		this.datatypeLength = datatypeLength;
-		
-		if( this.datatypeLength > MAX_LENGTH ) this.datatypeLength = MAX_LENGTH;
-		
-//		rndIndexes = new ArrayList<Integer>(datatypeLength);
-//
-//		for( int i = 0; i < datatypeLength; ++i )
-//			rndIndexes.add(0); // Initial String: 00000000...
+    // Constants
+    private static final int MAX_LENGTH = 20;
 
-		this.numFreshsToInsert = 0;
-		
-		this.intervals = new ArrayList<Interval<String>>();
-	}
-	
-	public StringColumn(String name, MySqlDatatypes type, int index, Schema schema) {
-		super(name, type, index, schema);
+    // Characters out of which Strings will be formed
+    String characters = StringInterval.characters;
 
-		this.datatypeLength = MAX_LENGTH;
-//		rndIndexes = new ArrayList<Integer>(datatypeLength);
-//
-//		for( int i = 0; i < datatypeLength; ++i )
-//			rndIndexes.add(0); // Initial String: 00000000...
+    public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
+	super(name, type, index, schema);
 
-		this.numFreshsToInsert = 0;
-		
-		this.intervals = new ArrayList<Interval<String>>();
-	}
-	
-	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException {
+	this.datatypeLength = datatypeLength;
 
-	    if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+	if( this.datatypeLength > MAX_LENGTH ) this.datatypeLength = MAX_LENGTH;
 
-	    int intervalIndex = 0;
+	//		rndIndexes = new ArrayList<Integer>(datatypeLength);
+	//
+	//		for( int i = 0; i < datatypeLength; ++i )
+	//			rndIndexes.add(0); // Initial String: 00000000...
 
-	    // Debug
-	    if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
-	        if( this.numFreshsToInsert >= this.characters.length()){
-	            try{
-	                throw new DebugException();
-	            }
-	            catch(DebugException e){
-	                e.printStackTrace();
-	                System.exit(1);
-	            }
-	        }
+	this.numFreshsToInsert = 0;
+
+	this.intervals = new ArrayList<Interval<String>>();
+    }
+
+    public StringColumn(String name, MySqlDatatypes type, int index, Schema schema) {
+	super(name, type, index, schema);
+
+	this.datatypeLength = MAX_LENGTH;
+	//		rndIndexes = new ArrayList<Integer>(datatypeLength);
+	//
+	//		for( int i = 0; i < datatypeLength; ++i )
+	//			rndIndexes.add(0); // Initial String: 00000000...
+
+	this.numFreshsToInsert = 0;
+
+	this.intervals = new ArrayList<Interval<String>>();
+    }
+
+    @Override
+    public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException {
+
+	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+
+	int intervalIndex = 0;
+
+	// Debug
+	if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
+	    if( this.numFreshsToInsert >= this.characters.length()){
+		try{
+		    throw new DebugException();
+		}
+		catch(DebugException e){
+		    e.printStackTrace();
+		    System.exit(1);
+		}
 	    }
-
-	    List<String> values = new ArrayList<String>();
-	    int insertedInInterval = 0;
-	    int numDupsInsertedInInterval = 0;
-
-	    for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-	        if( i < this.numNullsToInsert ){
-	            values.add(null);
-	        }
-	        else{
-	            Interval<String> interval = this.intervals.get(intervalIndex);
-
-	            String trail = StringInterval.encode(interval.getMinEncoding() + this.generator.nextValue(this.numFreshsToInsert));
-
-	            StringBuilder zeroes = new StringBuilder();
-	            for( int j = 0; j < StringInterval.encode(interval.getMinEncoding()).length() - trail.length(); ++j ){
-	                zeroes.append("0");
-	            }
-	            String valueToAdd = zeroes.toString() + trail;
-	            values.add(valueToAdd);
-
-	            ++insertedInInterval;
-	            
-	            if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
-                    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
-                        insertedInInterval = 0;
-                        ++intervalIndex;
-                        numDupsInsertedInInterval = 0;
-                    }
-                }
-	        }
-	    }				
-	    setDomain(values);
 	}
 
-	@Override
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException {
-		
-		this.initNumDupsNullsFreshs();
-		
-//		this.getIntervals().get(0).minEncoding = 0; // TODO See this part
-//		String lowerBouldValue = lowerBoundValue();
-//		
-//		String trail = encode(this.numFreshsToInsert);
-//		StringBuilder zeroes = new StringBuilder();
-//		
-//		if( lowerBouldValue.length() > trail.length() ){
-//			for( int j = 0; j < lowerBouldValue.length() - trail.length(); ++j ){
-//				zeroes.append("0");
-//			}
-//			this.max = zeroes.toString() + trail;
-//		}
-//		else{
-//			this.max = upperBoundValue();
-//			this.numFreshsToInsert = 1;
-//			for( int i = 0; i < this.max.length(); ++i ){
-//				this.numFreshsToInsert *= characters.length() -1;
-//			}
-//		}
-		
-		// Create the single initial interval
-		List<ColumnPumper<String>> involvedCols = new LinkedList<ColumnPumper<String>>();
-		involvedCols.add(this);
-        Interval<String> initialInterval = new StringInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
-        
-        initialInterval.updateMinEncodingAndValue(0);
-        initialInterval.updateMaxEncodingAndValue(Integer.MAX_VALUE);
-//        initialInterval.setMinValue(lowerBoundValue());
-//        initialInterval.setMaxValue(upperBoundValue());
-        
-        this.intervals.add(initialInterval);
-		
-		this.firstIntervalSet = true;
-	}
-	
-//	private String lowerBoundValue(){
-//		StringBuilder builder = new StringBuilder();
-//		
-//		for( int i = 0; i < datatypeLength; ++i ){
-//			builder.append(characters.charAt(0)); // Minimum
-//		}
-//		
-//		return builder.toString();
-//	}
-//	
-//	private String upperBoundValue(){
-//		StringBuilder builder = new StringBuilder();
-//		
-//		for( int i = 0; i < (datatypeLength > MAX_LENGTH ? MAX_LENGTH : datatypeLength); ++i ){
-//			builder.append(characters.charAt(characters.length()-1)); // Maximum
-//		}
-//		
-//		return builder.toString();
-//	}
+	List<String> values = new ArrayList<String>();
+	int insertedInInterval = 0;
+	int numDupsInsertedInInterval = 0;
+
+	for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+	    if( i < this.numNullsToInsert ){
+		values.add(null);
+	    }
+	    else{
+		StringInterval interval = (StringInterval) this.intervals.get(intervalIndex);
+
+		String trail = interval.encode(interval.getMinEncoding() + this.generator.nextValue(this.numFreshsToInsert));
+
+		StringBuilder zeroes = new StringBuilder();
+		for( int j = 0; j < interval.encode(interval.getMinEncoding()).length() - trail.length(); ++j ){
+		    zeroes.append("0");
+		}
+		String valueToAdd = zeroes.toString() + trail;
+		values.add(valueToAdd);
+
+		++insertedInInterval;
+
+		if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
+		    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
+			insertedInInterval = 0;
+			++intervalIndex;
+			numDupsInsertedInInterval = 0;
+		    }
+		}
+	    }
+	}				
+	setDomain(values);
+    }
+
+    @Override
+    public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException {
+
+	this.initNumDupsNullsFreshs();
+
+	//		this.getIntervals().get(0).minEncoding = 0; // TODO See this part
+	//		String lowerBouldValue = lowerBoundValue();
+	//		
+	//		String trail = encode(this.numFreshsToInsert);
+	//		StringBuilder zeroes = new StringBuilder();
+	//		
+	//		if( lowerBouldValue.length() > trail.length() ){
+	//			for( int j = 0; j < lowerBouldValue.length() - trail.length(); ++j ){
+	//				zeroes.append("0");
+	//			}
+	//			this.max = zeroes.toString() + trail;
+	//		}
+	//		else{
+	//			this.max = upperBoundValue();
+	//			this.numFreshsToInsert = 1;
+	//			for( int i = 0; i < this.max.length(); ++i ){
+	//				this.numFreshsToInsert *= characters.length() -1;
+	//			}
+	//		}
+
+	// Create the single initial interval
+	List<ColumnPumper<String>> involvedCols = new LinkedList<ColumnPumper<String>>();
+	involvedCols.add(this);
+	Interval<String> initialInterval = new StringInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
+
+	initialInterval.updateMinEncodingAndValue(0);
+	initialInterval.updateMaxEncodingAndValue(this.numFreshsToInsert);
+
+	this.intervals.add(initialInterval);
+
+	this.firstIntervalSet = true;
+    }
+
+    //	private String lowerBoundValue(){
+    //		StringBuilder builder = new StringBuilder();
+    //		
+    //		for( int i = 0; i < datatypeLength; ++i ){
+    //			builder.append(characters.charAt(0)); // Minimum
+    //		}
+    //		
+    //		return builder.toString();
+    //	}
+    //	
+    //	private String upperBoundValue(){
+    //		StringBuilder builder = new StringBuilder();
+    //		
+    //		for( int i = 0; i < (datatypeLength > MAX_LENGTH ? MAX_LENGTH : datatypeLength); ++i ){
+    //			builder.append(characters.charAt(characters.length()-1)); // Maximum
+    //		}
+    //		
+    //		return builder.toString();
+    //	}
 };
 
 //private String increment(String toIncrement) {

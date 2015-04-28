@@ -28,6 +28,7 @@ import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.BigDecimalInterval;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -79,7 +80,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 	}
 	
 	@Override
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException {
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException {
 		
 		this.initNumDupsNullsFreshs();
 		

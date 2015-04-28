@@ -105,8 +105,8 @@ public abstract class Interval<T> {
     }
 
     // Public updatable interface
-    public abstract void updateMinEncodingAndValue(long newMin);
-    public abstract void updateMaxEncodingAndValue(long newMax);
+    public abstract void updateMinEncodingAndValue(long newMin) throws DebugException;
+    public abstract void updateMaxEncodingAndValue(long newMax) throws DebugException;
     
     public abstract long getMinEncoding() throws BoundariesUnsetException, DebugException;
     public abstract long getMaxEncoding() throws BoundariesUnsetException, DebugException;
@@ -169,7 +169,7 @@ public abstract class Interval<T> {
         }
     }
 
-    public abstract Interval<T> getCopyInstance();
+    public abstract Interval<T> getCopyInstance() throws DebugException;
 
     /**
      * It removes all the stable references to <b>this</b> interval.

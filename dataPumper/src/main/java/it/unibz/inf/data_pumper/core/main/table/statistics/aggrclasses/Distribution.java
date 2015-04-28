@@ -186,6 +186,8 @@ public class Distribution {
         
         String query = builder.toString();
         
+        logger.info(query);
+        
         PreparedStatement stmt = dbmsConn.getPreparedStatement(query);
         
         ResultSet rs = stmt.executeQuery();
