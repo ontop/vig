@@ -92,8 +92,8 @@ public interface ColumnPumperInterface<T> {
 	
 	public String getNthInDomain(int i);
 	
-	public void incrementNumFreshs();
-	public void decrementNumFreshs();
+	public void incrementNumFreshs() throws DebugException, BoundariesUnsetException;
+	public void decrementNumFreshs() throws DebugException, BoundariesUnsetException;
 	
 	public void reset(); // To reset the internal state
 }

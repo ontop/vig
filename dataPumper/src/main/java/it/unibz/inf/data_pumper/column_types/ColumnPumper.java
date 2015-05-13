@@ -22,7 +22,10 @@ package it.unibz.inf.data_pumper.column_types;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
+import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
+import it.unibz.inf.data_pumper.column_types.intervals.Interval;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
 public abstract class ColumnPumper<T> extends Column implements ColumnPumperInterface<T>{
@@ -117,12 +120,18 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	}
 	
 	@Override
-	public void incrementNumFreshs() {
+	public void incrementNumFreshs() throws DebugException, BoundariesUnsetException {
 		++this.numFreshsToInsert;
+		Interval<T> interval = this.getIntervals().get(0);
+		interval.setNFreshsToInsert(interval.getNFreshsToInsert() + 1);
+		interval.updateMaxEncodingAndValue(interval.getMaxEncoding() + 1);
 	}
 	
 	@Override
-	public void decrementNumFreshs() {
+	public void decrementNumFreshs() throws DebugException, BoundariesUnsetException {
 		--this.numFreshsToInsert;
+		Interval<T> interval = this.getIntervals().get(0);
+		interval.setNFreshsToInsert(interval.getNFreshsToInsert() - 1);
+		interval.updateMaxEncodingAndValue(interval.getMaxEncoding() - 1);
 	}
 };

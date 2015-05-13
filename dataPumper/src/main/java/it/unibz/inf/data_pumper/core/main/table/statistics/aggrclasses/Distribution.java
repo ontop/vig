@@ -30,8 +30,12 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.mysql.jdbc.exceptions.MySQLTimeoutException;
+
+
 public class Distribution {
 	private DBMSConnection dbmsConn;
+	private int timeout = 120;// 1200 ; // (20 mins) ( This thing should be a parameter ) 
 	
 	private static Logger logger = Logger.getLogger(Distribution.class.getCanonicalName());
 	
@@ -189,10 +193,18 @@ public class Distribution {
         logger.info(query);
         
         PreparedStatement stmt = dbmsConn.getPreparedStatement(query);
+        stmt.setQueryTimeout(timeout);
         
-        ResultSet rs = stmt.executeQuery();
-        if( rs.next() ){
-            result = rs.getInt(1);
+        try{
+            ResultSet rs = stmt.executeQuery();
+            
+            if( rs.next() ){
+        	result = rs.getInt(1);
+            }
+        }
+        catch( MySQLTimeoutException e ){
+            logger.info("Timeout Reached. Assuming shared ratio zero");
+            result = -1;
         }
                     
         return result;

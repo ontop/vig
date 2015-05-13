@@ -95,17 +95,18 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	}
 
 	List<String> values = new ArrayList<String>();
-	int insertedInInterval = 0;
-	int numDupsInsertedInInterval = 0;
-
+	
 	for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
 	    if( i < this.numNullsToInsert ){
 		values.add(null);
 	    }
 	    else{
+		long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
+		intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
+		
 		StringInterval interval = (StringInterval) this.intervals.get(intervalIndex);
 
-		String trail = interval.encode(interval.getMinEncoding() + this.generator.nextValue(this.numFreshsToInsert));
+		String trail = interval.encode(interval.getMinEncoding() + this.generator.nextValue(interval.getNFreshsToInsert()));
 
 		StringBuilder zeroes = new StringBuilder();
 		for( int j = 0; j < interval.encode(interval.getMinEncoding()).length() - trail.length(); ++j ){
@@ -113,16 +114,6 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		}
 		String valueToAdd = zeroes.toString() + trail;
 		values.add(valueToAdd);
-
-		++insertedInInterval;
-
-		if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
-		    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
-			insertedInInterval = 0;
-			++intervalIndex;
-			numDupsInsertedInInterval = 0;
-		    }
-		}
 	    }
 	}				
 	setDomain(values);

@@ -39,90 +39,79 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
-		
+
     public BigDecimalColumn(String name, MySqlDatatypes type, int index, Schema schema) {
-	    super(name, type, index, schema);		
-	    this.intervals = new ArrayList<Interval<BigDecimal>>();
-	}
-	
-	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
-		
-		if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+	super(name, type, index, schema);		
+	this.intervals = new ArrayList<Interval<BigDecimal>>();
+    }
 
-		int intervalIndex = 0;
-		
-		List<BigDecimal> values = new ArrayList<BigDecimal>();
-		int insertedInInterval = 0;
-		int numDupsInsertedInInterval = 0;
-		
-		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-		    if( i < this.numNullsToInsert ){
-		        values.add(null);
-		    }
-		    else{
-		        Interval<BigDecimal> interval = this.intervals.get(intervalIndex);
-		        BigDecimal genFresh = new BigDecimal(this.generator.nextValue(this.numFreshsToInsert));
-		        values.add(interval.getMinValue().add(genFresh));
+    @Override
+    public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException {
 
-		        ++insertedInInterval;
-		        
-                if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
-                    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
-                        insertedInInterval = 0;
-                        ++intervalIndex;
-                        numDupsInsertedInInterval = 0;
-                    }
-                }
-		    }
-		}
-		setDomain(values);
+	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+
+	List<BigDecimal> values = new ArrayList<BigDecimal>();
+
+	for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+	    if( i < this.numNullsToInsert ){
+		values.add(null);
+	    }
+	    else{
+		long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
+		int intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
+		
+		Interval<BigDecimal> interval = this.intervals.get(intervalIndex);
+		BigDecimal genFresh = new BigDecimal(seqIndex);
+		values.add(interval.getMinValue().add(genFresh));
+	    }
 	}
-	
-	@Override
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException {
-		
-		this.initNumDupsNullsFreshs();
-		
-		Template t = new Template("select ? from "+schema.getTableName()+";");
-		PreparedStatement stmt;
-		
-		t.setNthPlaceholder(1, "min("+getName()+"), max("+getName()+")");
-		
-		stmt = db.getPreparedStatement(t);
-		
-		ResultSet result = null;
-		BigDecimal min = BigDecimal.ZERO;
-		BigDecimal max = BigDecimal.ZERO;
-		try {
-			result = stmt.executeQuery();
-			if( result.next() ){
-				min = BigDecimal.valueOf(result.getDouble(1));
-				max = BigDecimal.valueOf(result.getDouble(2));
-			}
-			stmt.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-		
-		BigDecimal nFreshsBigDecimalTransl = new BigDecimal(this.numFreshsToInsert);
-		BigDecimal proposedMax = min.add(nFreshsBigDecimalTransl); 
-		
-		if( proposedMax.compareTo(max) > 0 ){ 
-				max = proposedMax;
-		}
-		
-		// Create the single initial interval
-		List<ColumnPumper<BigDecimal>> involvedCols = new LinkedList<ColumnPumper<BigDecimal>>();
-		involvedCols.add(this);
-        Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
-		
-		initialInterval.updateMinEncodingAndValue(min.longValue());
-		initialInterval.updateMaxEncodingAndValue(max.longValue());
-		
-		this.intervals.add(initialInterval);
-		
-		this.firstIntervalSet = true;
+	setDomain(values);
+    }
+
+    @Override
+    public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException {
+
+	this.initNumDupsNullsFreshs();
+
+	Template t = new Template("select ? from "+schema.getTableName()+";");
+	PreparedStatement stmt;
+
+	t.setNthPlaceholder(1, "min("+getName()+"), max("+getName()+")");
+
+	stmt = db.getPreparedStatement(t);
+
+	ResultSet result = null;
+	BigDecimal min = BigDecimal.ZERO;
+	BigDecimal max = BigDecimal.ZERO;
+	try {
+	    result = stmt.executeQuery();
+	    if( result.next() ){
+		min = BigDecimal.valueOf(result.getDouble(1));
+		max = BigDecimal.valueOf(result.getDouble(2));
+	    }
+	    stmt.close();
+	} catch (SQLException e) {
+	    e.printStackTrace();
+	    System.exit(1);
 	}
+
+	BigDecimal nFreshsBigDecimalTransl = new BigDecimal(this.numFreshsToInsert);
+	BigDecimal proposedMax = min.add(nFreshsBigDecimalTransl); 
+
+	if( proposedMax.compareTo(max) > 0 ){ 
+	    max = proposedMax;
+	}
+
+	// Create the single initial interval
+	List<ColumnPumper<BigDecimal>> involvedCols = new LinkedList<ColumnPumper<BigDecimal>>();
+	involvedCols.add(this);
+	Interval<BigDecimal> initialInterval = new BigDecimalInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
+
+	initialInterval.updateMinEncodingAndValue(min.longValue());
+	initialInterval.updateMaxEncodingAndValue(max.longValue());
+
+	this.intervals.add(initialInterval);
+
+	this.firstIntervalSet = true;
+    }
 }

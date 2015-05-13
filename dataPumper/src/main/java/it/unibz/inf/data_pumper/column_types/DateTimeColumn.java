@@ -47,42 +47,31 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	}
 
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException{
-		
-		if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
-		
-		int intervalIndex = 0;
+	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException{
 
-		List<Timestamp> values = new ArrayList<Timestamp>();
-		int insertedInInterval = 0;
-		int numDupsInsertedInInterval = 0;
-		
-		// 86400 Seconds in one day
-		
-		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-			if( i < this.numNullsToInsert ){
-				values.add(null);
-			}
-			else{
-			    Interval<Timestamp> interval = this.intervals.get(intervalIndex);
-			    Calendar c = Calendar.getInstance();
-			    c.setTime(interval.getMinValue());
-			    
-			    long nextValue = this.generator.nextValue(this.numFreshsToInsert) * DatetimeInterval.MILLISECONDS_PER_DAY + c.getTimeInMillis();
-			    values.add(new Timestamp(nextValue));
-			    
-			    ++insertedInInterval;
-			    
-			    if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
-                    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
-                        insertedInInterval = 0;
-                        ++intervalIndex;
-                        numDupsInsertedInInterval = 0;
-                    }
-                }
-			}
+	    if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+
+
+	    List<Timestamp> values = new ArrayList<Timestamp>();
+
+	    // 86400 Seconds in one day
+
+	    for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+		if( i < this.numNullsToInsert ){
+		    values.add(null);
+		}
+		else{
+		    long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
+		    int intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
+		    Interval<Timestamp> interval = this.intervals.get(intervalIndex);
+		    Calendar c = Calendar.getInstance();
+		    c.setTime(interval.getMinValue());
+
+		    long nextValue = this.map(seqIndex) * DatetimeInterval.MILLISECONDS_PER_DAY + c.getTimeInMillis();
+		    values.add(new Timestamp(nextValue));
 		}
 		setDomain(values);
+	    }
 	}
 
 	@Override

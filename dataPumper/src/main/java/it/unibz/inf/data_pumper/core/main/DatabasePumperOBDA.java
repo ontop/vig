@@ -62,6 +62,11 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    System.exit(1);
 	}
     }
+    
+    @Override
+    protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException, DebugException {
+	
+    }
 
     /**
      * Update the boundaries of those columns in a correlated set
@@ -77,11 +82,17 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		    throws ValueUnsetException, BoundariesUnsetException, DebugException, SQLException, InstanceNullException {
 
 	for( CorrelatedColumnsList<T> cCL : correlatedCols){
+	    logger.debug("Doing cCL " + cCL);
 	    IntervalsBoundariesFinder<T> utils = new IntervalsBoundariesFinder<T>(this);
 	    LinkedList<Interval<T>> insertedIntervals = new LinkedList<Interval<T>>();
-	    for( int i = 0; i < cCL.size(); ++i ){
+	    boolean stop = false;
+	    for( int i = 0; i < cCL.size() && !stop; ++i ){
 		ColumnPumper<T> cP = cCL.get(i);
-		utils.insert(insertedIntervals, cP);
+		stop = utils.insert(insertedIntervals, cP);
+	    }
+	    if( stop ){
+		// TODO Some fk constraints might be violated, let's fix this
+		logger.info("CIAO!!");
 	    }
 	    // All interval boundaries are set
 	}
@@ -109,7 +120,7 @@ class IntervalsBoundariesFinder<T>{
      * @throws SQLException 
      * @throws BoundariesUnsetException 
      */
-    void insert(LinkedList<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
+    boolean insert(LinkedList<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
 	    throws DebugException, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
 
 	long maxEncodingEncountered = 0;
@@ -132,6 +143,10 @@ class IntervalsBoundariesFinder<T>{
 		if( maxEncodingEncountered < previouslyInserted.getMaxEncoding() ) maxEncodingEncountered = previouslyInserted.getMaxEncoding();
 
 		long nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
+		
+		if( nToInsertInPreviousInterval == -1 ){ // Timeout Reached, Stop everything for this cCL
+		    return true;
+		}
 
 		// For all superIntervals Reduce (ABC is superInterval of AB is superInterval of B)
 		long insertedInSuperIntervals = countInsertedInSuperIntervals(cP, previouslyInserted, newIntervals);
@@ -140,6 +155,7 @@ class IntervalsBoundariesFinder<T>{
 		// Assert
 		if( !( nToInsertInPreviousInterval >= 0) ){
 		    throw new DebugException("Assertion failed: nToInsertInPreviousInterval >= 0");
+		    
 		}
 
 		if( nToInsertInPreviousInterval > 0 ){ // Create a new "SubInterval"
@@ -197,6 +213,7 @@ class IntervalsBoundariesFinder<T>{
 		}
 	    }
 	}
+	return false;
     }
 
     /**
@@ -258,6 +275,8 @@ class IntervalsBoundariesFinder<T>{
 
     /**
      * 
+     * If timeout => -1
+     * 
      * @param cP
      * @param previouslyInserted
      * @return The shared ratio of cP Join {cP_i | cP_i \in previouslyInserted}
@@ -281,9 +300,14 @@ class IntervalsBoundariesFinder<T>{
 	    throw new DebugException("The being inserted column HAS TO BE IN FIRST POSITION");
 	}
 	float sharedRatio = this.dbPumperInstance.tStatsFinder.findSharedRatio(cols);
-
-	result = (long) (cP.getNumFreshsToInsert() * sharedRatio);
-
+	
+	if( sharedRatio == -1 ){ // Timeout
+	    result = -1;
+	}
+	else{
+	    result = (long) (cP.getNumFreshsToInsert() * sharedRatio);
+	}
+	  
 	return result; 
     }
 };

@@ -40,14 +40,8 @@ import java.util.List;
 public class IntColumn extends MultiIntervalColumn<Long> {
 
 
-    private int datatypeLengthFirstArgument;
-    private int datatypeLengthSecondArgument;
-
-    public IntColumn(String name, MySqlDatatypes type, int index, int datatypeLengthFirst, int datatypeLengthSecondArgument, Schema schema) {
+    public IntColumn(String name, MySqlDatatypes type, int index, int datatypeLengthFirstArgument, int datatypeLengthSecondArgument, Schema schema) {
         super(name, type, index, schema);
-
-        this.datatypeLengthFirstArgument = datatypeLengthFirst;
-        this.datatypeLengthSecondArgument = datatypeLengthSecondArgument;
 
         this.intervals = new ArrayList<Interval<Long>>();
     }
@@ -55,44 +49,63 @@ public class IntColumn extends MultiIntervalColumn<Long> {
     public IntColumn(String name, MySqlDatatypes type, int index, Schema schema) {
         super(name, type, index, schema);
 
-        this.datatypeLengthFirstArgument = Integer.MAX_VALUE;
-        this.datatypeLengthSecondArgument = 0;
-
         this.intervals = new ArrayList<Interval<Long>>();
     }
-
+    
     @Override
-    public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
+    public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException {
 
         if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
         
-        int intervalIndex = 0;
-
         List<Long> values = new ArrayList<Long>();
-        int insertedInInterval = 0;
-        int numDupsInsertedInInterval = 0;
         
         for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
             if( i < this.numNullsToInsert ){
                 values.add(null);
             }			
             else{
-                Interval<Long> interval = intervals.get(intervalIndex);
-                values.add(interval.getMinValue() + this.generator.nextValue(this.numFreshsToInsert));
-
-                ++insertedInInterval;
-
-                if( insertedInInterval >= interval.getNFreshsToInsert() && (intervalIndex < intervals.size() - 1) ){
-                    if( numDupsInsertedInInterval++ == numDupsForInterval(intervalIndex) ){
-                        insertedInInterval = 0;
-                        ++intervalIndex;
-                        numDupsInsertedInInterval = 0;
-                    }
-                }
+        	long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
+        	int intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
+		
+		IntInterval interval = (IntInterval) this.intervals.get(intervalIndex);
+        	
+		long toAdd = interval.getMinEncoding() + this.map(seqIndex);
+		
+        	values.add(toAdd);        
             }
         }
         setDomain(values);
     }
+
+//    @Override
+//    public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
+//
+//        if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+//        
+//        int intervalIndex = 0;
+//
+//        List<Long> values = new ArrayList<Long>();
+//        int insertedInInterval = 0;
+//              
+//        for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
+//            if( i < this.numNullsToInsert ){
+//                values.add(null);
+//            }			
+//            else{
+//                Interval<Long> interval = intervals.get(intervalIndex);
+//                values.add(interval.getMinValue() + this.generator.nextValue(interval.getNFreshsToInsert()));
+//
+//                ++insertedInInterval;
+//
+//                if( insertedInInterval >= interval.getNFreshsToInsert()  ){
+//                    insertedInInterval = 0;
+//                    intervalIndex = ( intervalIndex + 1 ) %  intervals.size();
+//                }
+//            }
+//        }
+//        setDomain(values);
+//    }
+    
 
     @Override
     public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException {
@@ -119,6 +132,10 @@ public class IntColumn extends MultiIntervalColumn<Long> {
 
         max = min + this.numFreshsToInsert;  
 
+        if( this.getQualifiedName().toString().equals("field_investment_yearly.prfYear")){
+            logger.debug("CIAO!!!");
+        }
+        
         // Create the single initial interval
         List<ColumnPumper<Long>> involvedCols = new LinkedList<ColumnPumper<Long>>();
         involvedCols.add(this);

@@ -64,6 +64,9 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 	}
 
 	/**
+	 * 
+	 * If timeout is reached (20 min., then assume shared ratio to be zero)
+	 * 
 	 * cols.size() == 1 ? 1
 	 * @throws DebugException 
 	 */
@@ -98,7 +101,9 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
             
             sharedRatio = ((float) sharedDistinctRowsOriginal) / ((float) nDistinctOriginal);
         }
-        
+        else if( sharedDistinctRowsOriginal < 0 ){ // Timeout
+            sharedRatio = -1;
+        }
         return sharedRatio;
         
     }
