@@ -124,6 +124,14 @@ class IntervalsBoundariesFinder<T>{
     boolean insert(LinkedList<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
 	    throws DebugException, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
 
+	if( cP.getName().equals("fclNpdidCurrentRespCompany") ){
+	    System.err.println("CIAOOOO!");
+	}
+	
+	if( cP.getQualifiedName().toString().equals("company.cmpNpdidCompany") ){
+	    System.err.println("CIAO!");
+	}
+	
 	long maxEncodingEncountered = 0;
 
 	// Assert 
@@ -191,6 +199,7 @@ class IntervalsBoundariesFinder<T>{
 		// Find fresh values for cP.getIntervals.get(0);
 		cP.getIntervals().get(0).updateMinEncodingAndValue(maxEncodingEncountered);
 		cP.getIntervals().get(0).updateMaxEncodingAndValue( (maxEncodingEncountered) + nFreshsInFirstInterval );
+		cP.getIntervals().get(0).setNFreshsToInsert(nFreshsInFirstInterval);
 		insertedIntervals.addFirst(cP.getIntervals().get(0));
 	    }
 	    else{
