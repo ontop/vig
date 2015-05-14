@@ -25,6 +25,7 @@ import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
+import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
 import it.unibz.inf.data_pumper.core.exception.ProblematicCycleForPrimaryKeyException;
@@ -82,10 +83,10 @@ public class DatabasePumperDB extends DatabasePumper {
 	List<ColumnPumper<? extends Object>> listColumns = new ArrayList<ColumnPumper<? extends Object>>();
 	initListAllColumns(listColumns, scaleFactor);
 
-
 	try {
 	    establishColumnBounds(listColumns);
 	    updateBoundariesWRTForeignKeys(listColumns);
+	    checkIntervalsAssertions(listColumns);
 	} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException | DebugException | SQLException e) {
 	    e.printStackTrace();
 	    DatabasePumper.closeEverything();
@@ -120,6 +121,21 @@ public class DatabasePumperDB extends DatabasePumper {
 
 	logger.info("Database pumped in " + (endTime - startTime) + " msec.");
     }
+    
+    /** This method simply verifies that the boundaries of each interval X
+     *  are consistent w.r.t. the number of freshs to insert in X
+     * @throws DebugException 
+     * @throws BoundariesUnsetException 
+     */
+    private void checkIntervalsAssertions(List<ColumnPumper<? extends Object>> listColumns) throws BoundariesUnsetException, DebugException {
+	for( ColumnPumper<? extends Object> cP : listColumns ){
+	    for( Interval<?> interval : cP.getIntervals() ){
+		if( interval.getNFreshsToInsert() != interval.getMaxEncoding() - interval.getMinEncoding() )
+		    throw new DebugException("Inconsistent Interval Detected! : Interval " + interval.toString());
+	    }
+	}
+    }
+
 
     /**
      * for each primary key (col1,col2,...,coln) of table schema, 

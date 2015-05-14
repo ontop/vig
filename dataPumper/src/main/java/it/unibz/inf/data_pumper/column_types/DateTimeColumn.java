@@ -92,7 +92,7 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 
 	    if( result.next() && (result.getTimestamp(1) != null) ){
 
-	        if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(new Timestamp(Long.MAX_VALUE)) == 0 ){ // It looks crazy but it happens
+	        if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(new Timestamp(Long.MAX_VALUE)) == 0 ){ // 9999,11,31 = min = max
 	            // Do nothing
 	        }
 	        else{
@@ -111,22 +111,30 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    Calendar curMax = Calendar.getInstance();
 	    curMax.setTimeInMillis(max.getTime());
 
+	    boolean upperBoundTouched = false;
 	    for( int i = 1; i <= this.numFreshsToInsert; ++i ){
 
-	        if( c.compareTo(upperBound) > -1 ){
-	            this.numFreshsToInsert = i;
-	            break;
-	        }
+		if( c.compareTo(upperBound) > -1 ){
+		    this.numFreshsToInsert = i;
+		    upperBoundTouched = true;
+		    break;
+		}
 	        c.add(Calendar.DATE, 1);
 	    }
-
-	    max = new Timestamp(c.getTimeInMillis());
+	    
+	    if( upperBoundTouched ){
+		max = new Timestamp(Long.MAX_VALUE);
+	    }
+	    else{
+		max = new Timestamp( ( (min.getTime() / DatetimeInterval.MILLISECONDS_PER_DAY) + numFreshsToInsert ) * DatetimeInterval.MILLISECONDS_PER_DAY );
+	    }
+//	    max = new Timestamp(c.getTimeInMillis());
 
 	    // Create the single initial interval
 	    List<ColumnPumper<Timestamp>> involvedCols = new LinkedList<ColumnPumper<Timestamp>>();
 	    involvedCols.add(this);
 	    Interval<Timestamp> initialInterval = new DatetimeInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
-
+	    
 	    initialInterval.updateMinEncodingAndValue(min.getTime() / DatetimeInterval.MILLISECONDS_PER_DAY);
 	    initialInterval.updateMaxEncodingAndValue(max.getTime() / DatetimeInterval.MILLISECONDS_PER_DAY);
 	    

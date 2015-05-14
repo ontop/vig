@@ -92,6 +92,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    }
 	    if( stop ){
 		// TODO Some fk constraints might be violated, let's fix this
+		// Idea: Revert to before
 		logger.info("CIAO!!");
 	    }
 	    // All interval boundaries are set

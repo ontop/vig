@@ -137,6 +137,8 @@ public abstract class Interval<T> {
         if( this.getMaxEncoding() > splitterMaxEncoding ){
             // Shrink
             this.updateMinEncodingAndValue(splitterMaxEncoding);
+        
+            this.setNFreshsToInsert( this.getMaxEncoding() - this.getMinEncoding() );
         }
         else{
             if(! (this.getMaxEncoding() == splitterMaxEncoding) ){
@@ -205,6 +207,7 @@ public abstract class Interval<T> {
         builder.append(this.key + "\n");
         builder.append("Min Encoding = " + this.minEncoding + "\n");
         builder.append("Max encoding = " + this.maxEncoding + "\n");
+        builder.append("nFreshsToInsert = " + this.nFreshsToInsert + "\n");
         return builder.toString();
     }
 }
