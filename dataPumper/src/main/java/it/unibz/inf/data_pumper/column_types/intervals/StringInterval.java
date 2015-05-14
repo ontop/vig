@@ -11,7 +11,7 @@ import it.unibz.inf.data_pumper.core.main.DebugException;
 
 public class StringInterval extends Interval<String> {
     
-    public static String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILMNOPKRSTUVWXYZ"; // Ordered from the least to the bigger (String.compareTo)
+    public static String characters = "0123456789abcdefghijklmnopqrstuvwxyz"; // Ordered from the least to the bigger (String.compareTo)
     protected final int datatypeLength;
         
     public StringInterval(String key,

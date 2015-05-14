@@ -101,12 +101,13 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		values.add(null);
 	    }
 	    else{
+		
 		long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
 		intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
 		
 		StringInterval interval = (StringInterval) this.intervals.get(intervalIndex);
 
-		String trail = interval.encode(interval.getMinEncoding() + this.generator.nextValue(interval.getNFreshsToInsert()));
+		String trail = interval.encode(interval.getMinEncoding() + this.map(seqIndex));
 
 		StringBuilder zeroes = new StringBuilder();
 		for( int j = 0; j < interval.encode(interval.getMinEncoding()).length() - trail.length(); ++j ){

@@ -131,10 +131,6 @@ public class IntColumn extends MultiIntervalColumn<Long> {
         stmt.close();
 
         max = min + this.numFreshsToInsert;  
-
-        if( this.getQualifiedName().toString().equals("field_investment_yearly.prfYear")){
-            logger.debug("CIAO!!!");
-        }
         
         // Create the single initial interval
         List<ColumnPumper<Long>> involvedCols = new LinkedList<ColumnPumper<Long>>();
