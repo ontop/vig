@@ -1,6 +1,7 @@
 package it.unibz.inf.data_pumper.column_types.intervals;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
+import it.unibz.inf.data_pumper.column_types.Column;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.core.main.DebugException;
@@ -210,4 +211,4 @@ public abstract class Interval<T> {
         builder.append("nFreshsToInsert = " + this.nFreshsToInsert + "\n");
         return builder.toString();
     }
-}
+};

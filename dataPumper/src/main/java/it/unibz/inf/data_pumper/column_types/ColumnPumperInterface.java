@@ -28,6 +28,7 @@ import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
 import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
@@ -96,4 +97,4 @@ public interface ColumnPumperInterface<T> {
 	public void decrementNumFreshs() throws DebugException, BoundariesUnsetException;
 	
 	public void reset(); // To reset the internal state
-}
+};

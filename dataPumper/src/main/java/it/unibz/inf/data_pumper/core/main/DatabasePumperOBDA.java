@@ -2,6 +2,7 @@ package it.unibz.inf.data_pumper.core.main;
 
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
+import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnsCluster;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Queue;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author tir
@@ -63,9 +66,37 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	}
     }
     
+    /**
+     * Take care of the multi-interval columns
+     * @throws ValueUnsetException 
+     */
     @Override
-    protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException, DebugException {
+    protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException, DebugException, ValueUnsetException {
 	
+	for( ColumnPumper<? extends Object> cP : listColumns ){
+	    cP.visited = false;
+	}
+	
+	
+	for( ColumnPumper<? extends Object> cP : listColumns ){
+
+	    if( cP.visited ) continue;
+	    ColumnsCluster<? extends Object> cluster = cP.getCluster();
+	    
+	    if( cluster.hasMultiInterval() ){
+		cluster.tagLowerBounds();
+		cluster.tagUpperBounds();
+		cluster.updateIntervalsBottomUp();
+	    }
+	    else{
+		cluster.classicStrategy();
+	    }
+	    
+	    // Set visited
+	    for( ColumnPumper<? extends Object> col : cluster.getColumnPumpersInCluster() ){
+		col.visited = true;
+	    }
+	}
     }
 
     /**
@@ -85,15 +116,21 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    logger.debug("Doing cCL " + cCL);
 	    IntervalsBoundariesFinder<T> utils = new IntervalsBoundariesFinder<T>(this);
 	    LinkedList<Interval<T>> insertedIntervals = new LinkedList<Interval<T>>();
+	    List<ColumnPumper<T>> visited = new LinkedList<ColumnPumper<T>>();
 	    boolean stop = false;
 	    for( int i = 0; i < cCL.size() && !stop; ++i ){
 		ColumnPumper<T> cP = cCL.get(i);
-		stop = utils.insert(insertedIntervals, cP);
+	
+	        if( cP.toString().equals("bsns_arr_area.baaNpdidBsnsArrArea") ){
+	            logger.debug("CIAO!");
+	        }
+		
+		stop = utils.insert(insertedIntervals, cP, visited);
 	    }
 	    if( stop ){
 		// TODO Some fk constraints might be violated, let's fix this
 		// Idea: Revert to before
-		logger.info("CIAO!!");
+		logger.info("TODO case occurred");
 	    }
 	    // All interval boundaries are set
 	}
@@ -121,17 +158,9 @@ class IntervalsBoundariesFinder<T>{
      * @throws SQLException 
      * @throws BoundariesUnsetException 
      */
-    boolean insert(LinkedList<Interval<T>> insertedIntervals, ColumnPumper<T> cP) 
+    boolean insert(LinkedList<Interval<T>> insertedIntervals, ColumnPumper<T> cP, List<ColumnPumper<T>> visitedList) 
 	    throws DebugException, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
 
-	if( cP.getName().equals("fclNpdidCurrentRespCompany") ){
-	    System.err.println("CIAOOOO!");
-	}
-	
-	if( cP.getQualifiedName().toString().equals("company.cmpNpdidCompany") ){
-	    System.err.println("CIAO!");
-	}
-	
 	long maxEncodingEncountered = 0;
 
 	// Assert 
@@ -139,55 +168,98 @@ class IntervalsBoundariesFinder<T>{
 	    throw new DebugException("Intervals size != 1");
 	}
 
+	visitedList.add(cP);
+
 	if( insertedIntervals.isEmpty() ){
 	    insertedIntervals.add(cP.getIntervals().get(0));
 	}
 	else{
-	    //            int lastIndex = insertedIntervals.size();
-	    int count = insertedIntervals.size();
+	    int lastIndex = insertedIntervals.size();
 	    LinkedList<Interval<T>> newIntervals = new LinkedList<Interval<T>>();
-	    for( ListIterator<Interval<T>> it = insertedIntervals.listIterator(count) ; it.hasPrevious(); ){
+	    for( ListIterator<Interval<T>> it = insertedIntervals.listIterator(lastIndex) ; it.hasPrevious(); ){
 		Interval<T> previouslyInserted = it.previous();
 
-		if( maxEncodingEncountered < previouslyInserted.getMaxEncoding() ) maxEncodingEncountered = previouslyInserted.getMaxEncoding();
-
-		long nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
-		
-		if( nToInsertInPreviousInterval == -1 ){ // Timeout Reached, Stop everything for this cCL
-		    return true;
+		if( maxEncodingEncountered < previouslyInserted.getMaxEncoding() ){
+		    maxEncodingEncountered = previouslyInserted.getMaxEncoding();
 		}
 
-		// For all superIntervals Reduce (ABC is superInterval of AB is superInterval of B)
-		long insertedInSuperIntervals = countInsertedInSuperIntervals(cP, previouslyInserted, newIntervals);
-		nToInsertInPreviousInterval -= insertedInSuperIntervals;
-
-		// Assert
-		if( !( nToInsertInPreviousInterval >= 0) ){
-		    throw new DebugException("Assertion failed: nToInsertInPreviousInterval >= 0");
-		    
-		}
-
-		if( nToInsertInPreviousInterval > 0 ){ // Create a new "SubInterval"
-
-		    // Make sub interval ( with the right boundaries )
-		    Interval<T> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviousInterval);
-
-		    // Split
-		    boolean killOldInterval = previouslyInserted.adaptBounds(toInsert);
-
-		    if( killOldInterval ){
-			it.remove();
-			previouslyInserted.suicide(); 
-		    }
-
-		    newIntervals.add(toInsert);
-
-		    // Add the new interval to the involved cPs' intervals lists
-		    for( ColumnPumper<T> toUpdateCp : toInsert.getInvolvedColumnPumpers() ){
-			toUpdateCp.addInterval(toInsert);
+//		// Try Optimizations 1 and 2
+		boolean optimization1 = false;
+		boolean optimization2 = false;
+		for( ColumnPumper<? extends Object> involved : previouslyInserted.getInvolvedColumnPumpers() ){
+		    if( involved.getRefersToClosure().contains(cP) ){
+			optimization1 = true;
 		    }
 		}
-	    }
+		if( !optimization1 ){
+		    // Let's try to apply optimization2 FIXME Wrong!!!
+		    boolean noFkInInterval = true;
+		    for( ColumnPumper<? extends Object> involved : previouslyInserted.getInvolvedColumnPumpers() ){
+			if( cP.getRefersToClosure().contains(involved) ){
+			    noFkInInterval = false;
+			}
+		    }
+		    if( noFkInInterval ){
+			for( ColumnPumper<? extends Object> visited : visitedList ){
+			    /*visitedCPs \intersected cP.getRefersToClusure \neq \emptyset*/
+			    if( cP.getRefersToClosure().contains(visited) ){				
+				optimization2 = true;
+			    }
+			}
+		    }
+		}
+		if( optimization1 ){ 
+		    DatabasePumperOBDA.logger.info("Applying Optimization 1");
+		    previouslyInserted.addInvolvedColumnPumper(cP);
+		}
+		else{
+		    long nToInsertInPreviousInterval = 0;
+		    if( true || !optimization2 ){ // FIXME: optimization2 is broken
+			nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
+		    }else{
+			DatabasePumperOBDA.logger.info("Applying Optimization 2");
+			nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
+			if( nToInsertInPreviousInterval != 0 ){
+			    System.err.println(cP.toString() + "\n" + previouslyInserted);
+			    throw new DebugException();
+			}
+		    }
+		    if( nToInsertInPreviousInterval == -1 ){ // Timeout Reached, Stop everything for this cCL
+			return true;
+		    }
+
+		    // For all superIntervals Reduce (ABC is superInterval of AB is superInterval of B)
+		    long insertedInSuperIntervals = countInsertedInSuperIntervals(cP, previouslyInserted, newIntervals);
+		    nToInsertInPreviousInterval -= insertedInSuperIntervals;
+
+		    // Assert
+		    if( !( nToInsertInPreviousInterval >= 0) ){
+			throw new DebugException("Assertion failed: nToInsertInPreviousInterval >= 0");
+
+		    }
+
+		    if( nToInsertInPreviousInterval > 0 ){ // Create a new "SubInterval"
+			
+			// Make sub interval ( with the right boundaries )
+			Interval<T> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviousInterval);
+
+			// Split
+			boolean killOldInterval = previouslyInserted.adaptBounds(toInsert);
+
+			if( killOldInterval ){
+			    it.remove();
+			    previouslyInserted.suicide(); 
+			}
+
+			newIntervals.add(toInsert);
+
+			// Add the new interval to the involved cPs' intervals lists
+			for( ColumnPumper<T> toUpdateCp : toInsert.getInvolvedColumnPumpers() ){
+			    toUpdateCp.addInterval(toInsert);
+			}
+		    }
+		}
+	    } // End "foreach interval"
 	    long nFreshsInFirstInterval = cP.getNumFreshsToInsert() - cP.countFreshsInIntersectedIntervals();
 
 	    // Assert
@@ -208,17 +280,22 @@ class IntervalsBoundariesFinder<T>{
 	    }
 
 	    // Add in reverse order
-	    for( Interval<T> toInsert : newIntervals ){ 
-		for( ListIterator<Interval<T>> it = insertedIntervals.listIterator(); it.hasNext(); ){
-		    Interval<T> curInt = it.next();
-		    if( curInt.sizeIntersection() > toInsert.sizeIntersection() ){
-			it.previous();
-			it.add(toInsert);
-			break;
-		    }
-		    else if( !it.hasNext() ){
-			it.add(toInsert);
-			break;
+	    if( insertedIntervals.size() == 0 ){
+		insertedIntervals.addAll(newIntervals);
+	    }	    
+	    else{
+		for( Interval<T> toInsert : newIntervals ){
+		    for( ListIterator<Interval<T>> it = insertedIntervals.listIterator(); it.hasNext(); ){
+			Interval<T> curInt = it.next();
+			if( curInt.sizeIntersection() > toInsert.sizeIntersection() ){
+			    it.previous();
+			    it.add(toInsert);
+			    break;
+			}
+			else if( !it.hasNext() ){
+			    it.add(toInsert);
+			    break;
+			}
 		    }
 		}
 	    }
@@ -297,7 +374,7 @@ class IntervalsBoundariesFinder<T>{
      */
     private long makeIntersectionQuery(ColumnPumper<T> cP, Interval<T> previouslyInserted) 
 	    throws SQLException, InstanceNullException, ValueUnsetException, DebugException {
-
+	
 	long result = 0;
 
 	List<ColumnPumper<T>> cols = new ArrayList<ColumnPumper<T>>();
@@ -309,15 +386,42 @@ class IntervalsBoundariesFinder<T>{
 	if( ! cols.get(0).getQualifiedName().equals(cP.getQualifiedName()) ){
 	    throw new DebugException("The being inserted column HAS TO BE IN FIRST POSITION");
 	}
-	float sharedRatio = this.dbPumperInstance.tStatsFinder.findSharedRatio(cols);
 	
+	List<ColumnPumper<T>> prunedCols = new ArrayList<ColumnPumper<T>>();
+	//  Optimization: Remove all the joins with foreign keys
+	for( int i = 0; i < cols.size(); ++i ){
+	    ColumnPumper<T> colI = cols.get(i);
+	    boolean remove = false;
+	    for( int j = 0; j < cols.size(); ++j ){
+		if( i == j ) continue;
+		ColumnPumper<T> colJ = cols.get(j);
+		if( colJ.getRefersToClosure().contains(colI) ){ 
+		    remove = true;
+		    break;
+		}
+	    }
+	    if( !remove ){
+		prunedCols.add(colI);
+	    }
+	}
+	
+	float sharedRatio = -2;
+	
+	if( prunedCols.size() == 1 ){
+	    return prunedCols.get(0).getNumFreshsToInsert();
+	}
+	
+	
+	if( prunedCols.size() != 1 ){
+	    sharedRatio = this.dbPumperInstance.tStatsFinder.findSharedRatio(prunedCols);
+	}
 	if( sharedRatio == -1 ){ // Timeout
 	    result = -1;
 	}
 	else{
 	    result = (long) (cP.getNumFreshsToInsert() * sharedRatio);
 	}
-	  
+
 	return result; 
     }
 };
@@ -384,32 +488,52 @@ class CorrelatedColumnsList<T>{
 class CorrelatedColumnsExtractor{
 
     private final JoinableColumnsFinder jCF;
+    private static Logger logger = Logger.getLogger(CorrelatedColumnsExtractor.class.getCanonicalName());
+    
 
     CorrelatedColumnsExtractor(JoinableColumnsFinder jCF) {
 	this.jCF = jCF;
     }
 
     <T> List<CorrelatedColumnsList<T>> extractCorrelatedColumns() {
-	List<CorrelatedColumnsList<T>> result = null;
-	try {
 
+	class LocalUtils{
+	    Set<Field> extractCore(Set<Set<Field>> list){
+		Set<Field> result = new HashSet<Field>();
+
+		for( Set<Field> sF : list ){
+		    result.addAll(sF);
+		}
+		return result;
+	    }
+	}
+
+	List<CorrelatedColumnsList<T>> result = null;
+	
+	LocalUtils utils = new LocalUtils();
+	
+	
+	try {
+	    
 	    List<FunctionTemplate> templates = jCF.findFunctionTemplates();
 
-	    Set<Set<Field>> correlatedFields = extractCorrelatedFields(templates);
+	    Set<Set<Field>> coreCorrelatedFields = extractCorrelatedFields(templates); // Fields correlated because of some SPARQL join or join in the mappings
 
 	    Queue<Set<Field>> qCorrelatedFields = new LinkedList<Set<Field>>();
-	    for( Set<Field> fields : correlatedFields ){
+	    for( Set<Field> fields : coreCorrelatedFields ){
 		qCorrelatedFields.add(fields);
 	    }
-	    correlatedFields.clear();
-
+	    
+	    Set<Field> core = utils.extractCore(coreCorrelatedFields);
+	    coreCorrelatedFields.clear();
+	    
 	    addForeignKeys(qCorrelatedFields);
 
 	    // merge 
 	    List<Set<Field>> maximalMerge = new ArrayList<Set<Field>>();
 	    maximalMerge(qCorrelatedFields, maximalMerge);
-
-	    result = constructCorrelatedColumnsList(maximalMerge);
+	    
+	    result = constructCorrelatedColumnsList(maximalMerge, core);
 
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -433,8 +557,9 @@ class CorrelatedColumnsExtractor{
 
 	    Queue<Field> queueOfFields = new LinkedList<Field>(sF);
 
-	    while( queueOfFields.isEmpty() ){
+	    while( !queueOfFields.isEmpty() ){
 		Field f = queueOfFields.poll();
+
 		Queue<QualifiedName> correlated = new LinkedList<QualifiedName>();
 		correlated.add(new QualifiedName(f.tableName, f.colName));
 
@@ -471,12 +596,37 @@ class CorrelatedColumnsExtractor{
 	}
     }
 
-    private <T> List<CorrelatedColumnsList<T>> constructCorrelatedColumnsList(List<Set<Field>> maximalMerge) {
+    private <T> List<CorrelatedColumnsList<T>> constructCorrelatedColumnsList(List<Set<Field>> maximalMerge, Set<Field> core) {
+	
+	class LocalUtils{
+	    
+	    /** Prune from sets of fields the non-core fields **/
+	    void pruneToCore(List<Set<Field>> maximalMerge, Set<Field> core){		
+		// Prune away non-core fields
+		for( Iterator<Set<Field>> it = maximalMerge.iterator(); it.hasNext(); ){
+		    Set<Field> sF = it.next();
+		    for( Iterator<Field> it2 = sF.iterator(); it2.hasNext(); ){
+			Field field = it2.next();
+			if( !core.contains(field) ){
+			    it2.remove();
+			}
+		    }
+		    if( sF.isEmpty() ){
+			it.remove();
+		    }
+		}
+	    }
+	}
 
+	LocalUtils utils = new LocalUtils();
 	List<CorrelatedColumnsList<T>> result = new ArrayList<CorrelatedColumnsList<T>>();
 
+	utils.pruneToCore(maximalMerge, core);
+	
+	logger.debug("Pruned maximal merge: \n" + maximalMerge);
+	
 	for( Set<Field> correlatedColsList : maximalMerge ){
-	    	    
+
 	    CorrelatedColumnsList<T> cCL = new CorrelatedColumnsList<T>();
 	    for( Field f : correlatedColsList ){
 		try {
@@ -517,7 +667,6 @@ class CorrelatedColumnsExtractor{
 	    }
 	    maximalMerge(current, result);
 	}
-
     }
 
     private Set<Set<Field>> extractCorrelatedFields(

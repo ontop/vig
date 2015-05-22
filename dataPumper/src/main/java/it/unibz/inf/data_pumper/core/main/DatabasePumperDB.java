@@ -215,19 +215,23 @@ public class DatabasePumperDB extends DatabasePumper {
 	}
     }
 
-    protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException, DebugException {
+    protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException, DebugException, ValueUnsetException {
 	Queue<ColumnPumper<? extends Object>> toUpdateBoundaries = new LinkedList<ColumnPumper<? extends Object>>();
 	toUpdateBoundaries.addAll(listColumns);
 
 	while( !toUpdateBoundaries.isEmpty() ){
 	    ColumnPumper<? extends Object> first = toUpdateBoundaries.remove();
+	    
+	    if( first.getIntervals().size() != 1 ) continue;
+	    
 	    long firstMinEncoding = first.getIntervals().get(0).getMinEncoding();
 	    for( QualifiedName referredName : first.referencesTo() ){
 		ColumnPumper<? extends Object> referred = DBMSConnection.getInstance().getSchema(referredName.getTableName()).getColumn(referredName.getColName());
 		long refMinEncoding = referred.getIntervals().get(0).getMinEncoding();
 		if( firstMinEncoding > refMinEncoding ){
-
-		    first.getIntervals().get(0).updateMinEncodingAndValue(refMinEncoding);
+		    Interval<? extends Object> interval = first.getIntervals().get(0);
+		    interval.updateMinEncodingAndValue(refMinEncoding);
+		    interval.updateMaxEncodingAndValue(refMinEncoding + interval.getNFreshsToInsert());
 		    // Update the boundaries for all the kids
 		    for( QualifiedName kidName : first.referencedBy() ){
 			ColumnPumper<? extends Object> kid = (ColumnPumper<? extends Object>) DBMSConnection.getInstance().getSchema(kidName.getTableName()).getColumn(kidName.getColName());

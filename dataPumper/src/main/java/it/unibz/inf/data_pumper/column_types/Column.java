@@ -126,7 +126,7 @@ public abstract class Column {
 	}	
 	
 	public String toString(){
-		return name;
+		return this.schema.getTableName() + "." + this.name;
 	}
 	
 	/**

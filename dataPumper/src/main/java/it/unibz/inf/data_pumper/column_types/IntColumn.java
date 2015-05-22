@@ -131,6 +131,7 @@ public class IntColumn extends MultiIntervalColumn<Long> {
         stmt.close();
 
         max = min + this.numFreshsToInsert;  
+                
         
         // Create the single initial interval
         List<ColumnPumper<Long>> involvedCols = new LinkedList<ColumnPumper<Long>>();

@@ -20,11 +20,19 @@ package it.unibz.inf.data_pumper.column_types;
  * #L%
  */
 
+import java.util.LinkedList;
+import java.util.List;
+
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
+import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
+import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnsCluster;
+import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnsClusterImpl;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
+import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
 import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
@@ -45,6 +53,11 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	
 	protected CyclicGroupGenerator generator;
 	
+	protected ColumnsCluster<T> cluster;
+	
+	// For general purposes
+	public boolean visited;
+	
 	public ColumnPumper(String name, MySqlDatatypes type, int index, Schema schema){ // index: index of the column
 	    super(name, type, index, schema);
 	    this.duplicateRatio = 0;
@@ -57,8 +70,22 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 		nullRatioSet = false;
 		numRowsToInsertSet = false;
 		this.numDupsNullRowsSet = false;
+		visited = false;
 	}
 
+//	@Override
+	/**
+	 * Get the closure under referredBy and refersTo
+	 * @return
+	 * @throws InstanceNullException 
+	 * @throws BoundariesUnsetException 
+	 * @throws DebugException 
+	 * @throws ValueUnsetException 
+	 */
+	public ColumnsCluster<T> getCluster() throws InstanceNullException, ValueUnsetException, DebugException, BoundariesUnsetException{
+	    return new ColumnsClusterImpl<T>(this);
+	}
+	
 	@Override
 	public void setDuplicatesRatio(float ratio) {
 		this.duplicateRatio = ratio;
@@ -95,21 +122,15 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 		return this.numRowsToInsert;
 	}
 	
-	protected void initNumDupsNullsFreshs(){
-		
-		if(this.numDupsNullRowsSet == true) return; // Values set already
-		
-		try{
-			this.numDupsToInsert = (long) (this.getNumRowsToInsert() * this.getDuplicateRatio());
-			this.numNullsToInsert = (long) (this.getNumRowsToInsert() * this.getNullRatio());
-			this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;			
-		}catch(ValueUnsetException e){
-			e.printStackTrace();			
-			// TODO: Release all resources
-			System.exit(1);
-		}
-		this.numDupsNullRowsSet = true;
-		this.generator = new CyclicGroupGenerator(numFreshsToInsert);
+	protected void initNumDupsNullsFreshs() throws ValueUnsetException{
+
+	    if(this.numDupsNullRowsSet == true) return; // Values set already
+
+	    this.numDupsToInsert = (long) (this.getNumRowsToInsert() * this.getDuplicateRatio());
+	    this.numNullsToInsert = (long) (this.getNumRowsToInsert() * this.getNullRatio());
+	    this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;			
+	    this.numDupsNullRowsSet = true;
+	    this.generator = new CyclicGroupGenerator(numFreshsToInsert);
 	}
 
 	
@@ -133,5 +154,41 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 		Interval<T> interval = this.getIntervals().get(0);
 		interval.setNFreshsToInsert(interval.getNFreshsToInsert() - 1);
 		interval.updateMaxEncodingAndValue(interval.getMaxEncoding() - 1);
+	}
+
+	public List<ColumnPumper<T>> getRefersToClosure() throws InstanceNullException {
+	    
+	    List<ColumnPumper<T>> result = new LinkedList<>();
+	    for( QualifiedName qN : this.referencesTo() ){
+		@SuppressWarnings("unchecked")
+		ColumnPumper<T> cP = (ColumnPumper<T>)DBMSConnection.getInstance().getSchema(qN.getTableName()).getColumn(qN.getColName());
+		
+		if( !result.contains(cP) ) result.add(cP);
+		
+		for( ColumnPumper<T> inClosure : cP.getRefersToClosure() ){
+		    if( !result.contains(inClosure) ){
+			result.add(inClosure);
+		    }
+		}
+	    }
+	    return result;
+	}
+	
+	public List<ColumnPumper<T>> getReferredByClosure() throws InstanceNullException {
+	    
+	    List<ColumnPumper<T>> result = new LinkedList<>();
+	    for( QualifiedName qN : this.referencedBy() ){
+		@SuppressWarnings("unchecked")
+		ColumnPumper<T> cP = (ColumnPumper<T>)DBMSConnection.getInstance().getSchema(qN.getTableName()).getColumn(qN.getColName());
+		
+		if( !result.contains(cP) ) result.add(cP);
+		
+		for( ColumnPumper<T> inClosure : cP.getReferredByClosure() ){
+		    if( !result.contains(inClosure) ){
+			result.add(inClosure);
+		    }
+		}
+	    }
+	    return result;
 	}
 };
