@@ -120,10 +120,6 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    boolean stop = false;
 	    for( int i = 0; i < cCL.size() && !stop; ++i ){
 		ColumnPumper<T> cP = cCL.get(i);
-	
-	        if( cP.toString().equals("bsns_arr_area.baaNpdidBsnsArrArea") ){
-	            logger.debug("CIAO!");
-	        }
 		
 		stop = utils.insert(insertedIntervals, cP, visited);
 	    }
