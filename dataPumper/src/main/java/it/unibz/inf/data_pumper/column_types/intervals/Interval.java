@@ -106,20 +106,18 @@ public abstract class Interval<T> {
     }
 
     // Public updatable interface
-    public abstract void updateMinEncodingAndValue(long newMin) throws DebugException;
-    public abstract void updateMaxEncodingAndValue(long newMax) throws DebugException;
+    public abstract void updateMinEncodingAndValue(long newMin);
+    public abstract void updateMaxEncodingAndValue(long newMax);
     
-    public abstract long getMinEncoding() throws BoundariesUnsetException, DebugException;
-    public abstract long getMaxEncoding() throws BoundariesUnsetException, DebugException;
+    public abstract long getMinEncoding();
+    public abstract long getMaxEncoding();
 
     /**
      * It adapts the boundaries of <b>this</b> interval
      * @param toInsert
      * @return
-     * @throws DebugException 
-     * @throws BoundariesUnsetException 
      */
-    public boolean adaptBounds(Interval<T> toInsert) throws DebugException, BoundariesUnsetException {
+    public boolean adaptBounds(Interval<T> toInsert) {
         
         boolean killMe = false;
         
@@ -174,7 +172,7 @@ public abstract class Interval<T> {
         }
     }
 
-    public abstract Interval<T> getCopyInstance() throws DebugException;
+    public abstract Interval<T> getCopyInstance();
 
     /**
      * It removes all the stable references to <b>this</b> interval.
@@ -201,6 +199,8 @@ public abstract class Interval<T> {
         
         return result;
     }
+    
+    
     
     @Override
     public String toString(){

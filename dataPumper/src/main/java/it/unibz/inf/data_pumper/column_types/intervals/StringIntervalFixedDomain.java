@@ -22,7 +22,7 @@ public class StringIntervalFixedDomain extends StringInterval {
     }
     
     @Override
-    public long getMaxEncoding() throws BoundariesUnsetException {
+    public long getMaxEncoding() {
         return this.maxEncoding;
     }
     
@@ -32,7 +32,7 @@ public class StringIntervalFixedDomain extends StringInterval {
     }
 
     @Override
-    public Interval<String> getCopyInstance() throws DebugException {
+    public Interval<String> getCopyInstance() {
         
         StringInterval result =
                 new StringIntervalFixedDomain(

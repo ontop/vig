@@ -40,7 +40,7 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 
 	@Override
 	public <T> float findSharedRatio(ColumnPumper<T> col,
-			ColumnPumper<T> referenced) throws SQLException, InstanceNullException, ValueUnsetException {
+			ColumnPumper<T> referenced) throws SQLException {
 		
 		float sharedRatio = 0;
 		
@@ -68,14 +68,11 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 	 * If timeout is reached (20 min., then assume shared ratio to be zero)
 	 * 
 	 * cols.size() == 1 ? 1
-	 * @throws DebugException 
 	 */
     @Override
     public <T> float findSharedRatio(
             List<ColumnPumper<T>> cols)
-            throws SQLException,
-            InstanceNullException,
-            ValueUnsetException, DebugException {
+            throws SQLException {
                 
         if( ! (cols.size() > 1) ){
             throw new DebugException("Violated assertion cols.size() > 1");

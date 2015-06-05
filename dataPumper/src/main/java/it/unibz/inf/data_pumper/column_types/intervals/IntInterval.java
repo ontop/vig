@@ -29,7 +29,7 @@ public class IntInterval extends Interval<Long> {
     }
     
     @Override
-    public long getMinEncoding() throws BoundariesUnsetException, DebugException {
+    public long getMinEncoding() {
         if( this.min == this.max ) throw new BoundariesUnsetException("Undefined interval boundaries for columns "+this.getKey());
         
         // Assert
@@ -39,7 +39,7 @@ public class IntInterval extends Interval<Long> {
     }
     
     @Override
-    public long getMaxEncoding() throws BoundariesUnsetException, DebugException {
+    public long getMaxEncoding() {
         if( this.min == this.max ) throw new BoundariesUnsetException("Undefined interval boundaries");
         
         // Assert

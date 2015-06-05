@@ -46,7 +46,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
     }
 
     @Override
-    public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException {
+    public void generateValues(Schema schema, DBMSConnection db) {
 
 	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 
@@ -69,7 +69,7 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
     }
 
     @Override
-    public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException {
+    public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) {
 
 	this.initNumDupsNullsFreshs();
 

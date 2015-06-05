@@ -54,11 +54,11 @@ public class DBMSConnection {
 	
 	private static DBMSConnection instance = null;
 	
-	public static void initInstance(String jdbcConnector, String database, String username, String password) throws UnsupportedDatabaseException{
+	public static void initInstance(String jdbcConnector, String database, String username, String password) {
 		DBMSConnection.instance = new DBMSConnection(jdbcConnector, database, username, password);
 	}
 	
-	public static DBMSConnection getInstance() throws InstanceNullException{
+	public static DBMSConnection getInstance() {
 		if( DBMSConnection.instance == null ) throw new InstanceNullException("The method DBMSConnection.initInstance() has not been called yet");
 		
 		return DBMSConnection.instance;
@@ -168,72 +168,65 @@ public class DBMSConnection {
 
 	public void close() {
 		try {
-			connection.close();
+		    connection.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+		    System.exit(1);
+		    e.printStackTrace();
 		}
 	}
 	
 	public void setForeignCheckOff(){
-		try {
-			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0");
-			stmt.execute();
-			stmt.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	    try(PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0")) {
+		stmt.execute();
+	    } catch (SQLException e) {
+		e.printStackTrace();
+		System.exit(1);
+	    }
+		
 	}
 	public void setForeignCheckOn(){
-		try{
-			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1");
-			stmt.execute();
-			stmt.close();
+		try(PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1")){
+		    stmt.execute();
 		} catch (SQLException e){
-			e.printStackTrace();
+		    e.printStackTrace();
+		    System.exit(1);
 		}
 	}
 	public void setUniqueCheckOff(){
-		try {
-			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0");
-			stmt.execute();
-			stmt.close();
+		try(PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0")) {
+		    stmt.execute();
 		} catch (SQLException e) {
-			e.printStackTrace();
+		    e.printStackTrace();
+		    System.exit(1);
 		}
 	}
 	public void setUniqueCheckOn(){
-		try{
-			PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1");
-			stmt.execute();
-			stmt.close();
+		try(PreparedStatement stmt = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1")){
+		    stmt.execute();
 		} catch (SQLException e){
-			e.printStackTrace();
+		    e.printStackTrace();
+		    System.exit(1);
 		}
 	}
 	
 	public int getNRows(String tableName){
-		int result = 0;
-		
-		PreparedStatement stmt = this.getPreparedStatement("SELECT COUNT(*) FROM "+tableName);
-		
-		try {
-			ResultSet rs = stmt.executeQuery();
-			
-			if( rs.next() ){
-				result = rs.getInt(1);
-			}
+	    int result = 0;
+	    try(PreparedStatement stmt = this.getPreparedStatement("SELECT COUNT(*) FROM "+tableName)) {
+		ResultSet rs = stmt.executeQuery();
 
-			stmt.close();
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
+		if( rs.next() ){
+		    result = rs.getInt(1);
 		}
-		return result;
+	    } catch (SQLException e) {
+		e.printStackTrace();
+		System.exit(1);
+	    }
+	    return result;
 	}
 	
 	// Private Interface
 	
-	private DBMSConnection(String jdbcConnector, String database, String username, String password) throws UnsupportedDatabaseException{
+	private DBMSConnection(String jdbcConnector, String database, String username, String password) {
 		
 		this.jdbcConnector = jdbcConnector;
 		this.databaseUrl = database;
@@ -267,71 +260,72 @@ public class DBMSConnection {
 			throw new UnsupportedDatabaseException("The generator supports mysql, only");
 		}
 	}
-	
-	private Schema fillTableSchema(String tableName){
-		
-		logger.info("Adding schema "+tableName);
-		
-		Schema schema = new Schema(tableName);
-		
-		try{
-			PreparedStatement stmt;
-			stmt = connection.prepareStatement("DESCRIBE "+tableName);
-			ResultSet result = stmt.executeQuery();
-			
-			// Field - Type - Null - Default - Extra
-			int index = 0;
-			while(result.next()){
-				logger.debug("Adding column " + result.getString(1) + " from table " + tableName);
 
-				schema.addColumn(result.getString(1), result.getString(2), ++index);
-				
-				
-				// Primary keys need to be all different
-				logger.debug(result.getString(4));
-				if( result.getString(4).equals("PRI") /*|| result.getString(4).equals("UNI")*/ ){ //TODO BUGFIX!!
-					
-					schema.getColumn(result.getString(1)).setPrimary();
-				}		
-			}
-			stmt.close();
-			
-			// Retrieve columns with allDifferent()
-			int cnt = 0;
-			ColumnPumper ref = null;
-			for( ColumnPumper c : schema.getColumns() ){
-				if( c.isPrimary() ){ ref = c; ++cnt; }
-			}
-			if( cnt == 1 ) ref.setAllDifferent();
-			
-			
-			// Now let's retrieve foreign keys
-			String informationSchemaQuery = 
-					"select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME"
-					+ " from INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
-					+ "	where TABLE_NAME = ? and constraint_schema = ?"
-					+ " and REFERENCED_TABLE_NAME != 'null'";
-					
-			stmt = connection.prepareStatement(informationSchemaQuery);
-			stmt.setString(1, tableName);
-			stmt.setString(2, getDbName());
-			
-			result = stmt.executeQuery();
-			
-			while(result.next()){
-				schema.getColumn(result.getString(2))
-				.referencesTo().add(new QualifiedName(result.getString(4), result.getString(5)));
-			}
-			
-			stmt.close();		
+	private Schema fillTableSchema(String tableName){
+
+	    logger.info("Adding schema "+tableName);
+
+	    Schema schema = new Schema(tableName);
+
+	    try{
+		PreparedStatement stmt;
+		stmt = connection.prepareStatement("DESCRIBE "+tableName);
+		ResultSet result = stmt.executeQuery();
+
+		// Field - Type - Null - Default - Extra
+		int index = 0;
+		while(result.next()){
+		    logger.debug("Adding column " + result.getString(1) + " from table " + tableName);
+
+		    schema.addColumn(result.getString(1), result.getString(2), ++index);
+
+
+		    // Primary keys need to be all different
+		    logger.debug(result.getString(4));
+		    if( result.getString(4).equals("PRI") /*|| result.getString(4).equals("UNI")*/ ){ //TODO BUGFIX!!
+
+			schema.getColumn(result.getString(1)).setPrimary();
+		    }		
 		}
-		catch(SQLException e){
-			e.printStackTrace();
+		stmt.close();
+
+		// Retrieve columns with allDifferent()
+		int cnt = 0;
+		ColumnPumper<?> ref = null;
+		for( ColumnPumper<?> c : schema.getColumns() ){
+		    if( c.isPrimary() ){ ref = c; ++cnt; }
 		}
-		
-//		fillTuplesSchemas(schema);
-		
-		return schema;
+		if( cnt == 1 ) ref.setAllDifferent();
+
+
+		// Now let's retrieve foreign keys
+		String informationSchemaQuery = 
+			"select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME"
+				+ " from INFORMATION_SCHEMA.KEY_COLUMN_USAGE"
+				+ "	where TABLE_NAME = ? and constraint_schema = ?"
+				+ " and REFERENCED_TABLE_NAME != 'null'";
+
+		stmt = connection.prepareStatement(informationSchemaQuery);
+		stmt.setString(1, tableName);
+		stmt.setString(2, getDbName());
+
+		result = stmt.executeQuery();
+
+		while(result.next()){
+		    schema.getColumn(result.getString(2))
+		    .referencesTo().add(new QualifiedName(result.getString(4), result.getString(5)));
+		}
+
+		stmt.close();		
+	    }
+	    catch(SQLException e){
+		e.printStackTrace();
+		System.exit(1);
+	    }
+
+	    //		fillTuplesSchemas(schema);
+
+	    return schema;
 	}
-	
+
 };

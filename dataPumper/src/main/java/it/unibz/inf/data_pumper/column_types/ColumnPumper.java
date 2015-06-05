@@ -28,13 +28,9 @@ import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnsCluster;
 import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnsClusterImpl;
-import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
-import it.unibz.inf.data_pumper.core.main.DebugException;
-import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
 public abstract class ColumnPumper<T> extends Column implements ColumnPumperInterface<T>{
 		
@@ -77,12 +73,8 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	/**
 	 * Get the closure under referredBy and refersTo
 	 * @return
-	 * @throws InstanceNullException 
-	 * @throws BoundariesUnsetException 
-	 * @throws DebugException 
-	 * @throws ValueUnsetException 
 	 */
-	public ColumnsCluster<T> getCluster() throws InstanceNullException, ValueUnsetException, DebugException, BoundariesUnsetException{
+	public ColumnsCluster<T> getCluster() {
 	    return new ColumnsClusterImpl<T>(this);
 	}
 	
@@ -93,13 +85,13 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	}
 
 	@Override
-	public float getDuplicateRatio() throws ValueUnsetException {
+	public float getDuplicateRatio() {
 		if( ! duplicateRatioSet ) throw new ValueUnsetException();
 		return this.duplicateRatio;
 	}
 
 	@Override
-	public float getNullRatio() throws ValueUnsetException {
+	public float getNullRatio() {
 		if( ! nullRatioSet ) throw new ValueUnsetException();
 		return this.nullRatio;
 	}
@@ -111,18 +103,18 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	}
 	
 	@Override
-	public void setNumRowsToInsert(int num) throws TooManyValuesException{
+	public void setNumRowsToInsert(int num) {
 		this.numRowsToInsertSet = true;
 		this.numRowsToInsert = num;
 	}
 	
 	@Override
-	public long getNumRowsToInsert() throws ValueUnsetException{
+	public long getNumRowsToInsert() {
 		if( ! numRowsToInsertSet ) throw new ValueUnsetException();		
 		return this.numRowsToInsert;
 	}
 	
-	protected void initNumDupsNullsFreshs() throws ValueUnsetException{
+	protected void initNumDupsNullsFreshs() {
 
 	    if(this.numDupsNullRowsSet == true) return; // Values set already
 
@@ -135,13 +127,13 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 
 	
 	@Override
-	public long getNumFreshsToInsert() throws ValueUnsetException{
+	public long getNumFreshsToInsert() {
 		if( !this.numDupsNullRowsSet ) throw new ValueUnsetException();
 		return numFreshsToInsert;
 	}
 	
 	@Override
-	public void incrementNumFreshs() throws DebugException, BoundariesUnsetException {
+	public void incrementNumFreshs() {
 		++this.numFreshsToInsert;
 		Interval<T> interval = this.getIntervals().get(0);
 		interval.setNFreshsToInsert(interval.getNFreshsToInsert() + 1);
@@ -149,14 +141,14 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	}
 	
 	@Override
-	public void decrementNumFreshs() throws DebugException, BoundariesUnsetException {
+	public void decrementNumFreshs() {
 		--this.numFreshsToInsert;
 		Interval<T> interval = this.getIntervals().get(0);
 		interval.setNFreshsToInsert(interval.getNFreshsToInsert() - 1);
 		interval.updateMaxEncodingAndValue(interval.getMaxEncoding() - 1);
 	}
 
-	public List<ColumnPumper<T>> getRefersToClosure() throws InstanceNullException {
+	public List<ColumnPumper<T>> getRefersToClosure() {
 	    
 	    List<ColumnPumper<T>> result = new LinkedList<>();
 	    for( QualifiedName qN : this.referencesTo() ){
@@ -174,7 +166,7 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	    return result;
 	}
 	
-	public List<ColumnPumper<T>> getReferredByClosure() throws InstanceNullException {
+	public List<ColumnPumper<T>> getReferredByClosure() {
 	    
 	    List<ColumnPumper<T>> result = new LinkedList<>();
 	    for( QualifiedName qN : this.referencedBy() ){

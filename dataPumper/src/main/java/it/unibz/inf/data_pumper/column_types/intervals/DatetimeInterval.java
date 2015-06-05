@@ -39,24 +39,19 @@ public class DatetimeInterval extends Interval<Timestamp> {
             max = new Timestamp(newMax * MILLISECONDS_PER_DAY);
         }
         else{
-            try{
-                throw new DateOutOfBoundariesException();
-            }catch(DateOutOfBoundariesException e){
-                logger.error("The Date field cannot hold this many rows");
-                System.exit(1);
-            }
+            throw new DateOutOfBoundariesException("The Date field cannot hold this many rows");
         }
         this.maxEncoding = newMax;
     }
     
     @Override
-    public long getMinEncoding() throws BoundariesUnsetException {
+    public long getMinEncoding() {
         long encoding = (long) (this.min.getTime() / MILLISECONDS_PER_DAY);
         return encoding;
     }
 
     @Override
-    public long getMaxEncoding() throws BoundariesUnsetException {
+    public long getMaxEncoding() {
         long encoding = (long) (this.max.getTime() / MILLISECONDS_PER_DAY);
         return encoding;
     }

@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.core.exception;
 
-public class ProblematicCycleForPrimaryKeyException extends Exception {
+public class ProblematicCycleForPrimaryKeyException extends RuntimeException {
 
 	/**
 	 * 

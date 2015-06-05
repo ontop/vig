@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.column_types.exceptions;
 
-public class BoundariesUnsetException extends Exception {
+public class BoundariesUnsetException extends RuntimeException {
 
 	public BoundariesUnsetException(String string) {
 		super(string);

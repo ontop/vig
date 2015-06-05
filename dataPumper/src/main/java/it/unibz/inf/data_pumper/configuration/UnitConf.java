@@ -1,5 +1,7 @@
 package it.unibz.inf.data_pumper.configuration;
 
+import java.io.IOException;
+
 import it.unibz.inf.data_pumper.core.main.Main;
 
 /**
@@ -27,16 +29,18 @@ public class UnitConf extends Conf {
 		return instance;
 	}
 	
-	/** Returns the configuration scheme for the data generation **/
-	public  String dbUrlSingleTests(){
+	/** Returns the configuration scheme for the data generation 
+	 * @throws IOException **/
+	public  String dbUrlSingleTests() throws IOException{
 		return searchTag("DbUrlSingleTests");
 	}
-	/** Returns the configuration scheme for the data generation **/
-	public  String dbUsernameSingleTests(){
+	/** Returns the configuration scheme for the data generation 
+	 * @throws IOException **/
+	public  String dbUsernameSingleTests() throws IOException{
 		return searchTag("DbUrlUsernameSingleTests");
 	}
 	
-	public  String dbPasswordSingleTests(){
+	public  String dbPasswordSingleTests() throws IOException{
 		return searchTag("DbPasswordSingleTests");
 	}
 }

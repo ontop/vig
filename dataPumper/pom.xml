@@ -83,6 +83,11 @@
 
   <dependency>
   	<groupId>it.unibz.inf.vig</groupId>
+  	<artifactId>vig-cpsolver</artifactId>
+  	<version>1.0.0</version>
+  </dependency>
+  <dependency>
+  	<groupId>it.unibz.inf.vig</groupId>
   	<artifactId>vig-mappings-analyzer</artifactId>
     <version>1.0.0</version>  
   </dependency>

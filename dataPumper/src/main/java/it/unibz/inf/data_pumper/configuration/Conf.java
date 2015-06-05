@@ -47,48 +47,51 @@ public class Conf {
 	
 	
 	/** Returns the name of the database driver **/
-	public String jdbcConnector(){
+	public String jdbcConnector() throws IOException {
 		return searchTag("jdbc-connector");
 	}
-	/** Returns the url of the original database (this will not be pumped. A copy of it will) **/
-	public  String dbUrl(){
+	/** Returns the url of the original database (this will not be pumped. A copy of it will) 
+	 * @throws IOException **/
+	public  String dbUrl() throws IOException{
 		return searchTag("database-url");
 	}
-	/** Returns the username for the original database (this will not be pumped. A copy of it will) **/
-	public  String dbUser(){
+	/** Returns the username for the original database (this will not be pumped. A copy of it will) 
+	 * @throws IOException **/
+	public  String dbUser() throws IOException{
 		return searchTag("database-user");
 	}
-	/** Returns the password for the original database (this will not be pumped. A copy of it will) **/
-	public  String dbPwd(){
+	/** Returns the password for the original database (this will not be pumped. A copy of it will) 
+	 * @throws IOException **/
+	public  String dbPwd() throws IOException{
 		return searchTag("database-pwd");
 	}
-	public  boolean pureRandomGeneration(){
+	public  boolean pureRandomGeneration() throws IOException{
 		String randomValue = searchTag("random-gen");
 		return randomValue.equals("true");
 	}
-	/** Returns the obda file containing the mappings **/
-	public  String mappingsFile(){
+	/** Returns the obda file containing the mappings 
+	 * @throws IOException **/
+	public  String mappingsFile() throws IOException{
 		return searchTag("obda-file");
 	}
 	/** Returns the configuration scheme for the data generation **/
-	public  String pumperType(){
+	public String pumperType() throws IOException{
 		return searchTag("pumper-type");
 	}
 	
-	protected  String searchTag(String tag){
-		try{
-			BufferedReader in = new BufferedReader(
-					new FileReader(confFile));
-			String s;
-			String[] s2 = new String[2];
-			while ((s = in.readLine()) != null){
-				s2 = s.split("\\s+");
-				if (s2[0].equals(tag)){ in.close(); return s2[1]; }
-			}
-			in.close();
-		}catch(IOException e){
-			e.printStackTrace();
+	protected String searchTag(String tag) throws IOException{
+	    try(BufferedReader in = new BufferedReader(
+			new FileReader(confFile))){
+		String s;
+		String[] s2 = new String[2];
+		while ((s = in.readLine()) != null){
+		    s2 = s.split("\\s+");
+		    if (s2[0].equals(tag)){ in.close(); return s2[1]; }
 		}
-		return "error";
+		in.close();
+	    }catch(IOException e){
+		e.printStackTrace();
+	    }
+	    return "error";
 	}
 }

@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.column_types.exceptions;
 
-public class ValueUnsetException extends Exception {
+public class ValueUnsetException extends RuntimeException {
 
 	/**
 	 * 

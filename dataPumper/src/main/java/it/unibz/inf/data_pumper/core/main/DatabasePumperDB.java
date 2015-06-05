@@ -57,16 +57,9 @@ public class DatabasePumperDB extends DatabasePumper {
     protected static double scaleFactor;
 
     public DatabasePumperDB(){
-	try {
-	    this.dbOriginal = DBMSConnection.getInstance();
-	} catch (InstanceNullException e) {
-	    e.printStackTrace();
-	    this.persistence.closeFile();
-	    System.exit(1);
-	}
+	this.dbOriginal = DBMSConnection.getInstance();
 	this.tStatsFinder = new TableStatisticsFinderImpl(dbOriginal);
 	this.persistence = LogToFile.getInstance();
-
     }
     /**
      * 
@@ -87,7 +80,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	    establishColumnBounds(listColumns);
 	    updateBoundariesWRTForeignKeys(listColumns);
 	    checkIntervalsAssertions(listColumns);
-	} catch (ValueUnsetException | InstanceNullException | BoundariesUnsetException | DebugException | SQLException e) {
+	} catch (SQLException e) {
 	    e.printStackTrace();
 	    DatabasePumper.closeEverything();
 	    System.exit(1);
@@ -96,13 +89,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	for( String tableName : dbOriginal.getAllTableNames() ){
 	    Schema schema = dbOriginal.getSchema(tableName);
 	    schemas.add(schema);
-	    try {
-		checkPrimaryKeys(schema); 
-	    } catch (ValueUnsetException | DebugException | BoundariesUnsetException e) {
-		e.printStackTrace();
-		DatabasePumper.closeEverything();
-		System.exit(1);
-	    }
+	    checkPrimaryKeys(schema); 
 	}
 
 	for( Schema schema : schemas ){
@@ -124,10 +111,8 @@ public class DatabasePumperDB extends DatabasePumper {
     
     /** This method simply verifies that the boundaries of each interval X
      *  are consistent w.r.t. the number of freshs to insert in X
-     * @throws DebugException 
-     * @throws BoundariesUnsetException 
      */
-    private void checkIntervalsAssertions(List<ColumnPumper<? extends Object>> listColumns) throws BoundariesUnsetException, DebugException {
+    private void checkIntervalsAssertions(List<ColumnPumper<? extends Object>> listColumns) {
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 	    for( Interval<?> interval : cP.getIntervals() ){
 		if( interval.getNFreshsToInsert() != interval.getMaxEncoding() - interval.getMinEncoding() )
@@ -142,11 +127,8 @@ public class DatabasePumperDB extends DatabasePumper {
      * check whether lcm(col1.nFreshs, ..., coln.nFreshs) > nFreshsToInsert
      * 
      * @param schema
-     * @throws ValueUnsetException 
-     * @throws BoundariesUnsetException 
-     * @throws DebugException 
      */
-    private void checkPrimaryKeys(Schema schema) throws ValueUnsetException, DebugException, BoundariesUnsetException {
+    private void checkPrimaryKeys(Schema schema) {
 	class LocalUtils{
 	    long[] limitValues = {10,100,1000,10000,100000,1000000,10000000,1000000000}; // TODO Something nicer
 
@@ -203,19 +185,13 @@ public class DatabasePumperDB extends DatabasePumper {
 		    }
 		}
 		if( noneEmpty ){
-		    try{
-			throw new ProblematicCycleForPrimaryKeyException();
-		    }catch(ProblematicCycleForPrimaryKeyException e){
-			e.printStackTrace();
-			DatabasePumper.closeEverything();
-			System.exit(1);
-		    }
+		    throw new ProblematicCycleForPrimaryKeyException();
 		}
 	    }
 	}
     }
 
-    protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) throws InstanceNullException, BoundariesUnsetException, DebugException, ValueUnsetException {
+    protected void updateBoundariesWRTForeignKeys(List<ColumnPumper<? extends Object>> listColumns) {
 	Queue<ColumnPumper<? extends Object>> toUpdateBoundaries = new LinkedList<ColumnPumper<? extends Object>>();
 	toUpdateBoundaries.addAll(listColumns);
 
@@ -261,7 +237,7 @@ public class DatabasePumperDB extends DatabasePumper {
 
 		persistence.appendLine(value);
 	    }
-	} catch (ValueUnsetException | IOException e) {
+	} catch (IOException e) {
 	    e.printStackTrace();
 	    dbOriginal.close();
 	    persistence.closeFile();
@@ -293,18 +269,12 @@ public class DatabasePumperDB extends DatabasePumper {
 
 		int nRows = dbOriginal.getNRows(s.getTableName());
 		nRows = (int) (nRows * percentage);
-		try {
-		    c.setNumRowsToInsert(nRows);
-		} catch (TooManyValuesException e) {
-		    e.printStackTrace();
-		    dbOriginal.close();
-		    System.exit(1);
-		}
+		c.setNumRowsToInsert(nRows);
 	    }
 	}	
     }
 
-    protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws ValueUnsetException, DebugException, InstanceNullException, SQLException{
+    protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 	}
@@ -312,13 +282,7 @@ public class DatabasePumperDB extends DatabasePumper {
 
     private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
 	for( ColumnPumper<? extends Object> column : schema.getColumns() ){
-	    try {
-		column.generateValues(schema, originalDb);
-	    } catch (BoundariesUnsetException | ValueUnsetException | DebugException e) {
-		e.printStackTrace();
-		DatabasePumper.closeEverything();
-		System.exit(1);
-	    }
+	    column.generateValues(schema, originalDb);
 	}
     }
 

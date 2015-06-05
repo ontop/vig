@@ -24,13 +24,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
-import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
-import it.unibz.inf.data_pumper.core.main.DebugException;
-import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
 public interface ColumnPumperInterface<T> {
 	
@@ -42,17 +37,14 @@ public interface ColumnPumperInterface<T> {
 	 * 
 	 * @param schema
 	 * @param db
-	 * @throws BoundariesUnsetException
-	 * @throws ValueUnsetException
-	 * @throws DebugException 
 	 *
 	 */
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException;
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException;
+	public void generateValues(Schema schema, DBMSConnection db);
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException;
 	
 	public void setDuplicatesRatio(float ratio);
-	public float getDuplicateRatio() throws ValueUnsetException;
-	public float getNullRatio() throws ValueUnsetException;
+	public float getDuplicateRatio();
+	public float getNullRatio();
 	public void setNullRatio(float ratio);
 	
 	/**
@@ -77,11 +69,11 @@ public interface ColumnPumperInterface<T> {
      */
     public abstract void removeIntervalOfKey(String key);
 		
-	public void setNumRowsToInsert(int num) throws TooManyValuesException;
-	public long getNumRowsToInsert() throws ValueUnsetException;
+	public void setNumRowsToInsert(int num);
+	public long getNumRowsToInsert();
 	
 	// N Freshs
-	public long getNumFreshsToInsert() throws ValueUnsetException;
+	public long getNumFreshsToInsert();
 	/**
 	 * // The first interval is NOT intersected with any other column
 	 * <br>
@@ -89,12 +81,12 @@ public interface ColumnPumperInterface<T> {
             result += this.getIntervals().get(i).nFreshsToInsert;
         }        
      */
-	public long countFreshsInIntersectedIntervals() throws ValueUnsetException;
+	public long countFreshsInIntersectedIntervals();
 	
 	public String getNthInDomain(int i);
 	
-	public void incrementNumFreshs() throws DebugException, BoundariesUnsetException;
-	public void decrementNumFreshs() throws DebugException, BoundariesUnsetException;
+	public void incrementNumFreshs();
+	public void decrementNumFreshs();
 	
 	public void reset(); // To reset the internal state
 };

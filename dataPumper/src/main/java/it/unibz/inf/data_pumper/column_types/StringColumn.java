@@ -75,7 +75,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
     }
 
     @Override
-    public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException, DebugException {
+    public void generateValues(Schema schema, DBMSConnection db) {
 
 	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 
@@ -84,13 +84,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	// Debug
 	if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
 	    if( this.numFreshsToInsert >= this.characters.length()){
-		try{
-		    throw new DebugException();
-		}
-		catch(DebugException e){
-		    e.printStackTrace();
-		    System.exit(1);
-		}
+		throw new DebugException("Problem with StringColumn");
 	    }
 	}
 
@@ -121,7 +115,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
     }
 
     @Override
-    public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException, SQLException, DebugException {
+    public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException {
 
 	this.initNumDupsNullsFreshs();
 

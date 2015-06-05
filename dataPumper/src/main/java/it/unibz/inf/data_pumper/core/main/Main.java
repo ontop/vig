@@ -21,9 +21,10 @@ package it.unibz.inf.data_pumper.core.main;
  */
 
 //import org.apache.log4j.BasicConfigurator;
+import java.io.IOException;
+
 import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.connection.exceptions.UnsupportedDatabaseException;
 import it.unibz.inf.data_pumper.utils.Statistics;
 import it.unibz.inf.vig_options.core.DoubleOption;
 import it.unibz.inf.vig_options.core.Option;
@@ -54,11 +55,12 @@ public class Main {
 		Option.parseOptions(args);
 		double percentage = optScaling.getValue();
 		conf = Conf.getInstance();
-		
-		pumperType = PumperType.valueOf(conf.pumperType());
+		boolean randomGen = false;
 		try {
-			DBMSConnection.initInstance(conf.jdbcConnector(), conf.dbUrl(), conf.dbUser(), conf.dbPwd());
-		} catch (UnsupportedDatabaseException e) {
+		    randomGen = conf.pureRandomGeneration();
+		    pumperType = PumperType.valueOf(conf.pumperType());
+		    DBMSConnection.initInstance(conf.jdbcConnector(), conf.dbUrl(), conf.dbUser(), conf.dbPwd());
+		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -74,8 +76,8 @@ public class Main {
 			break;
 		}
 		
-		if( conf.pureRandomGeneration() ){
-			pumper.setPureRandomGeneration();
+		if( randomGen ){
+		    pumper.setPureRandomGeneration();
 		}	
 		pumper.pumpDatabase(percentage);
 		

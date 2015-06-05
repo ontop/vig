@@ -140,7 +140,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
     }
 
     @Override
-    public long countFreshsInIntersectedIntervals() throws ValueUnsetException {
+    public long countFreshsInIntersectedIntervals() {
 	if( !this.numDupsNullRowsSet ) throw new ValueUnsetException();
 
 	long result = 0;
@@ -159,10 +159,8 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
      * 
      * @param seqIndex
      * @return resultEncoding
-     * @throws DebugException 
-     * @throws BoundariesUnsetException 
      */
-    long map(long seqIndex) throws BoundariesUnsetException, DebugException{
+    long map(long seqIndex) {
 	
 	long nSkipped = 0;
 	
@@ -177,7 +175,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 	return localIndex;
     }
     
-    int getIntervalIndexFromSeqIndex(long seqIndex) throws BoundariesUnsetException, DebugException{
+    int getIntervalIndexFromSeqIndex(long seqIndex) {
 	int i = 0;
 	int nSkipped = 0;
 	

@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.core.table.statistics.exception;
 
-public class TooManyValuesException extends Exception {
+public class TooManyValuesException extends RuntimeException {
 
 	/**
 	 * 

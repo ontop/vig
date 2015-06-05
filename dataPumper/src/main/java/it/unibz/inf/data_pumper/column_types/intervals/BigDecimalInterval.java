@@ -32,8 +32,7 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
     }
 
     @Override
-    public long getMinEncoding()
-            throws BoundariesUnsetException {
+    public long getMinEncoding(){
         if( this.min == this.max ) throw new BoundariesUnsetException("Undefined interval boundaries");
         return min.longValue();
     }

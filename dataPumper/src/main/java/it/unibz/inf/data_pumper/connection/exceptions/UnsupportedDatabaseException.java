@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.connection.exceptions;
 
-public class UnsupportedDatabaseException extends Exception {
+public class UnsupportedDatabaseException extends RuntimeException {
 	
 	public UnsupportedDatabaseException(String message){
 		super(message);

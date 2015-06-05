@@ -84,9 +84,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    ColumnsCluster<? extends Object> cluster = cP.getCluster();
 	    
 	    if( cluster.hasMultiInterval() ){
-		cluster.tagLowerBounds();
-		cluster.tagUpperBounds();
-		cluster.updateIntervalsBottomUp();
+		cluster.adaptIntervalsFromMultiIntervalCols();
 	    }
 	    else{
 		cluster.classicStrategy();

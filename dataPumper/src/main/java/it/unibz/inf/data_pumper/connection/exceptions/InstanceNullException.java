@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.connection.exceptions;
 
-public class InstanceNullException extends Exception {
+public class InstanceNullException extends RuntimeException {
 
 	/**
 	 * 

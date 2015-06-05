@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.core.main;
 
-public class DebugException extends Exception {
+public class DebugException extends RuntimeException {
 
     /**
      * 
