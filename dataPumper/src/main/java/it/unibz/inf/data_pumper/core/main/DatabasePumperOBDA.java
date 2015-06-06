@@ -534,7 +534,7 @@ class CorrelatedColumnsExtractor{
 	    Set<Field> core = utils.extractCore(coreCorrelatedFields);
 	    coreCorrelatedFields.clear();
 	    
-//	    addForeignKeys(qCorrelatedFields);
+	    addForeignKeys(qCorrelatedFields);
 
 	    // merge 
 	    List<Set<Field>> maximalMerge = new ArrayList<Set<Field>>();
