@@ -6,26 +6,31 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class ReachConnectedTraverser implements Traverser {
+public class ReachConnectedTraverser extends CleanableTraverser {
     
-    private final List<? extends Node> nodes; 
+    private List<? extends Node> nodes; 
+    private List<Node> visitedNodes;
     
     public ReachConnectedTraverser(List<? extends Node> nodes){
 	this.nodes = nodes;
+	this.visitedNodes = new LinkedList<>();
     }
-    
-    public void traverse(Visitor visitor) {
+
+    @Override
+    protected void traverseImpl(Visitor visitor) {
+	
 	Queue<Node> toVisit = new LinkedList<>(); 
 	
 	toVisit.addAll(this.nodes);
 	
 	while( !toVisit.isEmpty() ){
 	    Node n = toVisit.poll();
-	    if( n.isVisited() ) continue;
-	    n.markVisited();
+	    if( n.isVisited(this.visitID()) ) continue;
+	    n.markVisited(this.visitID());
 	    visitor.visit(n);
 	    toVisit.addAll(n.getInNodes());
 	    toVisit.addAll(n.getOutNodes());
+	    this.visitedNodes.add(n);
 	}
     }
 }

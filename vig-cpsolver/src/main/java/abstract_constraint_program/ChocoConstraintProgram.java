@@ -28,7 +28,7 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
     public ACPLongVar<IntVar> addLongVar(String varName, long min, long max) {
 	
 	assert( max > min );
-	assert( max < Integer.MAX_VALUE ) : printChocoErr();
+	assert( max < Integer.MAX_VALUE -1 ) : printChocoErr();
 	
 	IntVar x = VariableFactory.bounded("varName", (int)min, (int)max, solver);
 	ACPLongVar<IntVar> wrapper = new ACPLongVar<IntVar>(x);
@@ -54,7 +54,7 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 	int[] coeffsArr = new int[coeffs.size()];
 	for( int i = 0; i < coeffsArr.length; ++i ){
 	    
-	    assert( coeffs.get(i) < Integer.MAX_VALUE ) : printChocoErr();
+	    assert( coeffs.get(i) < Integer.MAX_VALUE -1 ) : printChocoErr();
 	    
 	    coeffsArr[i] = coeffs.get(i).intValue();
 	}
@@ -78,7 +78,7 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 
     @Override
     public void addLongConstraint(ACPLongVar<IntVar> var, ACPOperator operator, long value) {
-	assert( value < Integer.MAX_VALUE ) : printChocoErr();
+	assert( value < Integer.MAX_VALUE -1 ) : printChocoErr();
 	Constraint c = IntConstraintFactory.arithm(var.getWrapped(), operator.getText(), (int)value);
 	constraints.add(c);
     }
@@ -114,5 +114,17 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 	}
 	st.append(String.format("%d", variables.get(variables.size() - 1).getValue()));
 	System.out.println(st.toString());
+    }
+    
+    @Override
+    public String toString(){
+	StringBuilder builder = new StringBuilder();
+	builder.append("\nVariables:\n");
+	builder.append(this.variables);
+	builder.append("\nConstraints\n");
+	builder.append(this.constraints);
+	builder.append("\nPosted so far: "+this.postedSoFar);
+	
+	return builder.toString();
     }
 }

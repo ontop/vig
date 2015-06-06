@@ -6,12 +6,12 @@ import it.unibz.inf.data_pumper.utils.traversers.visitors.Visitor;
 
 import java.util.List;
 
-public class GraphTraverser implements Traverser {
+public class GraphTraverser extends CleanableTraverser {
 
     private final List<? extends Node> nodes; 
     private final TopDownOrBottomUpStrategy traversalStrategy;
     private final BreadthFirstOrDepthFirstDataStructure<Node> toVisit;
-    
+        
     /**
      * 
      * @param nodes The nodes from where the traversal will start
@@ -23,23 +23,23 @@ public class GraphTraverser implements Traverser {
     }
     
     @Override
-    public void traverse(Visitor v) {	
+    protected void traverseImpl(Visitor v) {	
+	
 	// Init queue
 	toVisit.clear();
 	for( Node node : this.nodes ){
 	    toVisit.add(node);
-	    node.unmarkVisited();
 	}
 
 	while( !toVisit.isEmpty() ){
 	    Node node = toVisit.getAndRemove();
-	    if( node.isVisited() ) continue;
-	    node.markVisited();
+	    if( node.isVisited(visitID()) ) continue;
+	    node.markVisited(visitID());
 	    v.visit(node);
 	    for( Node in : traversalStrategy.getNodes(node) ){
 		toVisit.add(in);
 	    }
 	}
-    }   
+    }
 };
 

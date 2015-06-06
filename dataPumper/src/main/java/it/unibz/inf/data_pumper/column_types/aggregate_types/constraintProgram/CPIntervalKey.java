@@ -1,23 +1,34 @@
 package it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram;
 
-import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 
-public class CPIntervalKey extends IntervalKey {
-    public final String colName;
-
-    public CPIntervalKey(IntervalKey iK, String colName){
-	super(iK.key, iK.lwBound, iK.upBound);
+public class CPIntervalKey extends IntervalKeyDecorator {
+    
+    private final String colName;
+    private IntervalKey instance;
+    
+    private CPIntervalKey(IntervalKey iK, String colName){
 	this.colName = colName;
+	this.instance = iK;
     }
     
-    public CPIntervalKey(Interval<?> interval, String colName) {
-	super(interval);
-	this.colName = colName;
+    public static CPIntervalKey promote(IntervalKey iK, String colName) {
+	return new CPIntervalKey(iK, colName);
+    } 
+    
+    public String getColName(){
+	return this.colName;
     }
-
-    public CPIntervalKey(String colName, String intervalKey, long lwBound, long upBound){
-	super(intervalKey, lwBound, upBound);
-	this.colName = colName;
+    
+    public String getKey(){
+	return instance.getKey();
+    }
+    
+    public long getLwBound(){
+	return instance.getLwBound();
+    }
+    
+    public long getUpBound(){
+	return instance.getUpBound();
     }
     
     @Override 
@@ -32,7 +43,7 @@ public class CPIntervalKey extends IntervalKey {
     
     @Override
     public String toString(){
-	String result = this.colName + super.toString();
+	String result = this.colName + instance.toString();
 	return result;
     }
 };

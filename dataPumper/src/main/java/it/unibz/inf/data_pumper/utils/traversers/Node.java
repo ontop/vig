@@ -4,19 +4,19 @@ import java.util.List;
 
 public abstract class Node {
     
-    private boolean visited = false;
+    private int visitedBy = 0;
     
     public abstract List<? extends Node> getOutNodes();
     public abstract List<? extends Node> getInNodes();
     
     public void unmarkVisited(){
-	this.visited = false;
+	this.visitedBy = Integer.MAX_VALUE;
     }
-    public void markVisited(){
-	this.visited = true;
+    public void markVisited(int traversalID){
+	this.visitedBy = traversalID;
     }
-    public boolean isVisited(){
-	return this.visited;
+    public boolean isVisited(int traversalID){
+	return this.visitedBy == traversalID;
     }
     
 }

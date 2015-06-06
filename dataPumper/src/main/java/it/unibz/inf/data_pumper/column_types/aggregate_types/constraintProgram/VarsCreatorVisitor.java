@@ -47,9 +47,9 @@ public class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 
     private AbstractConstraintProgram<VarType,ConstrType> program;
     private CPIntervalKeyToBoundariesVariablesMapper<VarType> mIntervalsToBoundVars;
-    private List<IntervalKey> intervalKeys;
+    private List<SimpleIntervalKey> intervalKeys;
 
-    public VarsCreatorVisitor(AbstractConstraintProgram<VarType, ConstrType> cProg, CPIntervalKeyToBoundariesVariablesMapper<VarType> mIntervalsToBoundVars, List<IntervalKey> intervalKeys) {
+    public VarsCreatorVisitor(AbstractConstraintProgram<VarType, ConstrType> cProg, CPIntervalKeyToBoundariesVariablesMapper<VarType> mIntervalsToBoundVars, List<SimpleIntervalKey> intervalKeys) {
 	this.program = cProg;
 	this.mIntervalsToBoundVars = mIntervalsToBoundVars;
 	this.intervalKeys = intervalKeys;
@@ -79,15 +79,15 @@ public class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
      * @param cPIC
      */
     private void visitSingle(ColumnPumperInCluster<?> cPIC){
-	for( IntervalKey related : this.intervalKeys ){
+	for( SimpleIntervalKey related : this.intervalKeys ){
 
 	    // For each interval, add 2 variables
-	    CPIntervalKey cPInt = new CPIntervalKey(related, cPIC.cP.getName());
+	    CPIntervalKey cPInt = CPIntervalKey.promote(related, cPIC.cP.getName());
 	    String cPIntKey = cPInt.toString();
-	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", related.lwBound, related.upBound);
-	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", related.lwBound, related.upBound);
+	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", related.getLwBound(), related.getUpBound());
+	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", related.getLwBound(), related.getUpBound());
 
-	    this.mIntervalsToBoundVars.addVarsForInterval(new CPIntervalKey(related, cPIC.cP.getName()), new Pair<>(lwBoundVar, upBoundVar));
+	    this.mIntervalsToBoundVars.addVarsForInterval(cPInt, new Pair<>(lwBoundVar, upBoundVar));
 
 	    // Constraint: 
 	    // Force the fact that they are intervals
@@ -112,19 +112,19 @@ public class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 	      @param cPIC
      **/
     private void visitMulti(ColumnPumperInCluster<?> cPIC){
-	for( IntervalKey related : this.intervalKeys ){
+	for( SimpleIntervalKey related : this.intervalKeys ){
 
 	    // For each interval, add 2 variables
-	    CPIntervalKey cPInt = new CPIntervalKey(related, cPIC.cP.getName());
+	    CPIntervalKey cPInt = CPIntervalKey.promote(related, cPIC.cP.getName());
 	    String cPIntKey = cPInt.toString();
-	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", related.lwBound, related.upBound);
-	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", related.lwBound, related.upBound);
+	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", related.getLwBound(), related.getUpBound());
+	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", related.getLwBound(), related.getUpBound());
 
-	    this.mIntervalsToBoundVars.addVarsForInterval(new CPIntervalKey(related, cPIC.cP.getName()), new Pair<>(lwBoundVar, upBoundVar));
+	    this.mIntervalsToBoundVars.addVarsForInterval(cPInt, new Pair<>(lwBoundVar, upBoundVar));
 
 	    boolean in = false;
 	    for( Interval<?> i : cPIC.cP.getIntervals() ){
-		if( i.getKey().equals(related.key ) ){
+		if( i.getKey().equals(related.getKey() ) ){
 		    in = true;
 		    break;
 		}
@@ -132,8 +132,8 @@ public class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 	    if( in ){			
 
 		// Constraint cX3 = IntConstraintFactory.arithm(x_3, "=", 3);
-		this.program.addLongConstraint(lwBoundVar, ACPOperator.EQUALS, related.lwBound);
-		this.program.addLongConstraint(upBoundVar, ACPOperator.EQUALS, related.upBound);
+		this.program.addLongConstraint(lwBoundVar, ACPOperator.EQUALS, related.getLwBound());
+		this.program.addLongConstraint(upBoundVar, ACPOperator.EQUALS, related.getUpBound());
 	    }
 	    else{
 		// Set equality

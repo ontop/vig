@@ -140,9 +140,9 @@ public abstract class Interval<T> {
             this.setNFreshsToInsert( this.getMaxEncoding() - this.getMinEncoding() );
         }
         else{
-            if(! (this.getMaxEncoding() == splitterMaxEncoding) ){
-        	throw new DebugException("Assertion failed: this.getMaxEncoding() == splitterMaxEncoding");
-            }
+//            if(! (this.getMaxEncoding() == splitterMaxEncoding) ){
+//        	throw new DebugException("Assertion failed: this.getMaxEncoding() == splitterMaxEncoding");
+//            }
             // This interval HAS TO DIE!
             killMe/*please*/ = true;
             /*++evilLaugh*/

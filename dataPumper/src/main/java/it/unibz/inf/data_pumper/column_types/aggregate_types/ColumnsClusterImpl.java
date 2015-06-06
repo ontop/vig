@@ -4,7 +4,7 @@ import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.CPIntervalKeyToBoundariesVariablesMapper;
 import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.ForeignKeysVarsSetterVisitor;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.IntervalKey;
+import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.SimpleIntervalKey;
 import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.IntervalKeysCreatorVisitor;
 import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.VarsCreatorVisitor;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
@@ -127,7 +127,7 @@ public class ColumnsClusterImpl<T> extends ColumnsCluster<T> {
 	listTraverser.traverse(maxFinder);
 	
 	// Create the list of IntervalKeys
-	List<IntervalKey> intervalKeys = new ArrayList<IntervalKey>();
+	List<SimpleIntervalKey> intervalKeys = new ArrayList<SimpleIntervalKey>();
 	IntervalKeysCreatorVisitor intervalKeysCreator = new IntervalKeysCreatorVisitor(numAnonymousIntervals, maxFinder.result(), intervalKeys);
 	listTraverser.traverse(intervalKeysCreator);
 	

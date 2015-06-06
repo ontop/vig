@@ -96,7 +96,7 @@ public class ForeignKeysVarsSetterVisitor<VarType, ConstrType> implements Visito
 	ACPLongVar<VarType> upBoundVar = mlwToUpBoundVar.second;
 	
 	for( CPIntervalKey refKey : referredKeys ){
-	    if( refKey.key.equals(key.key) ){
+	    if( refKey.getKey().equals(key.getKey()) ){
 		Pair<ACPLongVar<VarType>, ACPLongVar<VarType>> mlwToUpBoundRefVar = this.mapper.getVarsForKey(refKey);
 		ACPLongVar<VarType> lwBoundRefVar = mlwToUpBoundRefVar.first;
 		ACPLongVar<VarType> upBoundRefVar = mlwToUpBoundRefVar.second;

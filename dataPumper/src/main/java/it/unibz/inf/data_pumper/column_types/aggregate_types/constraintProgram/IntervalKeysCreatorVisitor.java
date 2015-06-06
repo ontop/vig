@@ -22,12 +22,12 @@ import java.util.List;
  */
 public class IntervalKeysCreatorVisitor implements Visitor{
 
-    private List<IntervalKey> keys;
+    private List<SimpleIntervalKey> keys;
     private boolean anonymousIntervalsCreated;
     private long maxEncodingInIntervals;
     private int numAnonymousIntervals;
 
-    public IntervalKeysCreatorVisitor(int numAnonymousIntervals, long maxEncodingInIntervals, List<IntervalKey> result){
+    public IntervalKeysCreatorVisitor(int numAnonymousIntervals, long maxEncodingInIntervals, List<SimpleIntervalKey> result){
 	this.keys = result;
 	this.anonymousIntervalsCreated = false;
 	this.maxEncodingInIntervals = maxEncodingInIntervals;
@@ -53,14 +53,14 @@ public class IntervalKeysCreatorVisitor implements Visitor{
 
 	for( Interval<?> i : cPIC.cP.getIntervals() ){
 	    if( !alreadyAdded(i.getKey()) ){ 
-		this.keys.add(new IntervalKey(i));
+		this.keys.add(new SimpleIntervalKey(i));
 	    }
 	}
     }
 
     private boolean alreadyAdded(String key){
 	boolean contained = false;
-	for( IntervalKey current : this.keys ){
+	for( SimpleIntervalKey current : this.keys ){
 	    if( current.toString().equals(key) ){
 		contained = true;
 		break;
@@ -74,13 +74,16 @@ public class IntervalKeysCreatorVisitor implements Visitor{
 	// Cast Check
 
 	// Make 2*numAnonymousIntervals new variables
-	long offset = (Integer.MAX_VALUE - this.maxEncodingInIntervals) / this.numAnonymousIntervals;
+	assert(this.maxEncodingInIntervals > Integer.MAX_VALUE ) : "Values bigger than Integers are not allowed";
+	    
+	
+	long offset = (Integer.MAX_VALUE -1 - this.maxEncodingInIntervals) / this.numAnonymousIntervals;
 
 	for( int i = 0; i < this.numAnonymousIntervals; ++i ){
 	    long lwBound = this.maxEncodingInIntervals + (offset * i);
 	    long upBound = this.maxEncodingInIntervals + (offset * (i+1));
 
-	    IntervalKey key = new IntervalKey(CPConstants.ANONYMOUS_ID+"_i", lwBound, upBound);
+	    SimpleIntervalKey key = new SimpleIntervalKey(CPConstants.ANONYMOUS_ID+"_"+i, lwBound, upBound);
 	    this.keys.add(key);
 	}
     }

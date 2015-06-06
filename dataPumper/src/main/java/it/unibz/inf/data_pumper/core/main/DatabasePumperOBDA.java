@@ -56,7 +56,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 
 	// search for correlated columns and order them by fresh values to insert
 	List<CorrelatedColumnsList<T>> correlatedCols = this.cCE.extractCorrelatedColumns();
-
+	
 	try {
 	    updateColumnBoundsWRTCorrelated(correlatedCols);
 	} catch (BoundariesUnsetException | DebugException e) {
@@ -118,7 +118,6 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    boolean stop = false;
 	    for( int i = 0; i < cCL.size() && !stop; ++i ){
 		ColumnPumper<T> cP = cCL.get(i);
-		
 		stop = utils.insert(insertedIntervals, cP, visited);
 	    }
 	    if( stop ){
@@ -156,7 +155,7 @@ class IntervalsBoundariesFinder<T>{
 	    throws DebugException, ValueUnsetException, SQLException, InstanceNullException, BoundariesUnsetException{
 
 	long maxEncodingEncountered = 0;
-
+	
 	// Assert 
 	if( cP.getIntervals().size() != 1 ){
 	    throw new DebugException("Intervals size != 1");
@@ -224,12 +223,27 @@ class IntervalsBoundariesFinder<T>{
 
 		    // For all superIntervals Reduce (ABC is superInterval of AB is superInterval of B)
 		    long insertedInSuperIntervals = countInsertedInSuperIntervals(cP, previouslyInserted, newIntervals);
+		    long nToInsertInPreviousIntervalBAK = nToInsertInPreviousInterval;
 		    nToInsertInPreviousInterval -= insertedInSuperIntervals;
 
 		    // Assert
 		    if( !( nToInsertInPreviousInterval >= 0) ){
-			throw new DebugException("Assertion failed: nToInsertInPreviousInterval >= 0");
-
+			// Possible error due to multiplication
+			if( nToInsertInPreviousInterval > -2 ){
+			    nToInsertInPreviousInterval = 0;
+			}
+			else{
+			    StringBuilder builder = new StringBuilder();
+			    builder.append("\nAssertion failed: nToInsertInPreviousInterval >= 0\n");
+			    builder.append("cP: "+cP+"\n");
+			    builder.append("nToInsertInPreviousIntervalBAK = "+nToInsertInPreviousIntervalBAK+"\n");
+			    builder.append("nToInsertInPreviousInterval = "+nToInsertInPreviousInterval+"\n");
+			    builder.append("insertedInSuperIntervals = "+insertedInSuperIntervals+"\n");
+			    builder.append("previouslyInserted = "+previouslyInserted+"\n");
+			    builder.append("insertedIntervals = "+insertedIntervals+"\n" );
+			    builder.append("newIntervals = "+newIntervals+"\n");
+			    throw new DebugException(builder.toString());
+			}
 		    }
 
 		    if( nToInsertInPreviousInterval > 0 ){ // Create a new "SubInterval"
@@ -506,7 +520,6 @@ class CorrelatedColumnsExtractor{
 	
 	LocalUtils utils = new LocalUtils();
 	
-	
 	try {
 	    
 	    List<FunctionTemplate> templates = jCF.findFunctionTemplates();
@@ -521,7 +534,7 @@ class CorrelatedColumnsExtractor{
 	    Set<Field> core = utils.extractCore(coreCorrelatedFields);
 	    coreCorrelatedFields.clear();
 	    
-	    addForeignKeys(qCorrelatedFields);
+//	    addForeignKeys(qCorrelatedFields);
 
 	    // merge 
 	    List<Set<Field>> maximalMerge = new ArrayList<Set<Field>>();

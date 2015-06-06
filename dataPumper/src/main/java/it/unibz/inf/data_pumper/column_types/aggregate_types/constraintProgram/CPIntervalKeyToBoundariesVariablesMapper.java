@@ -38,7 +38,7 @@ public class CPIntervalKeyToBoundariesVariablesMapper<VarType>{
     public Set<CPIntervalKey> getKeySetForCP(ColumnPumper<?> cP){
 	Set<CPIntervalKey> result = new HashSet<>();
 	for( CPIntervalKey i : keySet() ){
-	    if( i.colName.equals(cP.getName()) ){
+	    if( i.getColName().equals(cP.getName()) ){
 		result.add(i);
 	    }
 	}

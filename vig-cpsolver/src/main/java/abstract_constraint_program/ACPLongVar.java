@@ -12,4 +12,9 @@ public class ACPLongVar<T> {
     public T getWrapped(){
 	return this.wrapped;
     }
+    
+    @Override
+    public String toString(){
+	return wrapped.toString();
+    }
 }

@@ -14,6 +14,8 @@ public class StringInterval extends Interval<String> {
     public static String characters = "0123456789abcdefghijklmnopqrstuvwxyz"; // Ordered from the least to the bigger (String.compareTo)
     protected final int datatypeLength;
 
+    private boolean maxFoundOnce = false;
+    
     public StringInterval(String key,
 	    MySqlDatatypes type,
 	    long nValues, int datatypeLength, List<ColumnPumper<String>> involvedCols) {
@@ -35,15 +37,21 @@ public class StringInterval extends Interval<String> {
 
     @Override
     public long getMaxEncoding() {
-	long base = 1;
-	for( int i = 0; i < datatypeLength && i < 10; ++i ){ // 1.568336881×10¹⁸
-	    base *= characters.length();
+	if( !maxFoundOnce ){ 
+	    maxFoundOnce = true;
+	    long base = 1;
+	    for( int i = 0; i < datatypeLength && i < 10; ++i ){ // 1.568336881×10¹⁸
+		base *= characters.length();
+	    }
+	    long proposed = this.minEncoding + this.nFreshsToInsert;
+	    if( base >= proposed )
+		return proposed;
+	    else {
+		return Long.MAX_VALUE; // Some kind of error
+	    }
 	}
-	long proposed = this.minEncoding + this.nFreshsToInsert;
-	if( base >= proposed )
-	    return proposed;
-	else {
-	    return Long.MAX_VALUE; // Some kind of error
+	else{
+	    return this.maxEncoding;
 	}
     }
 

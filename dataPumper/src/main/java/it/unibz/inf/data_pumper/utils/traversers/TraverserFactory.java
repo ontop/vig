@@ -29,8 +29,9 @@ public class TraverserFactory extends TraverserAbstractFactory {
     
     @Override
     public ReachConnectedTraverser makeReachConnectedTraverser(
-	    List<? extends Node> v) {
-	return null;
+	    List<? extends Node> list) {
+	ReachConnectedTraverser result = new ReachConnectedTraverser(list);
+	return result;
     }
 
     @Override
