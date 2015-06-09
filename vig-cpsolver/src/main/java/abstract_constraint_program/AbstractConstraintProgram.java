@@ -15,6 +15,6 @@ public interface AbstractConstraintProgram<VarType, ConstraintType> {
     /** Solve 
      * @return **/
     public boolean solve();
-    public void prettyOut();
 
+    public String humanFormat();
 }

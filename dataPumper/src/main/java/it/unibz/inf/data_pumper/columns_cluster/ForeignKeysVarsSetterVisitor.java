@@ -1,13 +1,11 @@
-package it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram;
+package it.unibz.inf.data_pumper.columns_cluster;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnPumperInCluster;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.utils.Pair;
 import it.unibz.inf.data_pumper.utils.traversers.Node;
@@ -16,11 +14,18 @@ import abstract_constraint_program.ACPLongVar;
 import abstract_constraint_program.ACPOperator;
 import abstract_constraint_program.AbstractConstraintProgram;
 
-public class ForeignKeysVarsSetterVisitor<VarType, ConstrType> implements Visitor {
-    
+class ForeignKeysVarsSetterVisitor<VarType, ConstrType> implements Visitor {
+
     private AbstractConstraintProgram<VarType,ConstrType> program;
     private CPIntervalKeyToBoundariesVariablesMapper<VarType> mapper; 
-    
+
+    ForeignKeysVarsSetterVisitor(
+	    AbstractConstraintProgram<VarType, ConstrType> constraintProgram,
+	    CPIntervalKeyToBoundariesVariablesMapper<VarType> mIntervalsToBoundariesVars) {
+	this.program = constraintProgram;
+	this.mapper = mIntervalsToBoundariesVars;
+    }
+
     /**
      * // W -> X
 	Constraint w1x1 = IntConstraintFactory.arithm(w_1, ">=", x_1);
@@ -34,7 +39,7 @@ public class ForeignKeysVarsSetterVisitor<VarType, ConstrType> implements Visito
 	addFkConstraints(cPIC);
 	
 	this.program.post();
-	
+		
 	if( cPIC.isSingleInterval() ){
 	    addCoefficientsConstraints(cPIC);
 	}
@@ -47,12 +52,11 @@ public class ForeignKeysVarsSetterVisitor<VarType, ConstrType> implements Visito
      * @param cPIC
      */
     private void addCoefficientsConstraints(ColumnPumperInCluster<?> cPIC) {
-//	program.addScalarIntConstraint(coeffs, vars, value)
 	Set<CPIntervalKey> thisKeys = this.mapper.getKeySetForCP(cPIC.cP);
 	
 	// Prepare coefficients list
 	List<Long> coeffs = new ArrayList<>();
-	for( int i = 0; i < coeffs.size() * 2; ++i ){
+	for( int i = 0; i < thisKeys.size() * 2; ++i ){
 	    if( i % 2 == 0 ){
 		coeffs.add((long)1);
 	    }

@@ -35,7 +35,7 @@ import com.mysql.jdbc.exceptions.MySQLTimeoutException;
 
 public class Distribution {
 	private DBMSConnection dbmsConn;
-	private int timeout = 120;// 1200 ; // (20 mins) ( This thing should be a parameter ) 
+	private int timeout = 10;// 1200 ; // (20 mins) ( This thing should be a parameter ) 
 	
 	private static Logger logger = Logger.getLogger(Distribution.class.getCanonicalName());
 	

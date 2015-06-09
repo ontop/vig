@@ -2,6 +2,7 @@ package it.unibz.inf.data_pumper.utils.traversers;
 
 import java.util.List;
 
+import it.unibz.inf.data_pumper.columns_cluster.EmptyVisitor;
 import it.unibz.inf.data_pumper.utils.graphs.traversers.adjacence.BottomUpStrategy;
 import it.unibz.inf.data_pumper.utils.graphs.traversers.adjacence.TopDownOrBottomUpStrategy;
 import it.unibz.inf.data_pumper.utils.graphs.traversers.adjacence.TopDownStrategy;
@@ -62,5 +63,10 @@ public class TraverserFactory extends TraverserAbstractFactory {
     @Override
     public CollectVisitedVisitor makeCollectVisitedVisitor() {
 	return new CollectVisitedVisitor();
+    }
+
+    @Override
+    public EmptyVisitor makeEmptyVisitor() {
+	return EmptyVisitor.INSTANCE;
     }
 };

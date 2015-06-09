@@ -24,11 +24,9 @@ import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.basic_datatypes.Template;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.IntInterval;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.main.DebugException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -77,36 +75,6 @@ public class IntColumn extends MultiIntervalColumn<Long> {
         setDomain(values);
     }
 
-//    @Override
-//    public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
-//
-//        if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
-//        
-//        int intervalIndex = 0;
-//
-//        List<Long> values = new ArrayList<Long>();
-//        int insertedInInterval = 0;
-//              
-//        for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
-//            if( i < this.numNullsToInsert ){
-//                values.add(null);
-//            }			
-//            else{
-//                Interval<Long> interval = intervals.get(intervalIndex);
-//                values.add(interval.getMinValue() + this.generator.nextValue(interval.getNFreshsToInsert()));
-//
-//                ++insertedInInterval;
-//
-//                if( insertedInInterval >= interval.getNFreshsToInsert()  ){
-//                    insertedInInterval = 0;
-//                    intervalIndex = ( intervalIndex + 1 ) %  intervals.size();
-//                }
-//            }
-//        }
-//        setDomain(values);
-//    }
-    
-
     @Override
     public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException {
 
@@ -147,5 +115,11 @@ public class IntColumn extends MultiIntervalColumn<Long> {
         this.intervals.add(interval);
 
         this.firstIntervalSet = true;
+    }
+
+    @Override
+    public void addInterval(String name, long minEncoding, long maxEncoding) {
+	Interval<Long> toAdd = new IntInterval(name, getType(), minEncoding, maxEncoding);
+	this.addInterval(toAdd);
     }
 };

@@ -1,19 +1,19 @@
-package it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram;
+package it.unibz.inf.data_pumper.columns_cluster;
 
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 
-public class SimpleIntervalKey implements IntervalKey{
+ class SimpleIntervalKey implements IntervalKey{
     private final long lwBound;
     private final long upBound;
     private final String key;
     
-    public SimpleIntervalKey(String key, long lwBound, long upBound){
+     SimpleIntervalKey(String key, long lwBound, long upBound){
 	this.key = key;	
 	this.lwBound = lwBound;
 	this.upBound = upBound;
     }
     
-    public SimpleIntervalKey(Interval<?> interval){
+     SimpleIntervalKey(Interval<?> interval){
 	this.key = interval.getKey();
 	this.lwBound = interval.getMinEncoding();
 	this.upBound = interval.getMaxEncoding();

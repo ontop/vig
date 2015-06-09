@@ -24,11 +24,9 @@ import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.basic_datatypes.Template;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.BigDecimalInterval;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.main.DebugException;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -113,5 +111,11 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 	this.intervals.add(initialInterval);
 
 	this.firstIntervalSet = true;
+    }
+
+    @Override
+    public void addInterval(String name, long minEncoding, long maxEncoding) {
+	Interval<BigDecimal> toAdd = new BigDecimalInterval(name, getType(), minEncoding, maxEncoding);
+	this.addInterval(toAdd);
     }
 }

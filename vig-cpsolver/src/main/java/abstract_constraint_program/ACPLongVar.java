@@ -1,17 +1,19 @@
 package abstract_constraint_program;
 
-public class ACPLongVar<T> {
+public abstract class ACPLongVar<T> {
     
-    private T wrapped;
+    protected final T wrapped;
     
     public ACPLongVar(T wrapped){
 	this.wrapped = wrapped;
     }
     
     
-    public T getWrapped(){
+    public final T getWrapped(){
 	return this.wrapped;
     }
+    
+    public abstract long getValue();
     
     @Override
     public String toString(){

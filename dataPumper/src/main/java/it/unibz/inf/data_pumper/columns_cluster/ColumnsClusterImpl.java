@@ -1,12 +1,7 @@
-package it.unibz.inf.data_pumper.column_types.aggregate_types;
+package it.unibz.inf.data_pumper.columns_cluster;
 
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.CPIntervalKeyToBoundariesVariablesMapper;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.ForeignKeysVarsSetterVisitor;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.SimpleIntervalKey;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.IntervalKeysCreatorVisitor;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram.VarsCreatorVisitor;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.utils.traversers.Node;
@@ -39,7 +34,6 @@ public class ColumnsClusterImpl<T> extends ColumnsCluster<T> {
     private TraverserAbstractFactory traverserFactory;
     
     
-    @SuppressWarnings("unchecked")
     public ColumnsClusterImpl(ColumnPumper<T> undecoratedCol) {
 	this.columns = new ArrayList<>();
 	ColumnPumperInCluster<T> decoratedCol = new ColumnPumperInCluster<T>(undecoratedCol, this);
@@ -49,12 +43,9 @@ public class ColumnsClusterImpl<T> extends ColumnsCluster<T> {
 	
 	// Discover all nodes
 	ReachConnectedTraverser fullTraverser = this.traverserFactory.makeReachConnectedTraverser(this.columns);
-	CollectVisitedVisitor visitor = this.traverserFactory.makeCollectVisitedVisitor();
+	EmptyVisitor visitor = this.traverserFactory.makeEmptyVisitor();
 	
-	fullTraverser.traverse(visitor);
-		
-	this.columns = (List<ColumnPumperInCluster<T>>) visitor.result();
-	
+	fullTraverser.traverse(visitor);	
     }
     
     protected List<ColumnPumperInCluster<T>> getClusterCols(){
@@ -115,33 +106,109 @@ public class ColumnsClusterImpl<T> extends ColumnsCluster<T> {
     @Override
     public void adaptIntervalsFromMultiIntervalCols() {
 	
-	int numAnonymousIntervals = 1; // TODO Some parameter of some sort
+	/**
+	 * 
+	 * Encapsulating visitors' creation in the scope 
+	 * of a method will trigger the GC when the method finish, 
+	 * since the visitor will be out of scope.
+	 *
+	 */
+	class LocalUtils{
+	    
+	    Traverser listTraverser;
+	    
+	    LocalUtils(ColumnsClusterImpl<?> cCI){
+		listTraverser = cCI.traverserFactory.makeListTraverser(cCI.columns);
+	    }
+	    
+	    /** Find the maximum encoding in already set intervals **/	
+	    long findMaximum(){
+		
+		MaxEncodingFinder maxFinder = new MaxEncodingFinder();
+		listTraverser.traverse(maxFinder);
+		return maxFinder.result();
+	    }
+	    List<SimpleIntervalKey> createIntervalKeys(int numAnonymousIntervals, long maxEncodingEncountered){
+		
+		List<SimpleIntervalKey> intervalKeys = new ArrayList<SimpleIntervalKey>();
+		IntervalKeysCreatorVisitor intervalKeysCreator = new IntervalKeysCreatorVisitor(numAnonymousIntervals, maxEncodingEncountered, intervalKeys);
+		listTraverser.traverse(intervalKeysCreator);
+		return intervalKeys;
+	    }
+	    /** Create the variables for the CP program, and apply the common interval constraints **/
+	    void createVariables(
+		    AbstractConstraintProgram<IntVar, Constraint> constraintProgram, 
+		    CPIntervalKeyToBoundariesVariablesMapper<IntVar> mIntervalsToBoundariesVars,
+		    List<SimpleIntervalKey> intervalKeys){
+		
+		VarsCreatorVisitor<IntVar, Constraint> varsCreator = new VarsCreatorVisitor<>(constraintProgram, mIntervalsToBoundariesVars, intervalKeys);
+		listTraverser.traverse(varsCreator);
+	    }
+	    
+	    /** Apply the foreign-key related constraints **/
+	    void createFkConstraints(AbstractConstraintProgram<IntVar, Constraint> constraintProgram, 
+		    CPIntervalKeyToBoundariesVariablesMapper<IntVar> mIntervalsToBoundariesVars){
+		
+		ForeignKeysVarsSetterVisitor<IntVar, Constraint> fkConstrSetter = 
+			new ForeignKeysVarsSetterVisitor<IntVar, Constraint>(constraintProgram, mIntervalsToBoundariesVars);
+		listTraverser.traverse(fkConstrSetter);
+	    }
+
+	    public void transformResults(
+		    CPIntervalKeyToBoundariesVariablesMapper<IntVar> mIntervalsToBoundariesVars) {
+		
+		listTraverser.traverse(new CPResultsToIntervalsVisitor<IntVar>(mIntervalsToBoundariesVars));
+	    }
+	}
 	
-	Traverser listTraverser = this.traverserFactory.makeListTraverser(this.columns);
+	LocalUtils utils = new LocalUtils(this);
+	
+	int numAnonymousIntervals = 1; // TODO Some parameter of some sort
 	
 	CPIntervalKeyToBoundariesVariablesMapper<IntVar> mIntervalsToBoundariesVars = new CPIntervalKeyToBoundariesVariablesMapper<>();
 	AbstractConstraintProgram<IntVar, Constraint> constraintProgram = new ChocoConstraintProgram();
 	
 	// Find the maximum encoding in already set intervals
-	MaxEncodingFinder maxFinder = new MaxEncodingFinder();
-	listTraverser.traverse(maxFinder);
+	long maxEncodingEncountered = utils.findMaximum();
 	
 	// Create the list of IntervalKeys
-	List<SimpleIntervalKey> intervalKeys = new ArrayList<SimpleIntervalKey>();
-	IntervalKeysCreatorVisitor intervalKeysCreator = new IntervalKeysCreatorVisitor(numAnonymousIntervals, maxFinder.result(), intervalKeys);
-	listTraverser.traverse(intervalKeysCreator);
+	List<SimpleIntervalKey> intervalKeys = utils.createIntervalKeys(numAnonymousIntervals, maxEncodingEncountered);
 	
 	// Create the variables for the CP program, and apply the common interval constraints
-	VarsCreatorVisitor<IntVar, Constraint> varsCreator = new VarsCreatorVisitor<>( constraintProgram, mIntervalsToBoundariesVars, intervalKeys);
-	listTraverser.traverse(varsCreator);
+	utils.createVariables(constraintProgram, mIntervalsToBoundariesVars, intervalKeys);
 	
 	// Apply the foreign-key related constraints
-	ForeignKeysVarsSetterVisitor<IntVar, Constraint> fkConstrSetter = new ForeignKeysVarsSetterVisitor<>();
-	listTraverser.traverse(fkConstrSetter);
+	utils.createFkConstraints(constraintProgram, mIntervalsToBoundariesVars);
+	
+	System.err.println(constraintProgram.humanFormat());
 	
 	// Solve the program
 	constraintProgram.solve();
-	constraintProgram.prettyOut(); // TODO Pick the result, and transform it in intervals
+	
+	// Transform the results to column intervals
+	utils.transformResults(mIntervalsToBoundariesVars);
+    }
+
+    @Override
+    void registerColumnPumper(ColumnPumper<T> cP) {
+	if( !getColumnPumpersInCluster().contains(cP) ){
+	    this.columns.add(new ColumnPumperInCluster<T>(cP, this));
+	}
+    }
+
+    @Override
+    ColumnPumperInCluster<T> getColumnPumperInClusterWrapping(ColumnPumper<T> cP) {
+	ColumnPumperInCluster<T> result = null;
+	if( getColumnPumpersInCluster().contains(cP) ){
+	    for( ColumnPumperInCluster<T> inCluster : getClusterCols() ){
+		if( inCluster.cP.equals(cP) ){
+		    result = inCluster;
+		    break;
+		}
+	    }
+	}
+	if( result == null ) throw new NullPointerException("The cluster does not contain the column" + cP);
+	return result; 
     } 
 }
 

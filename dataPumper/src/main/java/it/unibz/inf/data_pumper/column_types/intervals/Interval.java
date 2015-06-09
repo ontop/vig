@@ -1,14 +1,13 @@
 package it.unibz.inf.data_pumper.column_types.intervals;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
-import it.unibz.inf.data_pumper.column_types.Column;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.core.main.DebugException;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -40,7 +39,17 @@ public abstract class Interval<T> {
         this.type = type;
         this.nFreshsToInsert = nValues;
         this.intervalColumns = intervalColumns;
-        
+    }
+    
+    public Interval(String key, MySqlDatatypes type, long minEncoding, long maxEncoding){
+	this.domain = null;
+	this.domainIndex = 0;
+	this.key = key;
+	this.type = type;
+	this.nFreshsToInsert = maxEncoding - minEncoding;
+	this.maxEncoding = maxEncoding;
+	this.minEncoding = minEncoding;
+	this.intervalColumns = new LinkedList<>();
     }
     
     public void setNFreshsToInsert(long nFreshsToInsert){
@@ -198,8 +207,7 @@ public abstract class Interval<T> {
         }
         
         return result;
-    }
-    
+    } 
     
     
     @Override

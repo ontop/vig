@@ -65,16 +65,7 @@ public class Main {
 			System.exit(1);
 		}
 		
-		DatabasePumper pumper = null;
-		
-		switch(pumperType){
-		case DB:
-			pumper = new DatabasePumperDB();
-			break;
-		case OBDA:
-			pumper = new DatabasePumperOBDA();
-			break;
-		}
+		DatabasePumper pumper = pumperType == PumperType.DB ? new DatabasePumperDB() : new DatabasePumperOBDA();
 		
 		if( randomGen ){
 		    pumper.setPureRandomGeneration();

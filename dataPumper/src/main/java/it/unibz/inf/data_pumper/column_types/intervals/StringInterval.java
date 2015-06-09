@@ -6,8 +6,6 @@ import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.core.main.DebugException;
 
 public class StringInterval extends Interval<String> {
 
@@ -20,6 +18,12 @@ public class StringInterval extends Interval<String> {
 	    MySqlDatatypes type,
 	    long nValues, int datatypeLength, List<ColumnPumper<String>> involvedCols) {
 	super(key, type, nValues, involvedCols);
+	this.datatypeLength = datatypeLength;
+    }
+
+    public StringInterval(String name, MySqlDatatypes type, long minEncoding,
+	    long maxEncoding, int datatypeLength) {
+	super(name, type, minEncoding, maxEncoding);
 	this.datatypeLength = datatypeLength;
     }
 

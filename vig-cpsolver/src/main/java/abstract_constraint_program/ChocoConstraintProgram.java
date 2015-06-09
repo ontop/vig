@@ -1,11 +1,13 @@
 package abstract_constraint_program;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.constraints.IntConstraintFactory;
+import org.chocosolver.solver.search.strategy.IntStrategyFactory;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
@@ -30,8 +32,8 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 	assert( max > min );
 	assert( max < Integer.MAX_VALUE -1 ) : printChocoErr();
 	
-	IntVar x = VariableFactory.bounded("varName", (int)min, (int)max, solver);
-	ACPLongVar<IntVar> wrapper = new ACPLongVar<IntVar>(x);
+	IntVar x = VariableFactory.bounded(varName, (int)min, (int)max, solver);
+	ACPLongVar<IntVar> wrapper = new ChocoACPLongVar(x);
 	
 	this.variables.add(x);
 	
@@ -65,7 +67,7 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 	    unwrapped.add(acpVar.getWrapped());
 	}
 	
-	IntVar[] unwrappedArr = (IntVar[]) unwrapped.toArray();
+	IntVar[] unwrappedArr = unwrapped.toArray(new IntVar[0]);
 	
 	if( ! (coeffsArr.length == unwrappedArr.length) ){
 	    throw new ConstraintProgramException("Assertion failed: coefficients array size different from vars array size");
@@ -85,7 +87,7 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 
     @Override
     public void post() {
-	Constraint[] toPost = (Constraint[]) constraints.subList(postedSoFar, constraints.size()).toArray();
+	Constraint[] toPost = constraints.subList(postedSoFar, constraints.size()).toArray(new Constraint[0]);
 	this.solver.post(toPost);
 	postedSoFar = constraints.size();
     }
@@ -97,23 +99,9 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 
     @Override
     public boolean solve() {
+//	this.solver.set(IntStrategyFactory.minDom_UB(this.variables.toArray(new IntVar[0])));
 	boolean result = this.solver.findSolution();
 	return result;
-    }
-    
-    @Override
-    public void prettyOut() {
-	System.out.println("FunctionalDependenciesEvaluation({})");
-	StringBuilder st = new StringBuilder();
-	st.append("\t");
-	for (int i = 0; i < this.variables.size() - 1; i++) {
-	    st.append(String.format("%d ", variables.get(i).getValue()));
-	    if (i % 6 == 5) {
-		st.append("\n\t");
-	    }
-	}
-	st.append(String.format("%d", variables.get(variables.size() - 1).getValue()));
-	System.out.println(st.toString());
     }
     
     @Override
@@ -126,5 +114,15 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 	builder.append("\nPosted so far: "+this.postedSoFar);
 	
 	return builder.toString();
+    }
+    
+    public String humanFormat(){
+	String result = this.toString();
+	int i = 0;
+	for( Iterator<IntVar> it = this.variables.iterator(); it.hasNext(); ++i ){
+	    String name = it.next().getName();
+	    result = result.replaceAll(name, "X_"+i);
+	}
+	return result;
     }
 }

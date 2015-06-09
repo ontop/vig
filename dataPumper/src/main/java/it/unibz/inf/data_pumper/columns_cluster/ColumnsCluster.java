@@ -1,4 +1,4 @@
-package it.unibz.inf.data_pumper.column_types.aggregate_types;
+package it.unibz.inf.data_pumper.columns_cluster;
 
 import java.util.List;
 
@@ -14,4 +14,8 @@ public abstract class ColumnsCluster<T> {
     
     // Protected
     protected abstract List<ColumnPumperInCluster<T>> getClusterCols();
+    
+    // Package
+    abstract void registerColumnPumper(ColumnPumper<T> cP);
+    abstract ColumnPumperInCluster<T> getColumnPumperInClusterWrapping(ColumnPumper<T> cP); 
 }

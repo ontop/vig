@@ -2,6 +2,7 @@ package it.unibz.inf.data_pumper.utils.traversers;
 
 import java.util.List;
 
+import it.unibz.inf.data_pumper.columns_cluster.EmptyVisitor;
 import it.unibz.inf.data_pumper.utils.graphs.traversers.adjacence.BottomUpStrategy;
 import it.unibz.inf.data_pumper.utils.graphs.traversers.adjacence.TopDownOrBottomUpStrategy;
 import it.unibz.inf.data_pumper.utils.graphs.traversers.adjacence.TopDownStrategy;
@@ -27,5 +28,6 @@ public abstract class TraverserAbstractFactory {
     
     // Predefined visitors
     public abstract BooleanVisitor makeBooleanVisitor(ConditionChecker checker);
-    public abstract CollectVisitedVisitor makeCollectVisitedVisitor();    
+    public abstract CollectVisitedVisitor makeCollectVisitedVisitor();
+    public abstract EmptyVisitor makeEmptyVisitor();
 }

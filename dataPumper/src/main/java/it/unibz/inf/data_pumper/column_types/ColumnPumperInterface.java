@@ -63,6 +63,8 @@ public interface ColumnPumperInterface<T> {
 	public List<Interval<T>> getIntervals();
 	public void addInterval(Interval<T> addInterval); 
 	
+	public void addInterval(String name, long minEncoding, long maxEncoding);
+	
 	/**
      * Remove the interval with the provided <b>key</b>
      * @param key

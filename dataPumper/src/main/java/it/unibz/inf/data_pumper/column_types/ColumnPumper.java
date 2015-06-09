@@ -26,10 +26,10 @@ import java.util.List;
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnsCluster;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnsClusterImpl;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
+import it.unibz.inf.data_pumper.columns_cluster.ColumnsCluster;
+import it.unibz.inf.data_pumper.columns_cluster.ColumnsClusterImpl;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 
 public abstract class ColumnPumper<T> extends Column implements ColumnPumperInterface<T>{

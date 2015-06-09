@@ -176,23 +176,17 @@ public class TuplesPicker {
 		PreparedStatement stmt = 
 				dbToPump.getPreparedStatement(createTakeTuplesQueryString(dbToPump, curTable, referredTable, tt));
 		
-		ResultSet rs = null;
-		
-		try {
-			rs = stmt.executeQuery();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		pickFrom.set(pickIndex, rs);
+//		ResultSet rs = null;
 		
 		boolean result = false;
-		try {
-			result = !rs.isAfterLast();
-			logger.debug("isAfterLast????" + !result);
+		try( ResultSet rs = stmt.executeQuery() ) {
+//		    rs = stmt.executeQuery();
+		    pickFrom.set(pickIndex, rs);
+		    result = !rs.isAfterLast();
+		    logger.debug("isAfterLast????" + !result);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
-		
+		}		
 		return result;
 	}
 	/**

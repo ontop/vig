@@ -24,7 +24,6 @@ package it.unibz.inf.data_pumper.column_types;
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.column_types.intervals.StringInterval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
@@ -156,6 +155,12 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	    String qualifiedName, List<ColumnPumper<String>> involvedCols){
 	Interval<String> interval = new StringInterval(qualifiedName, this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
 	return interval;
+    }
+
+    @Override
+    public void addInterval(String name, long minEncoding, long maxEncoding) {
+	 Interval<String> toAdd = new StringInterval(name, getType(), minEncoding, maxEncoding, this.datatypeLength);
+	 this.addInterval(toAdd);
     }
     
     //	private String lowerBoundValue(){

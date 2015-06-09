@@ -1,6 +1,5 @@
-package it.unibz.inf.data_pumper.column_types.aggregate_types.constraintProgram;
+package it.unibz.inf.data_pumper.columns_cluster;
 
-import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnPumperInCluster;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.utils.Pair;
 import it.unibz.inf.data_pumper.utils.traversers.Node;
@@ -43,7 +42,7 @@ import abstract_constraint_program.AbstractConstraintProgram;
  * @param <VarType> Type of the variable in the constraint program
  * @param <ConstrType> Type of the constraint in the constraint program
  */
-public class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
+class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 
     private AbstractConstraintProgram<VarType,ConstrType> program;
     private CPIntervalKeyToBoundariesVariablesMapper<VarType> mIntervalsToBoundVars;
@@ -82,7 +81,7 @@ public class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 	for( SimpleIntervalKey related : this.intervalKeys ){
 
 	    // For each interval, add 2 variables
-	    CPIntervalKey cPInt = CPIntervalKey.promote(related, cPIC.cP.getName());
+	    CPIntervalKey cPInt = CPIntervalKey.promote(related, cPIC.cP.getQualifiedName().toString());
 	    String cPIntKey = cPInt.toString();
 	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", related.getLwBound(), related.getUpBound());
 	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", related.getLwBound(), related.getUpBound());
@@ -115,7 +114,7 @@ public class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 	for( SimpleIntervalKey related : this.intervalKeys ){
 
 	    // For each interval, add 2 variables
-	    CPIntervalKey cPInt = CPIntervalKey.promote(related, cPIC.cP.getName());
+	    CPIntervalKey cPInt = CPIntervalKey.promote(related, cPIC.cP.getQualifiedName().toString());
 	    String cPIntKey = cPInt.toString();
 	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", related.getLwBound(), related.getUpBound());
 	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", related.getLwBound(), related.getUpBound());

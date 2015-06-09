@@ -5,22 +5,23 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.DateOutOfBoundariesException;
 
 public class DatetimeInterval extends Interval<Timestamp> {
     
     public static final int MILLISECONDS_PER_DAY=86400000;
-    private static Logger logger = Logger.getLogger(DatetimeInterval.class.getCanonicalName());
 
     public DatetimeInterval(String key,
             MySqlDatatypes type,
             long nValues, List<ColumnPumper<Timestamp>> involvedCols ) {
         super(key, type, nValues, involvedCols);
+    }
+    
+    public DatetimeInterval(String key, MySqlDatatypes type, long minEncoding, long maxEncoding){
+	super(key, type, minEncoding, maxEncoding);
+	
     }
     
     @Override

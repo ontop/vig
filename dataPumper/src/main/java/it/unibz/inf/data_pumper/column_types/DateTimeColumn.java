@@ -24,11 +24,9 @@ import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.basic_datatypes.Template;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.DatetimeInterval;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.main.DebugException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -141,5 +139,11 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    this.intervals.add(initialInterval);	    
 	    
 	    this.firstIntervalSet = true;
+	}
+
+	@Override
+	public void addInterval(String name, long minEncoding, long maxEncoding) {
+	    Interval<Timestamp> toAdd = new DatetimeInterval(name, getType(), minEncoding, maxEncoding);
+	    this.addInterval(toAdd);
 	}
 };

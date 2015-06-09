@@ -9,11 +9,9 @@ import java.util.Queue;
 public class ReachConnectedTraverser extends CleanableTraverser {
     
     private List<? extends Node> nodes; 
-    private List<Node> visitedNodes;
     
     public ReachConnectedTraverser(List<? extends Node> nodes){
 	this.nodes = nodes;
-	this.visitedNodes = new LinkedList<>();
     }
 
     @Override
@@ -30,7 +28,6 @@ public class ReachConnectedTraverser extends CleanableTraverser {
 	    visitor.visit(n);
 	    toVisit.addAll(n.getInNodes());
 	    toVisit.addAll(n.getOutNodes());
-	    this.visitedNodes.add(n);
 	}
     }
 }

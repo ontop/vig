@@ -16,6 +16,11 @@ public class IntInterval extends Interval<Long> {
         super(key, type, nValues, involvedCols);
     }
 
+    public IntInterval(String name, MySqlDatatypes type, long minEncoding,
+	    long maxEncoding) {
+	super(name, type, minEncoding, maxEncoding);
+    }
+
     @Override
     public void updateMinEncodingAndValue(long newMin) {
         this.min = newMin;

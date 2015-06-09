@@ -2,10 +2,10 @@ package it.unibz.inf.data_pumper.core.main;
 
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.aggregate_types.ColumnsCluster;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
+import it.unibz.inf.data_pumper.columns_cluster.ColumnsCluster;
 import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;

@@ -1,4 +1,4 @@
-package it.unibz.inf.data_pumper.column_types.aggregate_types;
+package it.unibz.inf.data_pumper.columns_cluster;
 
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
@@ -42,15 +42,11 @@ public class ColumnPumperInCluster<T> extends Node{
 	    @SuppressWarnings("unchecked")
 	    ColumnPumper<T> cP = (ColumnPumper<T>) DBMSConnection.getInstance().getSchema(qN.getTableName()).getColumn(qN.getColName());	    
 	    if( cluster.getColumnPumpersInCluster().contains(cP) ){
-		for( ColumnPumperInCluster<T> inCluster : cluster.getClusterCols() ){
-		    if( inCluster.cP.equals(cP) ){
-			result.add(inCluster);
-			break;
-		    }
-		}
+		result.add(cluster.getColumnPumperInClusterWrapping(cP));
 	    }
 	    else{
-		result.add(new ColumnPumperInCluster<T>(cP, cluster));
+		cluster.registerColumnPumper(cP);
+		result.add(cluster.getColumnPumperInClusterWrapping(cP));
 	    }
 	}
 	return result;
@@ -62,15 +58,11 @@ public class ColumnPumperInCluster<T> extends Node{
 	    @SuppressWarnings("unchecked")
 	    ColumnPumper<T> cP = (ColumnPumper<T>) DBMSConnection.getInstance().getSchema(qN.getTableName()).getColumn(qN.getColName());
 	    if( cluster.getColumnPumpersInCluster().contains(cP) ){
-		for( ColumnPumperInCluster<T> inCluster : cluster.getClusterCols() ){
-		    if( inCluster.cP.equals(cP) ){
-			result.add(inCluster);
-			break;
-		    }
-		}
+		result.add(cluster.getColumnPumperInClusterWrapping(cP));
 	    }
 	    else{
-		result.add(new ColumnPumperInCluster<T>(cP, cluster));
+		cluster.registerColumnPumper(cP);
+		result.add(cluster.getColumnPumperInClusterWrapping(cP));
 	    }
 	}
 	return result;

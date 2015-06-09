@@ -16,6 +16,14 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
             long nValues, List<ColumnPumper<BigDecimal>> involvedColumns) {
         super(key, type, nValues, involvedColumns);
     }
+    
+    public BigDecimalInterval(
+	    String key, 
+	    MySqlDatatypes type,
+	    long minEncoding,
+	    long maxEncoding){
+	super(key, type, minEncoding, maxEncoding);
+    }
 
     @Override
     public void updateMinEncodingAndValue(

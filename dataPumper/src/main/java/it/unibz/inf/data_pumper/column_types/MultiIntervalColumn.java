@@ -22,7 +22,6 @@ package it.unibz.inf.data_pumper.column_types;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
-import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.core.main.DebugException;
@@ -52,12 +51,11 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
     public void addInterval(Interval<T> addInterval){
 	this.intervals.add(addInterval);
     }
-
+    
     @Override
     public List<Interval<T>> getIntervals() {
 	return Collections.unmodifiableList(this.intervals);
     }
-
 
     @Override
     public void removeIntervalOfKey(String key){
