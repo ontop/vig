@@ -9,7 +9,6 @@ import it.unibz.inf.data_pumper.utils.traversers.ReachConnectedTraverser;
 import it.unibz.inf.data_pumper.utils.traversers.Traverser;
 import it.unibz.inf.data_pumper.utils.traversers.TraverserAbstractFactory;
 import it.unibz.inf.data_pumper.utils.traversers.TraverserFactory;
-import it.unibz.inf.data_pumper.utils.traversers.visitors.CollectVisitedVisitor;
 import it.unibz.inf.data_pumper.utils.traversers.visitors.VisitorWithResult;
 
 import java.util.ArrayList;
@@ -178,12 +177,18 @@ public class ColumnsClusterImpl<T> extends ColumnsCluster<T> {
 	utils.createVariables(constraintProgram, mIntervalsToBoundariesVars, intervalKeys);
 	
 	// Apply the foreign-key related constraints
-	utils.createFkConstraints(constraintProgram, mIntervalsToBoundariesVars);
+//	utils.createFkConstraints(constraintProgram, mIntervalsToBoundariesVars);
 	
 	System.err.println(constraintProgram.humanFormat());
 	
 	// Solve the program
-	constraintProgram.solve();
+	boolean hasSolution = constraintProgram.solve();
+	
+	if( !hasSolution ){
+	    System.out.println("DEBUG!!");
+	}
+	
+	assert hasSolution : "The constraint program does not have a solution" + constraintProgram.toString();
 	
 	// Transform the results to column intervals
 	utils.transformResults(mIntervalsToBoundariesVars);

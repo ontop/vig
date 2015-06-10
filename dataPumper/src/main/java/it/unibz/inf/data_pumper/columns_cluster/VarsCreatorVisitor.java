@@ -86,6 +86,11 @@ class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", related.getLwBound(), related.getUpBound());
 	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", related.getLwBound(), related.getUpBound());
 
+	    long lwBound = related.getLwBound();
+	    long upBound = related.getUpBound();
+	    
+	    assert (lwBound >= 0 && upBound >= 0) : "Negative encoding for column CPIntervalKey "+ cPInt; 
+	    
 	    this.mIntervalsToBoundVars.addVarsForInterval(cPInt, new Pair<>(lwBoundVar, upBoundVar));
 
 	    // Constraint: 
@@ -116,8 +121,14 @@ class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 	    // For each interval, add 2 variables
 	    CPIntervalKey cPInt = CPIntervalKey.promote(related, cPIC.cP.getQualifiedName().toString());
 	    String cPIntKey = cPInt.toString();
-	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", related.getLwBound(), related.getUpBound());
-	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", related.getLwBound(), related.getUpBound());
+	    
+	    long lwBound = related.getLwBound();
+	    long upBound = related.getUpBound();
+	    
+	    assert (lwBound >= 0 && upBound >= 0) : "Negative encoding for column CPIntervalKey "+ cPInt; 
+	    
+	    ACPLongVar<VarType> lwBoundVar = program.addLongVar(cPIntKey+"1", lwBound, upBound);
+	    ACPLongVar<VarType> upBoundVar = program.addLongVar(cPIntKey+"2", lwBound, upBound);
 
 	    this.mIntervalsToBoundVars.addVarsForInterval(cPInt, new Pair<>(lwBoundVar, upBoundVar));
 
@@ -131,8 +142,8 @@ class VarsCreatorVisitor<VarType, ConstrType> implements Visitor {
 	    if( in ){			
 
 		// Constraint cX3 = IntConstraintFactory.arithm(x_3, "=", 3);
-		this.program.addLongConstraint(lwBoundVar, ACPOperator.EQUALS, related.getLwBound());
-		this.program.addLongConstraint(upBoundVar, ACPOperator.EQUALS, related.getUpBound());
+		this.program.addLongConstraint(lwBoundVar, ACPOperator.EQUALS, lwBound);
+		this.program.addLongConstraint(upBoundVar, ACPOperator.EQUALS, upBound);
 	    }
 	    else{
 		// Set equality

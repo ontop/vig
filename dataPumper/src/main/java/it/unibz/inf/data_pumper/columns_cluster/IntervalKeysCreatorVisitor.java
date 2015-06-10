@@ -36,11 +36,11 @@ import java.util.List;
 
     @Override
     public void visit(Node node) {
+	ColumnPumperInCluster<?> cPIC = (ColumnPumperInCluster<?>) node;
 	if( !anonymousIntervalsCreated ){
-	    createAnonymousIntervals();
+	    createAnonymousIntervals(cPIC);
 	    anonymousIntervalsCreated = true;
 	}
-	ColumnPumperInCluster<?> cPIC = (ColumnPumperInCluster<?>) node;
 
 	if( !cPIC.isSingleInterval() ){
 	    visitMulti(cPIC);
@@ -68,12 +68,12 @@ import java.util.List;
 	return contained;
     }
 
-    private void createAnonymousIntervals() {
+    private void createAnonymousIntervals(ColumnPumperInCluster<?> cPIC) {
 	// Try the cast to int
 	// Cast Check
-
+	
 	// Make 2*numAnonymousIntervals new variables
-	assert(this.maxEncodingInIntervals > Integer.MAX_VALUE ) : "Values bigger than Integers are not allowed";
+	assert(this.maxEncodingInIntervals < Integer.MAX_VALUE ) : "Values bigger than Integers are not allowed, cPIC: " + cPIC;
 	    
 	
 	long offset = (Integer.MAX_VALUE -1 - this.maxEncodingInIntervals) / this.numAnonymousIntervals;

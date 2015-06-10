@@ -117,7 +117,10 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    List<ColumnPumper<T>> visited = new LinkedList<ColumnPumper<T>>();
 	    boolean stop = false;
 	    for( int i = 0; i < cCL.size() && !stop; ++i ){
-		ColumnPumper<T> cP = cCL.get(i);
+		ColumnPumper<T> cP = cCL.get(i);		
+		if( cP.toString().equals("licence_area_poly_hst.prlAreaPolyDateValidFrom") ){
+		    System.err.println("CIAO!");
+		}
 		stop = utils.insert(insertedIntervals, cP, visited);
 	    }
 	    if( stop ){
@@ -201,7 +204,7 @@ class IntervalsBoundariesFinder<T>{
 			}
 		    }
 		}
-		if( optimization1 ){ 
+		if( false && optimization1 ){ 
 		    DatabasePumperOBDA.logger.info("Applying Optimization 1");
 		    previouslyInserted.addInvolvedColumnPumper(cP);
 		}

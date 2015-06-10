@@ -40,7 +40,9 @@ public class DatetimeInterval extends Interval<Timestamp> {
             max = new Timestamp(newMax * MILLISECONDS_PER_DAY);
         }
         else{
-            throw new DateOutOfBoundariesException("The Date field cannot hold this many rows");
+            newMax = upperBound.getTimeInMillis() / MILLISECONDS_PER_DAY;
+            max = new Timestamp(newMax * MILLISECONDS_PER_DAY);
+//            throw new DateOutOfBoundariesException("The Date field cannot hold this many rows, interval is "+this.getKey());
         }
         this.maxEncoding = newMax;
     }

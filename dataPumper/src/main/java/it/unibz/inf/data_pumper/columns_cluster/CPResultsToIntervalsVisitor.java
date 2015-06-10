@@ -39,9 +39,11 @@ class CPResultsToIntervalsVisitor<VarType> implements Visitor {
 	
 	for( CPIntervalKey key : list ){
 	    Pair<ACPLongVar<VarType>, ACPLongVar<VarType>> mMinToMaxEnc = mIntervalsToBoundVars.getVarsForKey(key);
-	    ACPLongVar<VarType> minEnc = mMinToMaxEnc.first;
-	    ACPLongVar<VarType> maxEnc = mMinToMaxEnc.second;
-	    cPIC.cP.addInterval(key.getKey(), minEnc.getValue(), maxEnc.getValue());
+	    long minEnc = mMinToMaxEnc.first.getValue();
+	    long maxEnc = mMinToMaxEnc.second.getValue();
+	    if( minEnc < maxEnc ){
+		cPIC.cP.addInterval(key.getKey(), minEnc, maxEnc);
+	    }
 	}
     }
     

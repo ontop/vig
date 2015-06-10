@@ -75,6 +75,10 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	@Override
 	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException {		
 
+	    if( schema.getTableName().equals("licence_area_poly_hst") && getName().equals("prlAreaPolyDateValidFrom") ){
+		System.err.println("CIAO!!");
+	    }
+	    
 	    this.initNumDupsNullsFreshs();
 
 	    Template t = new Template("select ? from "+schema.getTableName()+";");
@@ -133,8 +137,11 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    involvedCols.add(this);
 	    Interval<Timestamp> initialInterval = new DatetimeInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
 	    
-	    initialInterval.updateMinEncodingAndValue(min.getTime() / DatetimeInterval.MILLISECONDS_PER_DAY);
-	    initialInterval.updateMaxEncodingAndValue(max.getTime() / DatetimeInterval.MILLISECONDS_PER_DAY);
+	    long minTime = min.getTime();
+	    long maxTime = max.getTime();
+	    
+	    initialInterval.updateMinEncodingAndValue(minTime / DatetimeInterval.MILLISECONDS_PER_DAY);
+	    initialInterval.updateMaxEncodingAndValue(maxTime / DatetimeInterval.MILLISECONDS_PER_DAY);
 	    
 	    this.intervals.add(initialInterval);	    
 	    

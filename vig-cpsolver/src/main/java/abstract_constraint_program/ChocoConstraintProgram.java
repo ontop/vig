@@ -30,7 +30,7 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
     public ACPLongVar<IntVar> addLongVar(String varName, long min, long max) {
 	
 	assert( max > min );
-	assert( max < Integer.MAX_VALUE -1 ) : printChocoErr();
+	assert( max < Integer.MAX_VALUE ) : printChocoErr();
 	
 	IntVar x = VariableFactory.bounded(varName, (int)min, (int)max, solver);
 	ACPLongVar<IntVar> wrapper = new ChocoACPLongVar(x);
@@ -99,7 +99,13 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 
     @Override
     public boolean solve() {
-//	this.solver.set(IntStrategyFactory.minDom_UB(this.variables.toArray(new IntVar[0])));
+//	this.solver.set(IntStrategyFactory.activity(this.variables.toArray(new IntVar[0]), 1));
+//	this.solver.set(IntStrategyFactory.domOverWDeg(this.variables.toArray(new IntVar[0]), 1)); BAD
+//	this.solver.set(IntStrategyFactory.impact(this.variables.toArray(new IntVar[0]), 1));
+//	this.solver.set(IntStrategyFactory.lastConflict(this.solver));//(this.variables.toArray(new IntVar[0]), 1));
+//	this.solver.set(IntStrategyFactory.lexico_Split(this.variables.toArray(new IntVar[0]))); Super BAD
+	this.solver.set(IntStrategyFactory.custom(IntStrategyFactory.maxDomainSize_var_selector(), IntStrategyFactory.min_value_selector(), this.variables.toArray(new IntVar[0])));
+	
 	boolean result = this.solver.findSolution();
 	return result;
     }

@@ -45,7 +45,7 @@ public class IntInterval extends Interval<Long> {
     
     @Override
     public long getMaxEncoding() {
-        if( this.min == this.max ) throw new BoundariesUnsetException("Undefined interval boundaries");
+        if( this.min == this.max ) throw new BoundariesUnsetException("Undefined interval boundaries for Interval "+this.toString());
         
         // Assert
         if( !(this.max == this.maxEncoding) ){ throw new DebugException("Assertion failed: " + !(this.max == this.maxEncoding)); }
