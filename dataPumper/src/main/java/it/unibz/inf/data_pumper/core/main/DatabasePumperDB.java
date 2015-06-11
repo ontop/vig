@@ -23,15 +23,11 @@ package it.unibz.inf.data_pumper.core.main;
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
 import it.unibz.inf.data_pumper.core.exception.ProblematicCycleForPrimaryKeyException;
 import it.unibz.inf.data_pumper.core.table.statistics.TableStatisticsFinder;
 import it.unibz.inf.data_pumper.core.table.statistics.TableStatisticsFinderImpl;
-import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 import it.unibz.inf.data_pumper.persistence.LogToFile;
 import it.unibz.inf.data_pumper.utils.UtilsMath;
 
@@ -115,6 +111,11 @@ public class DatabasePumperDB extends DatabasePumper {
     private void checkIntervalsAssertions(List<ColumnPumper<? extends Object>> listColumns) {
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 	    for( Interval<?> interval : cP.getIntervals() ){
+		
+		if( interval.toString().equals("prlAreaSplitByBlock.prlNpdidLicence---licence_area_poly_hst.prlNpdidLicence---licence_petreg_licence.prlNpdidLicence") ){
+		    logger.debug("CIAO!");
+		}
+		
 		if( interval.getNFreshsToInsert() != interval.getMaxEncoding() - interval.getMinEncoding() )
 		    throw new DebugException("Inconsistent Interval Detected! : Interval " + interval.toString());
 	    }

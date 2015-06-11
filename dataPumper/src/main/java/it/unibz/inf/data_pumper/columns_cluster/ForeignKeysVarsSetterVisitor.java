@@ -18,6 +18,9 @@ class ForeignKeysVarsSetterVisitor<VarType, ConstrType> implements Visitor {
 
     private AbstractConstraintProgram<VarType,ConstrType> program;
     private CPIntervalKeyToBoundariesVariablesMapper<VarType> mapper; 
+    
+    // State
+    private int scalarsAdded = 0;
 
     ForeignKeysVarsSetterVisitor(
 	    AbstractConstraintProgram<VarType, ConstrType> constraintProgram,
@@ -52,11 +55,22 @@ class ForeignKeysVarsSetterVisitor<VarType, ConstrType> implements Visitor {
      * @param cPIC
      */
     private void addCoefficientsConstraints(ColumnPumperInCluster<?> cPIC) {
+	
+//	if( scalarsAdded == 1 ) return;
+//	++scalarsAdded;
+	
 	Set<CPIntervalKey> thisKeys = this.mapper.getKeySetForCP(cPIC.cP);
 	
+	long nFreshs = cPIC.cP.getNumFreshsToInsert();
+//	int forcedStop = Integer.MAX_VALUE / 4;
+//	if( nFreshs == 417 ){
+//	    // Debug
+////	    forcedStop = 21;
+//	}
+		
 	// Prepare coefficients list
 	List<Long> coeffs = new ArrayList<>();
-	for( int i = 0; i < thisKeys.size() * 2; ++i ){
+	for( int i = 0; i < thisKeys.size() * 2 /*&& i < forcedStop * 2*/; ++i ){ // FIXME Debug
 	    if( i % 2 == 0 ){
 		coeffs.add((long)1);
 	    }
@@ -67,13 +81,20 @@ class ForeignKeysVarsSetterVisitor<VarType, ConstrType> implements Visitor {
 	
 	// Prepare variables' list
 	List<ACPLongVar<VarType>> vars = new ArrayList<>();
+//	int i = 0;
 	for( CPIntervalKey key : thisKeys ){
+//	    if( i++ == forcedStop ) break; // Fixme DEBUG
 	    Pair<ACPLongVar<VarType>, ACPLongVar<VarType>> mlwToUpBound = this.mapper.getVarsForKey(key);
+	    
+//	    if( nFreshs == 417 && mlwToUpBound.first.getName().equals("X_0") ){
+//		--i;
+//		continue;
+//	    }
+	    
 	    vars.add(mlwToUpBound.second); // upbound
 	    vars.add(mlwToUpBound.first);  // lwbound
 	}
-	
-	long nFreshs = cPIC.cP.getNumFreshsToInsert();
+		
 	program.addScalarLongConstraint(coeffs, vars, nFreshs);
     }
 

@@ -116,6 +116,8 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
     @Override
     public void addInterval(String name, long minEncoding, long maxEncoding) {
 	Interval<BigDecimal> toAdd = new BigDecimalInterval(name, getType(), minEncoding, maxEncoding);
+	toAdd.updateMinEncodingAndValue(minEncoding);
+	toAdd.updateMaxEncodingAndValue(maxEncoding);
 	this.addInterval(toAdd);
     }
 }

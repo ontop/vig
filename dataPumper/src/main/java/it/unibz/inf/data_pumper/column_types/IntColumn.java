@@ -120,6 +120,8 @@ public class IntColumn extends MultiIntervalColumn<Long> {
     @Override
     public void addInterval(String name, long minEncoding, long maxEncoding) {
 	Interval<Long> toAdd = new IntInterval(name, getType(), minEncoding, maxEncoding);
+	toAdd.updateMinEncodingAndValue(minEncoding);
+	toAdd.updateMaxEncodingAndValue(maxEncoding);
 	this.addInterval(toAdd);
     }
 };

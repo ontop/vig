@@ -17,4 +17,5 @@ public interface AbstractConstraintProgram<VarType, ConstraintType> {
     public boolean solve();
 
     public String humanFormat();
+    public boolean hasReachedLimit();
 }

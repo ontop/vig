@@ -12,4 +12,9 @@ public final class ChocoACPLongVar extends ACPLongVar<IntVar> {
 	long result = this.wrapped.getValue();
 	return result;
     }
+
+    @Override
+    public String getName() {
+	return this.wrapped.getName();
+    }
 }

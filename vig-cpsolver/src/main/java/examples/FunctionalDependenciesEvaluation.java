@@ -34,7 +34,7 @@ public class FunctionalDependenciesEvaluation extends AbstractProblem {
 	IntVar z_4 = vars[3] = VariableFactory.bounded("Z_4", 3, 8, solver);
 	IntVar z_5 = vars[4] = VariableFactory.bounded("Z_5", 9, 12, solver);
 	IntVar z_6 = vars[5] = VariableFactory.bounded("Z_6", 9, 12, solver);
-	
+		
 	IntVar w_1 = vars[6] = VariableFactory.bounded("W_1", 1, 2, solver);
 	IntVar w_2 = vars[7] = VariableFactory.bounded("W_2", 1, 2, solver);	
 	IntVar w_3 = vars[8] = VariableFactory.bounded("W_3", 3, 8, solver);

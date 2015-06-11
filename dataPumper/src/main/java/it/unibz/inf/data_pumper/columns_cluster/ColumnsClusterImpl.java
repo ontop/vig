@@ -4,6 +4,7 @@ import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
 import it.unibz.inf.data_pumper.column_types.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.utils.traversers.Node;
 import it.unibz.inf.data_pumper.utils.traversers.ReachConnectedTraverser;
 import it.unibz.inf.data_pumper.utils.traversers.Traverser;
@@ -177,15 +178,17 @@ public class ColumnsClusterImpl<T> extends ColumnsCluster<T> {
 	utils.createVariables(constraintProgram, mIntervalsToBoundariesVars, intervalKeys);
 	
 	// Apply the foreign-key related constraints
-//	utils.createFkConstraints(constraintProgram, mIntervalsToBoundariesVars);
+	utils.createFkConstraints(constraintProgram, mIntervalsToBoundariesVars);
 	
-	System.err.println(constraintProgram.humanFormat());
+//	System.err.println(constraintProgram.humanFormat());
 	
 	// Solve the program
 	boolean hasSolution = constraintProgram.solve();
 	
-	if( !hasSolution ){
-	    System.out.println("DEBUG!!");
+	System.err.println(constraintProgram.humanFormat());
+	
+	if( !hasSolution && constraintProgram.hasReachedLimit() ){
+	    throw new DebugException("The solver could not find a solution however there might be one");
 	}
 	
 	assert hasSolution : "The constraint program does not have a solution" + constraintProgram.toString();

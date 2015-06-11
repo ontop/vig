@@ -69,6 +69,9 @@ import java.util.List;
     }
 
     private void createAnonymousIntervals(ColumnPumperInCluster<?> cPIC) {
+	
+	if( this.numAnonymousIntervals == 0 ) return;
+	
 	// Try the cast to int
 	// Cast Check
 	
@@ -76,7 +79,7 @@ import java.util.List;
 	assert(this.maxEncodingInIntervals < Integer.MAX_VALUE ) : "Values bigger than Integers are not allowed, cPIC: " + cPIC;
 	    
 	
-	long offset = (Integer.MAX_VALUE -1 - this.maxEncodingInIntervals) / this.numAnonymousIntervals;
+	long offset = (this.maxEncodingInIntervals) / this.numAnonymousIntervals;
 
 	for( int i = 0; i < this.numAnonymousIntervals; ++i ){
 	    long lwBound = this.maxEncodingInIntervals + (offset * i);

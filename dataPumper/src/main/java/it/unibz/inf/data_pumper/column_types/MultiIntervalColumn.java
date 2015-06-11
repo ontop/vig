@@ -174,6 +174,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
     }
     
     int getIntervalIndexFromSeqIndex(long seqIndex) {
+	
 	int i = 0;
 	int nSkipped = 0;
 	
@@ -189,7 +190,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 	
 	
 	if( i >= intervals.size() ){
-	    throw new DebugException("The number of freshs to insert exceeds the number of freshs available from intervals");
+	    throw new DebugException("The number of freshs to insert exceeds the number of freshs available from intervals for column " + this.toString());
 	}
 	
 	return i;

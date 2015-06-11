@@ -74,11 +74,7 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 
 	@Override
 	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException {		
-
-	    if( schema.getTableName().equals("licence_area_poly_hst") && getName().equals("prlAreaPolyDateValidFrom") ){
-		System.err.println("CIAO!!");
-	    }
-	    
+   
 	    this.initNumDupsNullsFreshs();
 
 	    Template t = new Template("select ? from "+schema.getTableName()+";");
@@ -94,7 +90,8 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 
 	    if( result.next() && (result.getTimestamp(1) != null) ){
 
-	        if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(new Timestamp(Long.MAX_VALUE)) == 0 ){ // 9999,11,31 = min = max
+	        if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(max) == 0 ){ 
+	            // min = max = 9999,11,31 
 	            // Do nothing
 	        }
 	        else{
@@ -103,42 +100,24 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	        }
 	    }
 	    stmt.close();
-
-	    Calendar c = Calendar.getInstance();
-	    c.setTimeInMillis(min.getTime());
-
-	    Calendar upperBound = Calendar.getInstance();
-	    upperBound.set(9999,11,31);
-
-	    Calendar curMax = Calendar.getInstance();
-	    curMax.setTimeInMillis(max.getTime());
-
-	    boolean upperBoundTouched = false;
-	    for( int i = 1; i <= this.numFreshsToInsert; ++i ){
-
-		if( c.compareTo(upperBound) > -1 ){
-		    this.numFreshsToInsert = i;
-		    upperBoundTouched = true;
-		    break;
-		}
-	        c.add(Calendar.DATE, 1);
-	    }
 	    
-	    if( upperBoundTouched ){
-		max = new Timestamp(Long.MAX_VALUE);
+	    long minTime = min.getTime();
+	    long maxTime = max.getTime();
+	    
+	    // To avoid negative numbers
+	    if( minTime < 0 ){
+		minTime = 0;
 	    }
-	    else{
-		max = new Timestamp( ( (min.getTime() / DatetimeInterval.MILLISECONDS_PER_DAY) + numFreshsToInsert ) * DatetimeInterval.MILLISECONDS_PER_DAY );
-	    }
-//	    max = new Timestamp(c.getTimeInMillis());
+
+	    maxTime = minTime + numFreshsToInsert * DatetimeInterval.MILLISECONDS_PER_DAY;
+	    
+	    min = new Timestamp(minTime);
+	    max = new Timestamp(maxTime);
 
 	    // Create the single initial interval
 	    List<ColumnPumper<Timestamp>> involvedCols = new LinkedList<ColumnPumper<Timestamp>>();
 	    involvedCols.add(this);
 	    Interval<Timestamp> initialInterval = new DatetimeInterval(this.getQualifiedName().toString(), this.getType(), this.numFreshsToInsert, involvedCols);
-	    
-	    long minTime = min.getTime();
-	    long maxTime = max.getTime();
 	    
 	    initialInterval.updateMinEncodingAndValue(minTime / DatetimeInterval.MILLISECONDS_PER_DAY);
 	    initialInterval.updateMaxEncodingAndValue(maxTime / DatetimeInterval.MILLISECONDS_PER_DAY);
@@ -151,6 +130,8 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	@Override
 	public void addInterval(String name, long minEncoding, long maxEncoding) {
 	    Interval<Timestamp> toAdd = new DatetimeInterval(name, getType(), minEncoding, maxEncoding);
+	    toAdd.updateMaxEncodingAndValue(maxEncoding);
+	    toAdd.updateMinEncodingAndValue(minEncoding);
 	    this.addInterval(toAdd);
 	}
 };

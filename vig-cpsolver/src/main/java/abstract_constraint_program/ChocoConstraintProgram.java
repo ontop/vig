@@ -1,13 +1,15 @@
 package abstract_constraint_program;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.search.strategy.IntStrategyFactory;
+import org.chocosolver.solver.search.strategy.selectors.IntValueSelector;
+import org.chocosolver.solver.search.strategy.selectors.VariableSelector;
+import org.chocosolver.solver.search.strategy.strategy.IntStrategy;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
@@ -19,11 +21,18 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
     
     private int postedSoFar;
     
+    // Strategy
+    private AnonymousVarsSelector varsSelector;
+    private AnonymousVarsValueSelector valsSelector;
+        
     public ChocoConstraintProgram() {
 	this.solver = new Solver(this.getClass().getName());
 	this.variables = new ArrayList<>();
 	this.constraints = new ArrayList<>();
 	this.postedSoFar = 0;
+	
+	this.varsSelector = AnonymousVarsSelector.INSTANCE;
+	this.valsSelector = AnonymousVarsValueSelector.INSTANCE;
     }
 
     @Override
@@ -32,7 +41,9 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 	assert( max > min );
 	assert( max < Integer.MAX_VALUE ) : printChocoErr();
 	
-	IntVar x = VariableFactory.bounded(varName, (int)min, (int)max, solver);
+	// Ignore varName;
+	
+	IntVar x = VariableFactory.bounded("X_"+variables.size(), (int)min, (int)max, solver);
 	ACPLongVar<IntVar> wrapper = new ChocoACPLongVar(x);
 	
 	this.variables.add(x);
@@ -96,7 +107,7 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
     private String printChocoErr() {
 	return "Choco cannot hold values bigger than Integer";
     }
-
+    
     @Override
     public boolean solve() {
 //	this.solver.set(IntStrategyFactory.activity(this.variables.toArray(new IntVar[0]), 1));
@@ -104,31 +115,92 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 //	this.solver.set(IntStrategyFactory.impact(this.variables.toArray(new IntVar[0]), 1));
 //	this.solver.set(IntStrategyFactory.lastConflict(this.solver));//(this.variables.toArray(new IntVar[0]), 1));
 //	this.solver.set(IntStrategyFactory.lexico_Split(this.variables.toArray(new IntVar[0]))); Super BAD
-	this.solver.set(IntStrategyFactory.custom(IntStrategyFactory.maxDomainSize_var_selector(), IntStrategyFactory.min_value_selector(), this.variables.toArray(new IntVar[0])));
 	
-	boolean result = this.solver.findSolution();
+	boolean result = false;
+	
+	while( !result ){
+	    System.out.println("REDO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	    IntStrategy strat1 = IntStrategyFactory.custom(IntStrategyFactory.maxDomainSize_var_selector(), IntStrategyFactory.min_value_selector(), this.variables.toArray(new IntVar[0]));
+//	    AbstractStrategy<IntVar> strat2 = IntStrategyFactory.activity(this.variables.toArray(new IntVar[0]), 1);
+//	    IntStrategy strat = IntStrategyFactory.custom(this.varsSelector, this.valsSelector, this.variables.toArray(new IntVar[0]));
+	    this.solver.set(strat1);
+	    
+	    result = this.solver.findSolution();
+	}
+	
+//	Chatterbox.showSolutions(solver);
+	
 	return result;
     }
     
     @Override
     public String toString(){
-	StringBuilder builder = new StringBuilder();
-	builder.append("\nVariables:\n");
-	builder.append(this.variables);
-	builder.append("\nConstraints\n");
-	builder.append(this.constraints);
-	builder.append("\nPosted so far: "+this.postedSoFar);
+//	StringBuilder builder = new StringBuilder();
+//	builder.append("\nVariables:\n");
+//	builder.append(this.variables);
+//	builder.append("\nConstraints\n");
+//	builder.append(this.constraints);
+//	builder.append("\nPosted so far: "+this.postedSoFar);
+//	
+//	return builder.toString();
+
+//      Chatterbox.showDecisions(solver);
+//	String stats = String.format("- Solution #%s found. %s \n\t.",
+//                solver.getMeasures().getSolutionCount(),
+//                solver.getMeasures().toOneShortLineString());//,
+//                //solver.getStrategy().getVariables());
 	
-	return builder.toString();
+	return this.solver.toString();
     }
     
     public String humanFormat(){
 	String result = this.toString();
-	int i = 0;
-	for( Iterator<IntVar> it = this.variables.iterator(); it.hasNext(); ++i ){
-	    String name = it.next().getName();
-	    result = result.replaceAll(name, "X_"+i);
-	}
+//	int i = 0;
+//	for( Iterator<IntVar> it = this.variables.iterator(); it.hasNext(); ++i ){
+//	    String name = it.next().getName();
+//	    result = result.replaceAll(name, "X_"+i);
+//	}
 	return result;
+    }
+
+    @Override
+    public boolean hasReachedLimit() {
+	return solver.hasReachedLimit();
+    }
+    
+    enum AnonymousVarsSelector implements VariableSelector<IntVar>{
+	
+	INSTANCE;
+	
+	@Override
+	public IntVar getVariable(IntVar[] variables) {
+	    
+	    IntVar result = null;
+	    
+	    for( IntVar var : variables ){
+		if( var.getName().equals("X_0") || var.getName().equals("X_1") ){
+		    int dsize = var.getDomainSize();
+	            if (dsize > 1){
+	        	result =  var;
+	            }
+		}
+	    }
+	    return result;
+	}
+	
+    }
+    
+    enum AnonymousVarsValueSelector implements IntValueSelector{
+
+	INSTANCE;
+	
+	private int curAttempt = 0;
+	
+	@Override
+	public int selectValue(IntVar var) {
+	    
+	    return var.getLB() + curAttempt++;
+	}
+	
     }
 }

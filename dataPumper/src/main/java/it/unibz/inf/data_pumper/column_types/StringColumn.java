@@ -160,6 +160,8 @@ public class StringColumn extends MultiIntervalColumn<String> {
     @Override
     public void addInterval(String name, long minEncoding, long maxEncoding) {
 	 Interval<String> toAdd = new StringInterval(name, getType(), minEncoding, maxEncoding, this.datatypeLength);
+	 toAdd.updateMaxEncodingAndValue(maxEncoding);
+	 toAdd.updateMinEncodingAndValue(minEncoding);
 	 this.addInterval(toAdd);
     }
     

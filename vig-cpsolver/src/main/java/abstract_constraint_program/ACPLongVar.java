@@ -19,4 +19,6 @@ public abstract class ACPLongVar<T> {
     public String toString(){
 	return wrapped.toString();
     }
+
+    public abstract String getName();
 }

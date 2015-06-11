@@ -132,7 +132,7 @@ public class DBMSConnection {
 		
 		// Fill the REFERENCED_BY fks
 		for( String tableName : schemas.keySet() ){
-			for( ColumnPumper c : schemas.get(tableName).getColumns() ){
+			for( ColumnPumper<?> c : schemas.get(tableName).getColumns() ){
 				for( QualifiedName qN : c.referencesTo() ){
 					schemas.get(qN.getTableName()).getColumn(qN.getColName()).referencedBy().add(new QualifiedName(tableName, c.getName()));
 				}
