@@ -86,16 +86,9 @@ public class DBMSConnection {
 	}
 	
 	public PreparedStatement getPreparedStatement(String template){
-		//pstmt = conn.prepareStatement(
-        //sql,
-        //ResultSet.TYPE_FORWARD_ONLY,
-        //ResultSet.CONCUR_READ_ONLY);
-		//pstmt.setFetchSize(Integer.MIN_VALUE);
-		
+	
 		try {
-//			PreparedStatement stmt = connection.prepareStatement(template, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-//			stmt.setFetchSize(Integer.MIN_VALUE);
-			return connection.prepareStatement(template); /*stmt;*/
+			return connection.prepareStatement(template); 
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -282,8 +275,7 @@ public class DBMSConnection {
 
 		    // Primary keys need to be all different
 		    logger.debug(result.getString(4));
-		    if( result.getString(4).equals("PRI") /*|| result.getString(4).equals("UNI")*/ ){ //TODO BUGFIX!!
-
+		    if( result.getString(4).equals("PRI") ){ 
 			schema.getColumn(result.getString(1)).setPrimary();
 		    }		
 		}
