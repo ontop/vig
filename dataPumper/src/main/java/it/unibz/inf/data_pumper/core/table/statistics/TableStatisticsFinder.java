@@ -5,9 +5,6 @@ import java.util.List;
 
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
-import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
-import it.unibz.inf.data_pumper.core.main.DebugException;
 
 public interface TableStatisticsFinder {
 	public float findDuplicatesRatio(Schema s, ColumnPumper<? extends Object> column);
