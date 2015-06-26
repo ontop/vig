@@ -60,7 +60,7 @@ public class DatabasePumperDB extends DatabasePumper {
 			this.dbOriginal = DBMSConnection.getInstance();
 		} catch (InstanceNullException e) {
 			e.printStackTrace();
-			this.persistence.closeFile();
+			LogToFile.getInstance().closeFile();
 			System.exit(1);
 		}
 		this.tStatsFinder = new TableStatisticsFinderImpl(dbOriginal);
