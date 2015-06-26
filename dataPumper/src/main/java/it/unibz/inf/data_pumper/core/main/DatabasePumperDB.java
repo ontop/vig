@@ -20,7 +20,6 @@ package it.unibz.inf.data_pumper.core.main;
  * #L%
  */
 
-import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.ColumnPumper;
@@ -302,11 +301,11 @@ public class DatabasePumperDB extends DatabasePumper {
 		}
 	}
 	
-	private void resetDuplicateValues(Schema schema){
-		for( ColumnPumper c : schema.getColumns()){
-			c.reset();
-		}
-	}
+	//	private void resetDuplicateValues(Schema schema){
+	//		for( ColumnPumper c : schema.getColumns()){
+	//			c.reset();
+	//		}
+	//	}
 	
 	public static double getScaleFactor(){
 		return scaleFactor;

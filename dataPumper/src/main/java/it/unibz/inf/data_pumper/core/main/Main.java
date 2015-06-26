@@ -48,7 +48,7 @@ public class Main {
 	public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
 
 	public static void main(String[] args) {
-		
+	    
 		// --- configuration -- //
 		BasicConfigurator.configure();		
 		Option.parseOptions(args);

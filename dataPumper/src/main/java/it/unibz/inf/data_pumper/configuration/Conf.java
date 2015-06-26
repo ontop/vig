@@ -32,10 +32,12 @@ import java.io.*;
 public class Conf {
 	
 	protected String confFile;
+	protected String confDir;
 	private static Conf instance = null;
 	
 	protected Conf(String resourcesDir){
 		this.confFile = resourcesDir + "/configuration.conf";
+		this.confDir = resourcesDir;
 	};
 	
 	public static Conf getInstance(){
@@ -43,6 +45,10 @@ public class Conf {
 			instance = new Conf(Main.optResources.getValue());
 		}
 		return instance;
+	}
+	
+	public String confDir() {
+	    return this.confDir;
 	}
 	
 	
