@@ -283,6 +283,9 @@ public class DatabasePumperDB extends DatabasePumper {
 
     private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
 	for( ColumnPumper<? extends Object> column : schema.getColumns() ){
+	    if( column.toString().equals("wellbore_core.wlbCoreIntervalUom")){
+		logger.debug("CIAO!");
+	    }
 	    column.generateValues(schema, originalDb);
 	}
     }

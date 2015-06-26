@@ -33,7 +33,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>core.main.Main</mainClass>
+							<mainClass>it.unibz.inf.data_pumper.core.main.Main</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

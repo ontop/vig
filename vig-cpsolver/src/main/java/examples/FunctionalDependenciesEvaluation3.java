@@ -42,7 +42,7 @@ public class FunctionalDependenciesEvaluation3 extends AbstractProblem {
 //	Constraint I1I2 = IntConstraintFactory.arithm(I2, "=", I1);
 	
 		
-	solver.post(I1I2);
+//	solver.post(I1I2);
 	
 	
     }
