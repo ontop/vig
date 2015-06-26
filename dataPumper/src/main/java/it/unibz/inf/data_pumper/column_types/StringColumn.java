@@ -103,7 +103,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		String trail = interval.encode(interval.getMinEncoding() + this.map(seqIndex));
 
 		StringBuilder zeroes = new StringBuilder();
-		for( int j = 0; j < interval.encode(interval.getMinEncoding()).length() - trail.length(); ++j ){
+		for( int j = 0; j < interval.lowerBoundValue().length() - trail.length(); ++j ){
 		    zeroes.append("0");
 		}
 		String valueToAdd = zeroes.toString() + trail;

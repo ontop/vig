@@ -109,7 +109,7 @@ public class StringInterval extends Interval<String> {
 	return trail;
     }
 
-    private String lowerBoundValue(){
+    public String lowerBoundValue(){
 	StringBuilder builder = new StringBuilder();
 
 	for( int i = 0; i < datatypeLength; ++i ){
