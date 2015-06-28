@@ -291,6 +291,11 @@ public class DatabasePumperDB extends DatabasePumper {
 	
 	private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
 		for( ColumnPumper column : schema.getColumns() ){
+//		    if( column.getName().equals("seaSurveyName") ){
+//			if( schema.getTableName().equals("seaMultiline") )
+//			    logger.debug("CIAO!!");
+//		    }
+		    
 			try {
 				column.generateValues(schema, originalDb);
 			} catch (BoundariesUnsetException | ValueUnsetException e) {
