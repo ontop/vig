@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Clean
+mvn clean
+
 # Build and skip the unit tests
 mvn -Dmaven.test.skip=true install
 
