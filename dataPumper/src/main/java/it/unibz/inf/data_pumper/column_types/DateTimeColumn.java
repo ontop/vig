@@ -40,6 +40,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	
 	private boolean boundariesSet = false;
 	private final int MILLISECONDS_PER_DAY=86400000;
+	private static final long MAX_DATE_MILLIS = 253402210800000L;// 253402210800000
 	
 	public DateTimeColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
@@ -47,6 +48,13 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 		this.max = null;
 		this.min = null;
 		this.numFreshsToInsert = 0;
+	}
+	
+	private static void normalizeCalendar(Calendar cal){
+	    cal.set(Calendar.HOUR_OF_DAY, 0);
+	    cal.set(Calendar.MINUTE, 0);
+	    cal.set(Calendar.SECOND, 0);
+	    cal.set(Calendar.MILLISECOND, 0);
 	}
 
 	@Override
@@ -59,6 +67,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 		
 		Calendar c = Calendar.getInstance();
 		c.setTime(min);
+		normalizeCalendar(c);
 		
 		// 86400 Seconds in one day
 		
@@ -69,6 +78,9 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 			}
 			else{
 			    long nextValue = this.generator.nextValue(this.numFreshsToInsert) * this.MILLISECONDS_PER_DAY + c.getTimeInMillis();
+			    if( c.getTimeInMillis() == MAX_DATE_MILLIS ){
+				nextValue = c.getTimeInMillis();
+			    }
 			    values.add(new Timestamp(nextValue));
 			}
 		}
@@ -76,7 +88,11 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	}
 
 	@Override
-	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{		
+	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{	
+	    
+	    if( schema.getTableName().equals("bsns_arr_area_operator") ){
+		logger.debug("CIAO!");
+	    }
 		
 		this.initNumDupsNullsFreshs();
 		
@@ -89,17 +105,17 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 		try{
 			ResultSet result = stmt.executeQuery();
 			min = new Timestamp(0);
-			max = new Timestamp(Long.MAX_VALUE);
+			max = new Timestamp(MAX_DATE_MILLIS);
 			
 			if( result.next() && (result.getTimestamp(1) != null) ){
 				
-				if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(new Timestamp(Long.MAX_VALUE)) == 0 ){ // It looks crazy but it happens
-					// Do nothing
-				}
-				else{
+//				if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(new Timestamp(MAX_DATE_MILLIS)) == 0 ){ // It looks crazy but it happens
+//					// Do nothing
+//				}
+//				else{
 					min = result.getTimestamp(1);
 					max = result.getTimestamp(2);
-				}
+//				}
 			}
 			stmt.close();
 		}
@@ -109,13 +125,16 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 				
 		Calendar c = Calendar.getInstance();
 		c.setTimeInMillis(min.getTime());
+		normalizeCalendar(c);
 		
 		Calendar upperBound = Calendar.getInstance();
 		upperBound.set(9999,11,31);
-		
+		normalizeCalendar(upperBound);
+				
 		Calendar curMax = Calendar.getInstance();
 		curMax.setTimeInMillis(max.getTime());
-				
+		normalizeCalendar(curMax);
+		
 		for( int i = 1; i <= this.numFreshsToInsert; ++i ){
 			
 			if( c.compareTo(upperBound) > -1 ){
@@ -143,6 +162,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 		
 		Calendar upperBound = Calendar.getInstance();
 		upperBound.set(9999,11,31);
+		normalizeCalendar(upperBound);
 		
 		if( upperBound.getTimeInMillis() > newMax * this.MILLISECONDS_PER_DAY ){		
 			max = new Timestamp(newMax * this.MILLISECONDS_PER_DAY);
