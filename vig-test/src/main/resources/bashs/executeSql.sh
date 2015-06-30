@@ -13,7 +13,7 @@ if [ $# -eq 5 ]
 then    
     case "$DB_TYPE" in 
 	'postgres')
-	    psql --user=postgre --dbname=ontowis_100m --password -f $FILE
+	    psql --user=postgres --dbname=ontowis_100m --password -f $FILE
 	    ;;
 	'mysql')
 	    mysql $DB_NAME --user=$USER --password=$PWD < $FILE 

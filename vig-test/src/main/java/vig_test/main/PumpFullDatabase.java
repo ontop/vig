@@ -11,6 +11,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import exceptions.AssertionFailedException;
+
 abstract class Constants{
     
     static final String CSVS_PATH = "src/main/resources/csvs";
@@ -19,7 +21,7 @@ abstract class Constants{
     static abstract class Bashs{
 	static final String INIT_SCHEMA = "src/main/resources/bashs/initDatabaseSchema.sh";
 	static final String PUMP_DATA = "src/main/resources/bashs/pumpDataToNpd.sh";
-	static final String CHECK_FKs = "src/main/resources/bashs/executeSql.sh src/main/resources/sqls/check_fkeys.sql npd_clean_to_pump tir gr3g4r10 mysql | grep npd_clean_to_pump";
+	static final String CHECK_FKs = "src/main/resources/bashs/executeSql.sh src/main/resources/sqls/check_fkeys.sql npd_clean_to_pump tir gr3g4r10 mysql";
     }
     
     abstract class SQLs{
@@ -35,7 +37,7 @@ public class PumpFullDatabase {
 	TestDatabaseCreator creator = new TestDatabaseCreator();
 	creator.createTestDatabase();
 
-	Main.main(new String[0]);
+	Main.main(new String[0]);// That is, pump with size 1
 
 	// Take the csvs, and load them into the database
 	try {
@@ -58,35 +60,46 @@ class SQLScriptsExecuter{
 
     static void loadCsvsToDB() throws IOException{
 	Process p = Runtime.getRuntime().exec(Constants.Bashs.PUMP_DATA+" "+Constants.DB_NAME);
-	printErrorAndOutputStream(p);
+	String log = printErrorAndOutputStream(p);
+	if( log.contains("ERROR") ){
+	    throw new AssertionFailedException("Error while loading the csv");
+	}
     }
     
     static void checkForeignKeys() throws IOException{
 	Process p = Runtime.getRuntime().exec(Constants.Bashs.CHECK_FKs);
-	printErrorAndOutputStream(p);
+	String result = printErrorAndOutputStream(p);
+	if( result.contains("npd_clean_to_pump") ){
+	    throw new AssertionFailedException("Violated Foreign Key");
+	}
     }
 
-    private static void printErrorAndOutputStream(Process p) throws IOException {
+    private static String printErrorAndOutputStream(Process p) throws IOException {
 	class LocalUtils {
 	    BufferedReader makeReader(boolean isError, Process p){
 		InputStream str = isError ? p.getErrorStream() : p.getInputStream();
 		return new BufferedReader(new InputStreamReader(str));
 	    }
-	    public void readFromReader(BufferedReader input) throws IOException {
+	    public String readFromReader(BufferedReader input) throws IOException {
 		String line = null;
+		StringBuilder builder = new StringBuilder();
 		while ((line = input.readLine()) != null) {
 		    System.out.println(line);
+		    builder.append(line+"\n");
 		}
 		input.close();	
+		return builder.toString();
 	    }
 	}
 		
 	LocalUtils utils = new LocalUtils();
 	
 	BufferedReader out = utils.makeReader(false, p);
-	utils.readFromReader(out);
+	String outString = utils.readFromReader(out);
 	BufferedReader err = utils.makeReader(true, p);
-	utils.readFromReader(err);
+	String errString = utils.readFromReader(err);
+	
+	return outString + "\n BEGIN_STDERR \n"+ errString;
     }
 }
 

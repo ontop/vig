@@ -29,7 +29,6 @@ import it.unibz.inf.data_pumper.column_types.StringColumn;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -44,7 +43,6 @@ public class Schema{
     private int maxDupsRepetition;
 
     private int originalSize;
-    private int numRowsOriginal;
 
     private static Logger logger = Logger.getLogger(Schema.class.getCanonicalName());
 
@@ -128,10 +126,6 @@ public class Schema{
 	return tableName;
     }
 
-    public boolean isIndependent() {
-	// TODO Auto-generated method stub
-	return false;
-    }
     @Override
     public boolean equals(Object s){
 	if(! (s instanceof Schema) ) return false;
@@ -142,8 +136,8 @@ public class Schema{
     @Override
     public int hashCode(){
 	return this.getTableName().hashCode();
-
     }
+
     public List<ColumnPumper<? extends Object>> getPk(){
 	if( primaryKey.size() == 0 ){
 
@@ -156,40 +150,11 @@ public class Schema{
 	return primaryKey;
     }
 
-    public void sortColumnsAccordingToDupRatios() {
-	Collections.sort(columns, new Comparator<ColumnPumper<? extends Object>>() {
-	    @Override
-	    public int compare(ColumnPumper<? extends Object> c1, ColumnPumper<? extends Object> c2) { // Descending order
-
-		int result = 0;
-
-		result = c1.getDuplicateRatio() > c2.getDuplicateRatio() ? -1 : 
-		    c1.getDuplicateRatio() == c2.getDuplicateRatio() ? 0 : 1;
-		
-		return result;
-	    }
-	});
-	// Update the indexes
-	int index = 0;
-	for( ColumnPumper<? extends Object> cP : columns ){
-	    cP.setIndex(++index);
-	}
-    }
-
     public void reset() {
 	for( ColumnPumper<? extends Object> cP : columns ){
 	    cP.reset();
 	}
     }
-
-    public void setNumRowsOriginal(int nRows) {
-	this.numRowsOriginal = nRows;
-    }
-
-    public int getNumRowsOriginal(){
-	return this.numRowsOriginal;
-    }
-
 }
 class TypeStringParser{
 

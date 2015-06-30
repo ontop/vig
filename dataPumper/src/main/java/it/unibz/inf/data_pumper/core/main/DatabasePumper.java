@@ -28,7 +28,6 @@ public abstract class DatabasePumper {
 	
 	protected boolean pureRandom = false;
 	
-//	public abstract void pumpDatabase(double percentage, String fromTable);
 	public abstract void pumpDatabase(double percentage);
 	
 	public void setPureRandomGeneration() {

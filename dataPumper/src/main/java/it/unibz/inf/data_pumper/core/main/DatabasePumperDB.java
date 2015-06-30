@@ -79,7 +79,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	} catch (SQLException e) {
 	    e.printStackTrace();
 	    DatabasePumper.closeEverything();
-	    System.exit(1);
+	    throw new RuntimeException("Exception while pumping the database"); 
 	}
 
 	for( String tableName : dbOriginal.getAllTableNames() ){
