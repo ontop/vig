@@ -30,12 +30,12 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import it.unibz.inf.data_pumper.basic_datatypes.Schema;
-import it.unibz.inf.data_pumper.column_types.ColumnPumper;
+import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.statistics.xml_model.*;
-import it.unibz.inf.data_pumper.utils.Statistics;
+import it.unibz.inf.data_pumper.persistence.statistics.xml_model.*;
+import it.unibz.inf.data_pumper.tables.Schema;
+import it.unibz.inf.data_pumper.utils.ExecutionStatisticsProfiler;
 import it.unibz.inf.vig_options.core.DoubleOption;
 import it.unibz.inf.vig_options.core.Option;
 import it.unibz.inf.vig_options.core.StringOption;
@@ -85,7 +85,7 @@ public class Main {
 	}	
 	pumper.pumpDatabase(percentage);
 
-	Statistics.printStats();
+	ExecutionStatisticsProfiler.printStats();
 	
 	// Create xml model
 	dbModelCreator = DatabaseModelCreator.INSTANCE;

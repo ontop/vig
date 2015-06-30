@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.columns_cluster;
 
-import it.unibz.inf.data_pumper.column_types.ColumnPumper;
+import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.utils.Pair;
 
 import java.util.HashMap;

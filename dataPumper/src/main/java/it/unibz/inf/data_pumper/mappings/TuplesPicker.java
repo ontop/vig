@@ -20,9 +20,9 @@ package it.unibz.inf.data_pumper.mappings;
  * #L%
  */
 
-import it.unibz.inf.data_pumper.basic_datatypes.Template;
-import it.unibz.inf.data_pumper.column_types.ColumnPumper;
+import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.utils.Template;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -20,15 +20,14 @@ package it.unibz.inf.data_pumper.core.main;
  * #L%
  */
 
-import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
-import it.unibz.inf.data_pumper.basic_datatypes.Schema;
-import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.column_types.intervals.Interval;
+import it.unibz.inf.data_pumper.columns.ColumnPumper;
+import it.unibz.inf.data_pumper.columns.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.exception.ProblematicCycleForPrimaryKeyException;
-import it.unibz.inf.data_pumper.core.table.statistics.TableStatisticsFinder;
-import it.unibz.inf.data_pumper.core.table.statistics.TableStatisticsFinderImpl;
+import it.unibz.inf.data_pumper.core.statistics.creators.table.TableStatisticsFinder;
+import it.unibz.inf.data_pumper.core.statistics.creators.table.TableStatisticsFinderImpl;
 import it.unibz.inf.data_pumper.persistence.LogToFile;
+import it.unibz.inf.data_pumper.tables.QualifiedName;
+import it.unibz.inf.data_pumper.tables.Schema;
 import it.unibz.inf.data_pumper.utils.UtilsMath;
 
 import java.io.IOException;

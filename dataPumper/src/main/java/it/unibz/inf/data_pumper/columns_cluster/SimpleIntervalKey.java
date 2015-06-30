@@ -1,6 +1,6 @@
 package it.unibz.inf.data_pumper.columns_cluster;
 
-import it.unibz.inf.data_pumper.column_types.intervals.Interval;
+import it.unibz.inf.data_pumper.columns.intervals.Interval;
 
  class SimpleIntervalKey implements IntervalKey{
     private final long lwBound;

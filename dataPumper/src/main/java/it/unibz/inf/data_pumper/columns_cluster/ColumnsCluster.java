@@ -2,7 +2,7 @@ package it.unibz.inf.data_pumper.columns_cluster;
 
 import java.util.List;
 
-import it.unibz.inf.data_pumper.column_types.ColumnPumper;
+import it.unibz.inf.data_pumper.columns.ColumnPumper;
 
 public abstract class ColumnsCluster<T> {
  

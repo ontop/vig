@@ -1,8 +1,4 @@
-package it.unibz.inf.data_pumper.core.main;
-
-import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.connection.InstanceNullException;
-import it.unibz.inf.data_pumper.persistence.LogToFile;
+package it.unibz.inf.data_pumper.tables;
 
 /*
  * #%L
@@ -24,24 +20,18 @@ import it.unibz.inf.data_pumper.persistence.LogToFile;
  * #L%
  */
 
-public abstract class DatabasePumper {
-	
-	protected boolean pureRandom = false;
-	
-	public abstract void pumpDatabase(double percentage);
-	
-	public void setPureRandomGeneration() {
-		pureRandom = true;
-	}
-	
-	protected static void closeEverything(){
-		try {
-			DBMSConnection.getInstance().close();
-		} catch (InstanceNullException e) {
-			e.printStackTrace();
-		}
-		finally{
-			LogToFile.getInstance().closeFile();
-		}
-	}
-}
+public enum MySqlDatatypes {
+	INT, 
+	DOUBLE,
+	BIGINT,
+	CHAR,
+	VARCHAR,
+	TEXT,
+	LONGTEXT,
+	DATETIME,
+	POINT,
+	LINESTRING,
+	MULTILINESTRING,
+	POLYGON,
+	MULTIPOLYGON;
+};

@@ -20,12 +20,10 @@ package it.unibz.inf.data_pumper.connection;
  * #L%
  */
 
-import it.unibz.inf.data_pumper.basic_datatypes.QualifiedName;
-import it.unibz.inf.data_pumper.basic_datatypes.Schema;
-import it.unibz.inf.data_pumper.basic_datatypes.Template;
-import it.unibz.inf.data_pumper.column_types.ColumnPumper;
-import it.unibz.inf.data_pumper.connection.exceptions.InstanceNullException;
-import it.unibz.inf.data_pumper.connection.exceptions.UnsupportedDatabaseException;
+import it.unibz.inf.data_pumper.columns.ColumnPumper;
+import it.unibz.inf.data_pumper.tables.QualifiedName;
+import it.unibz.inf.data_pumper.tables.Schema;
+import it.unibz.inf.data_pumper.utils.Template;
 
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
