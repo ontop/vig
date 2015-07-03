@@ -35,6 +35,7 @@ import it.unibz.inf.data_pumper.tables.Schema;
 public abstract class ColumnPumper<T> extends Column implements ColumnPumperInterface<T>{
 		
 	private float duplicateRatio;
+	private static final float DUPS_CORRECTION_FACTOR = 0.0F;
 	private float nullRatio;
 	private long numRowsToInsert;
 	protected long numFreshsToInsert;
@@ -87,7 +88,13 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	@Override
 	public float getDuplicateRatio() {
 		if( ! duplicateRatioSet ) throw new ValueUnsetException();
-		return this.duplicateRatio;
+		float result = this.duplicateRatio > 1 - DUPS_CORRECTION_FACTOR ? 1 : this.duplicateRatio;
+		return result;
+	}
+	
+	@Override
+	public boolean dupsCorrectionFactorApplied(){
+	    return this.duplicateRatio > 1 - DUPS_CORRECTION_FACTOR;
 	}
 
 	@Override
@@ -120,10 +127,28 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 
 	    this.numDupsToInsert = (long) (this.getNumRowsToInsert() * this.getDuplicateRatio());
 	    this.numNullsToInsert = (long) (this.getNumRowsToInsert() * this.getNullRatio());
+	    
+//	    checkIfTooManyDups();
+	    
 	    this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;			
 	    this.numDupsNullRowsSet = true;
 	    this.generator = new CyclicGroupGenerator(numFreshsToInsert);
 	}
+	
+	
+//	private void checkIfTooManyDups(){
+//	    	    
+//	    // If the duplicates ratio has been alterated to 1
+//	    if( this.dupsCorrectionFactorApplied() ){
+//	    
+//		// Check
+//		if( this.numDupsToInsert + this.numNullsToInsert >= this.getNumRowsToInsert() ){
+//		    this.numDupsToInsert = this.getNumRowsToInsert() - this.numNullsToInsert - 1;
+//		    
+//		    assert this.numDupsToInsert > 0 : "Assertion Failed: No duplicate can be subtracted for column " + this.toString(); 
+//		} 
+//	    }
+//	}
 
 	
 	@Override

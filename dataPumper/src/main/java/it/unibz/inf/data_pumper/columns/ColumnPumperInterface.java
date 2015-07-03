@@ -91,4 +91,6 @@ public interface ColumnPumperInterface<T> {
 	public void decrementNumFreshs();
 	
 	public void reset(); // To reset the internal state
+
+	boolean dupsCorrectionFactorApplied();
 };

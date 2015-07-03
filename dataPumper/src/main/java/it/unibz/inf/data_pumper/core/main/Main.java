@@ -55,7 +55,7 @@ public class Main {
     private static Conf conf;
 
     // Options
-    private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
+    private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 2, new DoubleRange(0, Double.MAX_VALUE, false, true));	
     public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
 
     // Xml Model of the Data
@@ -75,7 +75,7 @@ public class Main {
 	    DBMSConnection.initInstance(conf.jdbcConnector(), conf.dbUrl(), conf.dbUser(), conf.dbPwd());
 	} catch (IOException e) {
 	    e.printStackTrace();
-	    System.exit(1);
+	    throw new RuntimeException(e);
 	}
 
 	DatabasePumper pumper = pumperType == PumperType.DB ? new DatabasePumperDB() : new DatabasePumperOBDA();

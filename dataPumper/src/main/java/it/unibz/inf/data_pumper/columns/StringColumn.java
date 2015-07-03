@@ -118,26 +118,6 @@ public class StringColumn extends MultiIntervalColumn<String> {
 
 	this.initNumDupsNullsFreshs();
 
-	//		this.getIntervals().get(0).minEncoding = 0; // TODO See this part
-	//		String lowerBouldValue = lowerBoundValue();
-	//		
-	//		String trail = encode(this.numFreshsToInsert);
-	//		StringBuilder zeroes = new StringBuilder();
-	//		
-	//		if( lowerBouldValue.length() > trail.length() ){
-	//			for( int j = 0; j < lowerBouldValue.length() - trail.length(); ++j ){
-	//				zeroes.append("0");
-	//			}
-	//			this.max = zeroes.toString() + trail;
-	//		}
-	//		else{
-	//			this.max = upperBoundValue();
-	//			this.numFreshsToInsert = 1;
-	//			for( int i = 0; i < this.max.length(); ++i ){
-	//				this.numFreshsToInsert *= characters.length() -1;
-	//			}
-	//		}
-
 	// Create the single initial interval
 	List<ColumnPumper<String>> involvedCols = new LinkedList<ColumnPumper<String>>();
 	involvedCols.add(this);
@@ -164,50 +144,4 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	 toAdd.updateMinEncodingAndValue(minEncoding);
 	 this.addInterval(toAdd);
     }
-    
-    //	private String lowerBoundValue(){
-    //		StringBuilder builder = new StringBuilder();
-    //		
-    //		for( int i = 0; i < datatypeLength; ++i ){
-    //			builder.append(characters.charAt(0)); // Minimum
-    //		}
-    //		
-    //		return builder.toString();
-    //	}
-    //	
-    //	private String upperBoundValue(){
-    //		StringBuilder builder = new StringBuilder();
-    //		
-    //		for( int i = 0; i < (datatypeLength > MAX_LENGTH ? MAX_LENGTH : datatypeLength); ++i ){
-    //			builder.append(characters.charAt(characters.length()-1)); // Maximum
-    //		}
-    //		
-    //		return builder.toString();
-    //	}
 };
-
-//private String increment(String toIncrement) {
-//
-//StringBuilder builder = new StringBuilder(toIncrement);
-//
-//for( int i = toIncrement.length() -1; i >= 0; --i ){
-//	
-//	if( toIncrement.substring(i, i+1).compareTo(upperBoundValue().substring(0, 1)) < 0 ){
-//		builder.replace(i, i+1, characters.charAt(characters.indexOf(toIncrement.charAt(i)) + 1)+"");
-//		return builder.toString();
-//	}
-//	int j = i;
-//	
-//	while( j >= 0 && toIncrement.charAt(j) == upperBoundValue().charAt(0) ){
-//		builder.replace(j, j+1, lowerBoundValue().substring(0, 1));
-//		--j;
-//	}
-//	if( j >= 0 ){
-//		builder.replace(j, j+1, characters.charAt(characters.indexOf(toIncrement.charAt(j)) + 1)+"");
-//		return builder.toString();
-//	}
-//} // Available symbols are finished. Put a duplicate.
-//logger.debug("NOT POSSIBLE TO ADD A FRESH VALUE. RE-GENERATING");
-//
-//return null;
-//}

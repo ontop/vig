@@ -28,6 +28,9 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
     @Override
     public void updateMinEncodingAndValue(
             long newMin) {
+	
+	super.updateMinEncodingAndValue(newMin);
+	
         this.min = new BigDecimal(newMin);
         this.minEncoding = newMin;
     }
@@ -64,6 +67,11 @@ public class BigDecimalInterval extends Interval<BigDecimal> {
         result.updateMaxEncodingAndValue(this.maxEncoding);
         
         return result;
+    }
+
+    @Override
+    public void synchronizeMinMaxNFreshs() {
+	
     }
     
 }

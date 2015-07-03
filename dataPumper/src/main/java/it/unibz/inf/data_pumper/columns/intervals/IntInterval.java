@@ -23,6 +23,9 @@ public class IntInterval extends Interval<Long> {
 
     @Override
     public void updateMinEncodingAndValue(long newMin) {
+	
+	super.updateMinEncodingAndValue(newMin);
+	
         this.min = newMin;
         this.minEncoding = newMin;
     }
@@ -64,5 +67,11 @@ public class IntInterval extends Interval<Long> {
         result.updateMaxEncodingAndValue(this.maxEncoding);
         
         return result;
+    }
+
+    @Override
+    public void synchronizeMinMaxNFreshs() {
+	// TODO Auto-generated method stub
+	
     }
 }

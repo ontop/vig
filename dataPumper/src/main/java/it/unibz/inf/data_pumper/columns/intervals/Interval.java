@@ -115,7 +115,15 @@ public abstract class Interval<T> {
     }
 
     // Public updatable interface
-    public abstract void updateMinEncodingAndValue(long newMin);
+    
+    /**
+     * 
+     * CONTRACT: Each overrider should call the Interval implementation
+     * @param newMin
+     */
+    public void updateMinEncodingAndValue(long newMin){
+	assert newMin >= 0 : "Negative encoding" +newMin+" is not allowed for "+this.toString();
+    }
     public abstract void updateMaxEncodingAndValue(long newMax);
     
     public abstract long getMinEncoding();
@@ -219,4 +227,10 @@ public abstract class Interval<T> {
         builder.append("nFreshsToInsert = " + this.nFreshsToInsert + "\n");
         return builder.toString();
     }
+
+    /**
+     * It pushes the minimum down, or the maximum up, according
+     * to the nFreshs.
+     */
+    public abstract void synchronizeMinMaxNFreshs();
 };

@@ -98,8 +98,12 @@ public class IntColumn extends MultiIntervalColumn<Long> {
         }
         stmt.close();
 
+        // Guarantee positive numbers
+        if( min < 0 ){
+            min = 0;
+        }
+        
         max = min + this.numFreshsToInsert;  
-                
         
         // Create the single initial interval
         List<ColumnPumper<Long>> involvedCols = new LinkedList<ColumnPumper<Long>>();

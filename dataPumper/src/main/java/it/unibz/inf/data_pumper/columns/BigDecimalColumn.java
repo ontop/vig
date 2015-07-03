@@ -90,10 +90,16 @@ public class BigDecimalColumn extends MultiIntervalColumn<BigDecimal>{
 	    stmt.close();
 	} catch (SQLException e) {
 	    e.printStackTrace();
-	    System.exit(1);
+	    throw new RuntimeException(e);
 	}
 
 	BigDecimal nFreshsBigDecimalTransl = new BigDecimal(this.numFreshsToInsert);
+	
+	// Guarantee positive encodings
+	if( min.compareTo(BigDecimal.ZERO) < 0 ){
+	    min = BigDecimal.ZERO;
+	}
+	
 	BigDecimal proposedMax = min.add(nFreshsBigDecimalTransl); 
 
 	if( proposedMax.compareTo(max) > 0 ){ 

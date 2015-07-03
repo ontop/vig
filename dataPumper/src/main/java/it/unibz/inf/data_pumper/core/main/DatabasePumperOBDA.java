@@ -122,9 +122,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		stop = utils.insert(insertedIntervals, cP, visited);
 	    }
 	    if( stop ){
-		// TODO Some fk constraints might be violated, let's fix this
-		// Idea: Revert to before
-		logger.info("TODO case occurred");
+		logger.info("Timeout occurred");
 	    }
 	    // All interval boundaries are set
 	}
@@ -186,7 +184,6 @@ class IntervalsBoundariesFinder<T>{
 		    }
 		}
 		if( !optimization1 ){
-		    // Let's try to apply optimization2 FIXME Wrong!!!
 		    boolean noFkInInterval = true;
 		    for( ColumnPumper<? extends Object> involved : previouslyInserted.getInvolvedColumnPumpers() ){
 			if( cP.getRefersToClosure().contains(involved) ){
@@ -269,11 +266,12 @@ class IntervalsBoundariesFinder<T>{
 		    }
 		}
 	    } // End "foreach interval"
+	    
 	    long nFreshsInFirstInterval = cP.getNumFreshsToInsert() - cP.countFreshsInIntersectedIntervals();
 
 	    // Assert
 	    if( nFreshsInFirstInterval < 0 ){
-		throw new DebugException("Assertion failed: nFreshsInFirstInterval < 0");
+		throw new DebugException("Assertion failed: nFreshsInFirstInterval < 0 while inserting column " + cP.toString());
 	    }
 
 	    if( nFreshsInFirstInterval > 0 ){

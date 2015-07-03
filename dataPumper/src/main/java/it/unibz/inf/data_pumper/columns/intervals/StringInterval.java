@@ -29,6 +29,9 @@ public class StringInterval extends Interval<String> {
 
     @Override
     public void updateMinEncodingAndValue(long newMin) {
+	
+	super.updateMinEncodingAndValue(newMin);
+	
 	this.minEncoding = newMin;
 	this.min = encode(newMin); 
     }
@@ -66,7 +69,10 @@ public class StringInterval extends Interval<String> {
 
     // Encode in base 62
     public String encode(long value) {
-
+	
+	// Assert
+	assert value >= 0 : "Encoding of a negative value for column " + this.toString();
+ 
 	List<Integer> number = new ArrayList<Integer>();
 
 	while( !(value == 0) ){
@@ -79,17 +85,21 @@ public class StringInterval extends Interval<String> {
 
 	StringBuilder result = new StringBuilder();
 	for( int i = 0; i < number.size(); ++i ){
+	    
+	    // Debug Check
+	    assert number.get(i) < characters.length() : "Out of boundaries for column " +this.getInvolvedColumnPumpers().iterator().next().toString();
+	    
 	    result.append(characters.charAt((number.get(i))));
 	}
 
 	String trail = result.toString();
 
-	String lowerBouldValue = lowerBoundValue();
+	String lowerBoundValue = lowerBoundValue();
 
 	StringBuilder zeroes = new StringBuilder();
 
-	if( lowerBouldValue.length() >= trail.length() ){
-	    for( int j = 0; j < lowerBouldValue.length() - trail.length(); ++j ){
+	if( lowerBoundValue.length() >= trail.length() ){
+	    for( int j = 0; j < lowerBoundValue.length() - trail.length(); ++j ){
 		zeroes.append("0");
 	    }
 	    this.max = zeroes.toString() + trail;
@@ -141,5 +151,11 @@ public class StringInterval extends Interval<String> {
 	result.updateMaxEncodingAndValue(this.maxEncoding);
 
 	return result;
+    }
+
+    @Override
+    public void synchronizeMinMaxNFreshs() {
+	// TODO Auto-generated method stub
+	
     }
 };

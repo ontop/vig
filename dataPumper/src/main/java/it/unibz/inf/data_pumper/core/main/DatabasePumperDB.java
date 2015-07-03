@@ -111,10 +111,6 @@ public class DatabasePumperDB extends DatabasePumper {
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 	    for( Interval<?> interval : cP.getIntervals() ){
 		
-		if( interval.toString().equals("prlAreaSplitByBlock.prlNpdidLicence---licence_area_poly_hst.prlNpdidLicence---licence_petreg_licence.prlNpdidLicence") ){
-		    logger.debug("CIAO!");
-		}
-		
 		if( interval.getNFreshsToInsert() != interval.getMaxEncoding() - interval.getMinEncoding() )
 		    throw new DebugException("Inconsistent Interval Detected! : Interval " + interval.toString());
 	    }
@@ -282,9 +278,6 @@ public class DatabasePumperDB extends DatabasePumper {
 
     private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
 	for( ColumnPumper<? extends Object> column : schema.getColumns() ){
-	    if( column.toString().equals("wellbore_core.wlbCoreIntervalUom")){
-		logger.debug("CIAO!");
-	    }
 	    column.generateValues(schema, originalDb);
 	}
     }

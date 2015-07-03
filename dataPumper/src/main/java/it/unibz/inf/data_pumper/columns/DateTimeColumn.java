@@ -73,8 +73,12 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	}
 
 	@Override
-	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException {		
-   
+	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException {	
+	    
+	    if( this.toString().equals("bsns_arr_area_operator.baaOperatorDateUpdated") ){
+		logger.debug("ciao!!");
+	    }
+	      
 	    this.initNumDupsNullsFreshs();
 
 	    Template t = new Template("select ? from "+schema.getTableName()+";");
@@ -89,26 +93,30 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    Timestamp max = new Timestamp(Long.MAX_VALUE);
 
 	    if( result.next() && (result.getTimestamp(1) != null) ){
-
-	        if( result.getTimestamp(1).compareTo(result.getTimestamp(2)) == 0 && result.getTimestamp(1).compareTo(max) == 0 ){ 
-	            // min = max = 9999,11,31 
-	            // Do nothing
-	        }
-	        else{
-	            min = result.getTimestamp(1);
-	            max = result.getTimestamp(2);
-	        }
+		min = result.getTimestamp(1);
+		max = result.getTimestamp(2);
 	    }
 	    stmt.close();
 	    
-	    long minTime = min.getTime();
-	    long maxTime = max.getTime();
+	    Calendar upperBound = Calendar.getInstance();
+	    upperBound.set(9999,11,31);
+	    DatetimeInterval.normalizeCalendar(upperBound);
 	    
-	    // To avoid negative numbers
+	    long minTime = min.getTime();
+	    long maxTime = upperBound.getTimeInMillis();
+	    
 	    if( minTime < 0 ){
 		minTime = 0;
 	    }
-
+	    
+	    if( maxTime - minTime < (this.numFreshsToInsert * DatetimeInterval.MILLISECONDS_PER_DAY) ){
+		minTime = maxTime - this.numFreshsToInsert * DatetimeInterval.MILLISECONDS_PER_DAY;
+		
+		if( minTime < 0 ){
+		    minTime = 0;
+		}
+	    }
+	    
 	    maxTime = minTime + numFreshsToInsert * DatetimeInterval.MILLISECONDS_PER_DAY;
 	    
 	    min = new Timestamp(minTime);
@@ -121,6 +129,8 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    
 	    initialInterval.updateMinEncodingAndValue(minTime / DatetimeInterval.MILLISECONDS_PER_DAY);
 	    initialInterval.updateMaxEncodingAndValue(maxTime / DatetimeInterval.MILLISECONDS_PER_DAY);
+	    
+	    initialInterval.synchronizeMinMaxNFreshs();
 	    
 	    this.intervals.add(initialInterval);	    
 	    

@@ -91,6 +91,18 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
             int colNRowsOriginal = DBMSConnection.getInstance().getNRows(beingInsertedCol.getSchema().getTableName());
             int nDupsOriginal = (int) (colNRowsOriginal * beingInsertedCol.getDuplicateRatio());
             int nNullsOriginal = (int) (colNRowsOriginal * beingInsertedCol.getNullRatio());
+            
+//            if( beingInsertedCol.toString().equals("apaAreaNet.apaAreaType") ){
+//        	System.err.println("CIAO!!");
+//            }
+//            
+//            if( beingInsertedCol.dupsCorrectionFactorApplied() ){
+//        	// Same check of method ColumnPumper.checkIfTooManyDups()
+//        	if( nDupsOriginal + nNullsOriginal >= colNRowsOriginal ){
+//        	    nDupsOriginal = colNRowsOriginal - nNullsOriginal - 1;
+//        	} 
+//            }
+            
             int nDistinctOriginal = colNRowsOriginal - nDupsOriginal - nNullsOriginal; 
             
             sharedRatio = ((float) sharedDistinctRowsOriginal) / ((float) nDistinctOriginal);

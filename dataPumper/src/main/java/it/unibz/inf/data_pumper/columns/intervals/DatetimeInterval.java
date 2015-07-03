@@ -11,7 +11,7 @@ import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 public class DatetimeInterval extends Interval<Timestamp> {
     
     public static final int MILLISECONDS_PER_DAY=86400000;
-
+    
     public DatetimeInterval(String key,
             MySqlDatatypes type,
             long nValues, List<ColumnPumper<Timestamp>> involvedCols ) {
@@ -25,24 +25,30 @@ public class DatetimeInterval extends Interval<Timestamp> {
     
     @Override
     public void updateMinEncodingAndValue(long newMin) {
+		
         min = new Timestamp(newMin * MILLISECONDS_PER_DAY);
         this.minEncoding = newMin;
     }
 
+    public static void normalizeCalendar(Calendar cal){
+	    cal.set(Calendar.HOUR_OF_DAY, 0);
+	    cal.set(Calendar.MINUTE, 0);
+	    cal.set(Calendar.SECOND, 0);
+	    cal.set(Calendar.MILLISECOND, 0);
+    }
+    
     @Override
     public void updateMaxEncodingAndValue(long newMax) {
 
         Calendar upperBound = Calendar.getInstance();
         upperBound.set(9999,11,31);
+        
+        normalizeCalendar(upperBound);
 
-        if( upperBound.getTimeInMillis() > newMax * MILLISECONDS_PER_DAY ){        
-            max = new Timestamp(newMax * MILLISECONDS_PER_DAY);
-        }
-        else{
-            newMax = upperBound.getTimeInMillis() / MILLISECONDS_PER_DAY;
-            max = new Timestamp(newMax * MILLISECONDS_PER_DAY);
-//            throw new DateOutOfBoundariesException("The Date field cannot hold this many rows, interval is "+this.getKey());
-        }
+        assert upperBound.getTimeInMillis() > newMax * MILLISECONDS_PER_DAY : "Attempt to update "+this.toString()+ " with too big value";
+        
+        max = new Timestamp(newMax * MILLISECONDS_PER_DAY);
+        
         this.maxEncoding = newMax;
     }
     
@@ -69,6 +75,22 @@ public class DatetimeInterval extends Interval<Timestamp> {
         result.updateMaxEncodingAndValue(this.maxEncoding);
         
         return result;
+    }
+
+    @Override
+    public void synchronizeMinMaxNFreshs() {
+	 Calendar upperBound = Calendar.getInstance();
+	 upperBound.set(9999,11,31);
+	 
+	 normalizeCalendar(upperBound);
+	 
+	 assert upperBound.getTimeInMillis() >= this.getMaxEncoding() : "The long value is greater than upper bound year 9999 for interval "+this.toString() ;
+	 
+	 if( upperBound.getTimeInMillis() == this.getMaxEncoding() * MILLISECONDS_PER_DAY ){        
+	     long newMin = this.getMaxEncoding() - this.nFreshsToInsert;
+	     this.updateMinEncodingAndValue(newMin);	     
+	 }
+	 
     }
 
 }
