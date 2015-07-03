@@ -75,10 +75,6 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	@Override
 	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException {	
 	    
-	    if( this.toString().equals("bsns_arr_area_operator.baaOperatorDateUpdated") ){
-		logger.debug("ciao!!");
-	    }
-	      
 	    this.initNumDupsNullsFreshs();
 
 	    Template t = new Template("select ? from "+schema.getTableName()+";");
@@ -119,9 +115,6 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    
 	    maxTime = minTime + numFreshsToInsert * DatetimeInterval.MILLISECONDS_PER_DAY;
 	    
-	    min = new Timestamp(minTime);
-	    max = new Timestamp(maxTime);
-
 	    // Create the single initial interval
 	    List<ColumnPumper<Timestamp>> involvedCols = new LinkedList<ColumnPumper<Timestamp>>();
 	    involvedCols.add(this);

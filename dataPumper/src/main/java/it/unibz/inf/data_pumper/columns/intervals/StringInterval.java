@@ -97,24 +97,30 @@ public class StringInterval extends Interval<String> {
 	String lowerBoundValue = lowerBoundValue();
 
 	StringBuilder zeroes = new StringBuilder();
+	
+	String assertionErrMsg = 
+		"The string "+trail+" is too long for the chosen datatype "
+			+ "length "+datatypeLength+ " of column "
+			+ getInvolvedColumnPumpers().iterator().next().getQualifiedName().toString();
+	
+	assert lowerBoundValue.length() >= trail.length() : assertionErrMsg;
 
-	if( lowerBoundValue.length() >= trail.length() ){
+//	if( lowerBoundValue.length() >= trail.length() ){
 	    for( int j = 0; j < lowerBoundValue.length() - trail.length(); ++j ){
 		zeroes.append("0");
 	    }
 	    this.max = zeroes.toString() + trail;
-	}
-	else{
-	    //	    throw 
-	    //	    new DebugException("The string "+trail+" is too long for the chosen datatype "
-	    //		    + "length "+datatypeLength+ " of column "
-	    //		    + getInvolvedColumnPumpers().iterator().next().getQualifiedName().toString());
-	    this.max = upperBoundValue();
-	    this.nFreshsToInsert = 1;
-	    for( int i = 0; i < this.max.length(); ++i ){
-		this.nFreshsToInsert *= characters.length() -1;
-	    }
-	}
+//	}
+//	else{
+//	    throw new DebugException("The string "+trail+" is too long for the chosen datatype "
+//	    		    + "length "+datatypeLength+ " of column "
+//	    		    + getInvolvedColumnPumpers().iterator().next().getQualifiedName().toString());
+//	    this.max = upperBoundValue();
+//	    this.nFreshsToInsert = 1;
+//	    for( int i = 0; i < this.max.length(); ++i ){
+//		this.nFreshsToInsert *= characters.length() -1;
+//	    }
+//	}
 
 	return trail;
     }

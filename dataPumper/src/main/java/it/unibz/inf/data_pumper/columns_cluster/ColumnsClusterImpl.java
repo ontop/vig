@@ -185,7 +185,7 @@ public class ColumnsClusterImpl<T> extends ColumnsCluster<T> {
 	// Solve the program
 	boolean hasSolution = constraintProgram.solve();
 	
-	System.err.println(constraintProgram.humanFormat());
+//	System.err.println(constraintProgram.humanFormat());
 	
 	if( !hasSolution && constraintProgram.hasReachedLimit() ){
 	    throw new DebugException("The solver could not find a solution however there might be one");

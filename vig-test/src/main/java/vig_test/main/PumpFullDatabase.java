@@ -32,12 +32,17 @@ abstract class Constants{
 
 public class PumpFullDatabase {
 
+    private static String parameterScale = "--scale=10";
+    
     public static void main(String[] args){
 
 	TestDatabaseCreator creator = new TestDatabaseCreator();
 	creator.createTestDatabase();
 
-	Main.main(new String[0]);// That is, pump with size 1
+	String[] parameters = new String[1];
+	parameters[0] = parameterScale;
+	
+	Main.main(parameters);// That is, pump with size 1
 
 	// Take the csvs, and load them into the database
 	try {

@@ -188,7 +188,6 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 	    ++i;
 	}
 	
-	
 	if( i >= intervals.size() ){
 	    throw new DebugException("The number of freshs to insert exceeds the number of freshs available from intervals for column " + this.toString());
 	}

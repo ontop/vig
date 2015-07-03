@@ -47,8 +47,13 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
     }
 
     @Override
-    protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws ValueUnsetException, DebugException, InstanceNullException, SQLException{
+    protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
 	for( ColumnPumper<? extends Object> cP : listColumns ){
+	    
+	    if( cP.toString().equals("wellbore_development_all.wlbNamePart3") ){
+		logger.debug("CIAO!");
+	    }
+
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 	}
 	// At this point, each column is initialized with statistical information
@@ -57,13 +62,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	// search for correlated columns and order them by fresh values to insert
 	List<CorrelatedColumnsList<T>> correlatedCols = this.cCE.extractCorrelatedColumns();
 	
-	try {
-	    updateColumnBoundsWRTCorrelated(correlatedCols);
-	} catch (BoundariesUnsetException | DebugException e) {
-	    e.printStackTrace();
-	    DatabasePumper.closeEverything();
-	    System.exit(1);
-	}
+	updateColumnBoundsWRTCorrelated(correlatedCols);
     }
     
     /**

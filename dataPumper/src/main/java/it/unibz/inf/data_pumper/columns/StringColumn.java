@@ -45,15 +45,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
     public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
 	super(name, type, index, schema);
 
-	this.datatypeLength = datatypeLength;
-
-	if( this.datatypeLength > MAX_LENGTH ) this.datatypeLength = MAX_LENGTH;
-
-	//		rndIndexes = new ArrayList<Integer>(datatypeLength);
-	//
-	//		for( int i = 0; i < datatypeLength; ++i )
-	//			rndIndexes.add(0); // Initial String: 00000000...
-
+	this.datatypeLength = datatypeLength > MAX_LENGTH ? this.datatypeLength = MAX_LENGTH : this.datatypeLength;
 	this.numFreshsToInsert = 0;
 
 	this.intervals = new ArrayList<Interval<String>>();
@@ -63,13 +55,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	super(name, type, index, schema);
 
 	this.datatypeLength = MAX_LENGTH;
-	//		rndIndexes = new ArrayList<Integer>(datatypeLength);
-	//
-	//		for( int i = 0; i < datatypeLength; ++i )
-	//			rndIndexes.add(0); // Initial String: 00000000...
-
 	this.numFreshsToInsert = 0;
-
 	this.intervals = new ArrayList<Interval<String>>();
     }
 
@@ -79,13 +65,6 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 
 	int intervalIndex = 0;
-
-	// Debug
-	if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
-	    if( this.numFreshsToInsert >= this.characters.length()){
-		throw new DebugException("Problem with StringColumn");
-	    }
-	}
 
 	List<String> values = new ArrayList<String>();
 	
