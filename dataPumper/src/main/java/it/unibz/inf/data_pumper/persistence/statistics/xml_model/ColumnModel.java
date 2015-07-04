@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(propOrder = {"name", "dupsRatio", "nullsRatio", "domain"})
+@XmlType(propOrder = {"name", "dupsRatio", "nullsRatio", "valuesListInjector", "stepInjector"})
 @XmlAccessorType (XmlAccessType.FIELD)
 public class ColumnModel{
 
@@ -16,14 +16,23 @@ public class ColumnModel{
     private double dupsRatio;
     private double nullsRatio;
     
-    private FixedDomain domain;
+    private ValuesListInjector valuesListInjector;
+    private StepInjector stepInjector;
     
-    public FixedDomain getDomain() {
-        return domain;
+    public StepInjector getStepInj() {
+        return stepInjector;
     }
 
-    public void setDomain(FixedDomain domain) {
-        this.domain = domain;
+    public void setStepInj(StepInjector stepInj) {
+        this.stepInjector = stepInj;
+    }
+
+    public ValuesListInjector getDomain() {
+        return valuesListInjector;
+    }
+
+    public void setDomain(ValuesListInjector domain) {
+        this.valuesListInjector = domain;
     }
 
     public String getName() {
@@ -59,27 +68,32 @@ public class ColumnModel{
     }
 }
 
-class FixedDomain{
-    private Long min = null;
-    private Long max = null;
-    private List<String> values = null;
-    
-    public Long getMin() {
+class StepInjector{
+    protected String min;
+    protected String step;
+
+    public String getMin() {
         return min;
     }
-    public void setMin(Long min) {
+    public void setMin(String min) {
         this.min = min;
     }
-    public Long getMax() {
-        return max;
+    
+    public String getStep() {
+        return step;
     }
-    public void setMax(Long i) {
-        this.max = i;
+    public void setStep(String step) {
+        this.step = step;
     }
+};
+
+class ValuesListInjector{
+    private List<String> values = null;
+    
     public List<String> getValues() {
         return values;
     }
     public void setValues(List<String> values) {
         this.values = values;
     }
-}
+};

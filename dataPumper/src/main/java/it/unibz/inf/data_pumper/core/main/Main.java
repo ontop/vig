@@ -55,7 +55,7 @@ public class Main {
     private static Conf conf;
 
     // Options
-    private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 2, new DoubleRange(0, Double.MAX_VALUE, false, true));	
+    private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
     public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
 
     // Xml Model of the Data

@@ -3,7 +3,6 @@ package it.unibz.inf.data_pumper.persistence.statistics.xml_model;
 import java.util.HashSet;
 import java.util.Set;
 
-
 public class DatabaseModelUtils {
     public static void sanityCheck(DatabaseModel dM) throws ErrorInModelException{
 	findProblemsDeclarationTablesOrCols(dM);
@@ -13,16 +12,8 @@ public class DatabaseModelUtils {
 	class LocalUtils{
 	    void fixedEitherMinMaxOrDomain(ColumnModel cM) throws ErrorInModelException{
 		if( cM.getDomain() != null ){
-		    if( cM.getDomain().getMax() != null || cM.getDomain().getMin() != null ){
-			if( cM.getDomain().getValues() != null ){
-			    throw new ErrorInModelException("Column "+cM.getName()+ " has both min/max and explicit domain");
-			}
-		    }
-		    if( cM.getDomain().getMax() != null && cM.getDomain().getMin() == null){
-			throw new ErrorInModelException("Column "+cM.getName()+" has Max but not Min");
-		    }
-		    if( cM.getDomain().getMin() != null && cM.getDomain().getMax() == null){
-			throw new ErrorInModelException("Column "+cM.getName()+" has Min but not Max");
+		    if( cM.getStepInj() != null ){
+			throw new ErrorInModelException("Column "+cM.getName()+" has both an explicit domain AND a step function");
 		    }
 		}
 	    }
