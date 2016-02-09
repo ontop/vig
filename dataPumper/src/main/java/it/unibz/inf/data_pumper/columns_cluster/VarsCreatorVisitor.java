@@ -14,7 +14,8 @@ import abstract_constraint_program.AbstractConstraintProgram;
 
 /**
  * 
- * This class creates the variables for the constraint program. For each interval I [min,..,max], (remember that either min or max uniquely determine I)
+ * This class creates the variables for the constraint program. 
+ * For each interval I [min,..,max], (remember that either min or max uniquely determine I)
  * for each column X in the cluster, two new variables X_min, X_max are created having domain [min...max].
  * If X is multi-interval, and I is an interval of X, then the constraints:
  * 

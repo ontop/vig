@@ -50,10 +50,6 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
     protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 	    
-	    if( cP.toString().equals("wellbore_development_all.wlbNamePart3") ){
-		logger.debug("CIAO!");
-	    }
-
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 	}
 	// At this point, each column is initialized with statistical information

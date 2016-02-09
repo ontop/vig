@@ -1,6 +1,6 @@
 package it.unibz.inf.vig_mappings_analyzer.core.exceptions;
 
-public class WrongArityException extends Exception {
+public class WrongArityException extends RuntimeException {
 
 	/**
 	 * 
