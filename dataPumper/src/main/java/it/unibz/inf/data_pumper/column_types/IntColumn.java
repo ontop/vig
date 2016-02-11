@@ -98,7 +98,7 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 	}
 	
 	@Override
-	public void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException {
+	public void createNValues(Schema schema, DBMSConnection db, long n) throws ValueUnsetException {
 				
 		List<Long> values = new ArrayList<Long>();
 		

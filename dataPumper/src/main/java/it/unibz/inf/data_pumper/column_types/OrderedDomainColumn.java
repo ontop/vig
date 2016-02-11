@@ -71,11 +71,11 @@ public abstract class OrderedDomainColumn<T> extends ColumnPumper {
 	}
 	
 	public void setDomain(List<T> newDomain){
-		if( domain == null ){
-			domain = newDomain;
+//		if( domain == null ){
+	    domain = newDomain;
 //			if( domain.size() != 0 )
 //				Collections.shuffle(domain);
-		}
+//		}
 	}
 	
 	public String getNthInDomain(int n){

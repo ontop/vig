@@ -54,7 +54,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	
 	protected static double scaleFactor;
 	
-	private static int LINES_BUF_SIZE=10000; // Keep in RAM at most 10000 values for a table
+	private static long LINES_BUF_SIZE=10000; // Keep in RAM at most 10000 values for a table
 	
 	public DatabasePumperDB(){
 		try {
@@ -108,25 +108,32 @@ public class DatabasePumperDB extends DatabasePumper {
 		
 		for( Schema schema : schemas ){
 						
-			int nRows = dbOriginal.getNRows(schema.getTableName());
+		    int nRows = dbOriginal.getNRows(schema.getTableName());
 			
-			nRows = (int) (nRows * scaleFactor);
-			logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
+		    nRows = (int) (nRows * scaleFactor);
+		    logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
+		    
+		    if( schema.getTableName().equals("bsns_arr_area_licensee_hst")){
+			logger.debug("CIAO!");
+		    }
+		    try{
+			persistence.openFile(schema.getTableName() + ".csv");
 			
-			nRows -= LINES_BUF_SIZE; 
-			
-			// Fill some lines for domains
-			while( nRows >= 0 ){
-			    // print LINES_BUF_SIZE
-			    fillDomainsUpToNForSchema(schema, dbOriginal, LINES_BUF_SIZE);
-			    printDomain(schema);
+			while( !fillDomainsUpToNForSchema(schema, dbOriginal, LINES_BUF_SIZE) ){
+			    printDomain(schema, LINES_BUF_SIZE);
 			    schema.resetColumnsDomains(); // Release memory
-			    
-			    nRows -= LINES_BUF_SIZE;
 			}
-			fillDomainsUpToNForSchema(schema, dbOriginal, nRows % LINES_BUF_SIZE);
-			printDomain(schema);
+			// Print the last values
+			printDomain(schema, nRows % LINES_BUF_SIZE);
 			schema.resetColumnsDomains(); // Release memory
+			
+		    } catch (IOException e) {
+			e.printStackTrace();
+			dbOriginal.close();
+			persistence.closeFile();
+			System.exit(1);
+		    }
+		    persistence.closeFile();
 		}
 		long endTime = System.currentTimeMillis();
 		
@@ -231,14 +238,13 @@ public class DatabasePumperDB extends DatabasePumper {
 			}
 		}
 	}
-	private void printDomain(Schema schema) {
+	private void printDomain(Schema schema, long nToPrint) {
 				
 		List<ColumnPumper> cols = schema.getColumns();
 		
 		StringBuilder line = new StringBuilder();
-		try {
-			persistence.openFile(schema.getTableName() + ".csv");
-			for( int i = 0; i < cols.get(0).getNumRowsToInsert(); ++i ){
+		
+			for( int i = 0; i < nToPrint; ++i ){
 				line.delete(0, line.length());
 				for( int j = 0; j < cols.size(); ++j ){
 					if( j != 0 ) line.append("`");
@@ -250,15 +256,7 @@ public class DatabasePumperDB extends DatabasePumper {
 				String value = line.toString();
 				
 				persistence.appendLine(value);
-			}
-		} catch (ValueUnsetException | IOException e) {
-			e.printStackTrace();
-			dbOriginal.close();
-			persistence.closeFile();
-			System.exit(1);
-		}
-		persistence.closeFile();
-		
+			}	
 	}
 	/**
 	 * 
@@ -318,16 +316,21 @@ public class DatabasePumperDB extends DatabasePumper {
 		}
 	}
 	
-	private void fillDomainsUpToNForSchema(Schema schema, DBMSConnection originalDb, int n){
+	private boolean fillDomainsUpToNForSchema(Schema schema, DBMSConnection originalDb, long n){
+	    
+	    boolean filled = false;
+	    
 	    for( ColumnPumper column : schema.getColumns() ){
 		try {
-		    column.generateNValues(schema, originalDb, n);
+		    filled = column.generateNValues(schema, originalDb, n);
 		} catch (BoundariesUnsetException | ValueUnsetException e) {
 		    e.printStackTrace();
 		    DatabasePumper.closeEverything();
 		    System.exit(1);
 		}
 	    }
+	    
+	    return filled;
 	}
 	
 	//	private void resetDuplicateValues(Schema schema){

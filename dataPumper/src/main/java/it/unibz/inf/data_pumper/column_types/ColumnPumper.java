@@ -171,19 +171,25 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	}
 
 	@Override
-	public void generateNValues(Schema schema, DBMSConnection db, int n)
+	public boolean generateNValues(Schema schema, DBMSConnection db, long n)
 		throws BoundariesUnsetException, ValueUnsetException{
 	    
 	    if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 	    
+	    long nOld = n;
+	    
+	    n = this.numRowsToInsert - this.generatedCounter > n ? n : this.numRowsToInsert - this.generatedCounter;
+	    
 	    createNValues(schema, db, n);
 	    
 	    this.generatedCounter += n;
+	    
+	    return n != nOld; // true: All the values have been generated
 	}
 	
 	protected abstract void createValues(Schema schema, DBMSConnection db) throws ValueUnsetException;
 	
-	protected abstract void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException;
+	protected abstract void createNValues(Schema schema, DBMSConnection db, long n) throws ValueUnsetException;
 	
 	
 	protected void setBoundariesSet(){

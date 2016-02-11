@@ -78,7 +78,7 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 	}
 	
 	@Override
-	public void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException {
+	public void createNValues(Schema schema, DBMSConnection db, long n) throws ValueUnsetException {
 
 	    List<BigDecimal> values = new ArrayList<BigDecimal>();
 

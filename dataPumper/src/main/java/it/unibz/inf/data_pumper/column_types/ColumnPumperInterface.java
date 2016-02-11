@@ -29,7 +29,7 @@ import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesExc
 public interface ColumnPumperInterface {
 		
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException;
-	public void generateNValues(Schema schema, DBMSConnection db, int n) throws BoundariesUnsetException, ValueUnsetException;
+	public boolean generateNValues(Schema schema, DBMSConnection db, long n) throws BoundariesUnsetException, ValueUnsetException;
 	
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException;
 	

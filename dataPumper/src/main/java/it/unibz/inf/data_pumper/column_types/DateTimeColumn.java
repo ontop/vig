@@ -84,7 +84,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	}
 	
 	@Override
-	public void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException{
+	public void createNValues(Schema schema, DBMSConnection db, long n) throws ValueUnsetException{
 
 	    List<Timestamp> values = new ArrayList<Timestamp>();
 
