@@ -22,7 +22,9 @@ package it.unibz.inf.data_pumper.column_types;
 
 import it.unibz.inf.data_pumper.basic_datatypes.MySqlDatatypes;
 import it.unibz.inf.data_pumper.basic_datatypes.Schema;
+import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
+import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
 public abstract class ColumnPumper extends Column implements ColumnPumperInterface{
@@ -41,6 +43,10 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 	private boolean numDupsNullRowsSet;
 	
 	protected CyclicGroupGenerator generator;
+	
+	private long generatedCounter = 0;
+	
+	private boolean boundariesSet = false;
 	
 	public ColumnPumper(String name, MySqlDatatypes type, int index, Schema schema){ // index: index of the column
 		super(name, type, index, schema);
@@ -153,6 +159,45 @@ public abstract class ColumnPumper extends Column implements ColumnPumperInterfa
 		--this.numFreshsToInsert;
 	}
 
+	@Override
+	public void generateValues(Schema schema, DBMSConnection db)
+		throws BoundariesUnsetException, ValueUnsetException{
+	    
+	    if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+	    
+	    createValues(schema, db);
+	    
+	    this.generatedCounter = this.numRowsToInsert;
+	}
+
+	@Override
+	public void generateNValues(Schema schema, DBMSConnection db, int n)
+		throws BoundariesUnsetException, ValueUnsetException{
+	    
+	    if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+	    
+	    createNValues(schema, db, n);
+	    
+	    this.generatedCounter += n;
+	}
+	
+	protected abstract void createValues(Schema schema, DBMSConnection db) throws ValueUnsetException;
+	
+	protected abstract void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException;
+	
+	
+	protected void setBoundariesSet(){
+	    this.boundariesSet = true;
+	}
+	
+	protected boolean isBoundariesSet(){
+	    return this.boundariesSet;
+	}
+	
+	protected long getGeneratedCounter(){
+	    return this.generatedCounter;
+	}
+	
 	//	
 //	@Override
 //	public void setNumFreshsToInsert(int numFreshsToInsert) {

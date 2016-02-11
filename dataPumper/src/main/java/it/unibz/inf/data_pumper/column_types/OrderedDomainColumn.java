@@ -30,29 +30,29 @@ public abstract class OrderedDomainColumn<T> extends ColumnPumper {
 	private static final String NULL = "\\N";
 
 	protected List<T> domain;
-	private int domainIndex;
+//	private int domainIndex;
 	protected T max;
 	protected T min;
 	
 	public OrderedDomainColumn(String name, MySqlDatatypes type, int index, Schema schema) {
 		super(name, type, index, schema);
 		domain = null;
-		domainIndex = 0;
+//		domainIndex = 0;
 	}
 	
 	@Override
 	/** This method has to be called whenever information held for the column can be released **/
-	public void reset(){
+	public void resetDomain(){
 		if( domain != null ) domain.clear();
-		domainIndex = 0;
+//		domainIndex = 0;
 		System.gc();
 	}
 	
-	@Override
-	public String getNextValue(){
-		String result = domain.get(domainIndex++).toString();
-		return result;
-	}
+//	@Override
+//	public String getNextValue(){
+//		String result = domain.get(domainIndex++).toString();
+//		return result;
+//	}
 		
 	public void setMaxValue(T max){
 		this.max = max;

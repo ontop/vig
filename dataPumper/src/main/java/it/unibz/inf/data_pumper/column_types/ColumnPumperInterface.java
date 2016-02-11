@@ -27,10 +27,10 @@ import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.table.statistics.exception.TooManyValuesException;
 
 public interface ColumnPumperInterface {
-	
-	public String getNextValue();
-	
+		
 	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException;
+	public void generateNValues(Schema schema, DBMSConnection db, int n) throws BoundariesUnsetException, ValueUnsetException;
+	
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException;
 	
 	public void setDuplicatesRatio(float ratio);
@@ -61,11 +61,10 @@ public interface ColumnPumperInterface {
 	public void incrementNumFreshs();
 	public void decrementNumFreshs();
 	
-	public void reset(); // To reset the internal state
+	public void resetDomain(); // To reset the internal state
 //	int getNumFreshsToInsert() throws ValueUnsetException;
 //	void setNumFreshsToInsert(int numFreshsToInsert);
 //	int getNumDupsToInsert() throws ValueUnsetException;
 //	void setNumDupsToInsert(int numDupsToInsert);
-
 
 }

@@ -183,9 +183,9 @@ public class Schema{
 		}
 	}
 
-	public void reset() {
+	public void resetColumnsDomains() {
 		for( ColumnPumper cP : columns ){
-			cP.reset();
+			cP.resetDomain();
 		}
 	}
 

@@ -38,7 +38,6 @@ import java.util.List;
 
 public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	
-	private boolean boundariesSet = false;
 	private final int MILLISECONDS_PER_DAY=86400000;
 	private static final long MAX_DATE_MILLIS = 253402210800000L;// 253402210800000
 	
@@ -58,10 +57,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 	}
 
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException{
-		
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
-		
+	public void createValues(Schema schema, DBMSConnection db) throws ValueUnsetException{
 		
 		List<Timestamp> values = new ArrayList<Timestamp>();
 		
@@ -85,6 +81,33 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 			}
 		}
 		setDomain(values);
+	}
+	
+	@Override
+	public void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException{
+
+	    List<Timestamp> values = new ArrayList<Timestamp>();
+
+	    Calendar c = Calendar.getInstance();
+	    c.setTime(min);
+	    normalizeCalendar(c);
+
+	    // 86400 Seconds in one day
+
+	    for( int i = 0; i < n; ++i ){
+
+		if( this.getGeneratedCounter() + i < this.numNullsToInsert ){
+		    values.add(null);
+		}
+		else{
+		    long nextValue = this.generator.nextValue(this.numFreshsToInsert) * this.MILLISECONDS_PER_DAY + c.getTimeInMillis();
+		    if( c.getTimeInMillis() == MAX_DATE_MILLIS ){
+			nextValue = c.getTimeInMillis();
+		    }
+		    values.add(new Timestamp(nextValue));
+		}
+	    }
+	    setDomain(values);
 	}
 
 	@Override
@@ -149,7 +172,7 @@ public class DateTimeColumn extends OrderedDomainColumn<Timestamp>{
 		setMinValue(min);
 		setMaxValue(max);
 		
-		this.boundariesSet = true;
+		this.setBoundariesSet();
 	}
 
 	@Override

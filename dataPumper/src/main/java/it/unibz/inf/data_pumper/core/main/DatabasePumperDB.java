@@ -54,6 +54,8 @@ public class DatabasePumperDB extends DatabasePumper {
 	
 	protected static double scaleFactor;
 	
+	private static int LINES_BUF_SIZE=10000; // Keep in RAM at most 10000 values for a table
+	
 	public DatabasePumperDB(){
 		try {
 			this.dbOriginal = DBMSConnection.getInstance();
@@ -111,10 +113,20 @@ public class DatabasePumperDB extends DatabasePumper {
 			nRows = (int) (nRows * scaleFactor);
 			logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
 			
-			fillDomainsForSchema(schema, dbOriginal);			
-			printDomain(schema);
+			nRows -= LINES_BUF_SIZE; 
 			
-			schema.reset();
+			// Fill some lines for domains
+			while( nRows >= 0 ){
+			    // print LINES_BUF_SIZE
+			    fillDomainsUpToNForSchema(schema, dbOriginal, LINES_BUF_SIZE);
+			    printDomain(schema);
+			    schema.resetColumnsDomains(); // Release memory
+			    
+			    nRows -= LINES_BUF_SIZE;
+			}
+			fillDomainsUpToNForSchema(schema, dbOriginal, nRows % LINES_BUF_SIZE);
+			printDomain(schema);
+			schema.resetColumnsDomains(); // Release memory
 		}
 		long endTime = System.currentTimeMillis();
 		
@@ -288,7 +300,7 @@ public class DatabasePumperDB extends DatabasePumper {
 			cP.fillDomainBoundaries(cP.getSchema(), dbOriginal);
 		}
 	}
-	
+		
 	private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){
 		for( ColumnPumper column : schema.getColumns() ){
 //		    if( column.getName().equals("seaSurveyName") ){
@@ -304,6 +316,18 @@ public class DatabasePumperDB extends DatabasePumper {
 				System.exit(1);
 			}
 		}
+	}
+	
+	private void fillDomainsUpToNForSchema(Schema schema, DBMSConnection originalDb, int n){
+	    for( ColumnPumper column : schema.getColumns() ){
+		try {
+		    column.generateNValues(schema, originalDb, n);
+		} catch (BoundariesUnsetException | ValueUnsetException e) {
+		    e.printStackTrace();
+		    DatabasePumper.closeEverything();
+		    System.exit(1);
+		}
+	    }
 	}
 	
 	//	private void resetDuplicateValues(Schema schema){

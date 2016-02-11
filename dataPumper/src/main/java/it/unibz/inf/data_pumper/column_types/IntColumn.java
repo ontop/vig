@@ -37,7 +37,6 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 	
 	private int datatypeLengthFirstArgument;
 	private int datatypeLengthSecondArgument;
-	private boolean boundariesSet;
 	
 //	private long modulo;
 	
@@ -83,15 +82,29 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 
 
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException, ValueUnsetException {
-		
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+	public void createValues(Schema schema, DBMSConnection db) throws ValueUnsetException {
 		
 		List<Long> values = new ArrayList<Long>();
 		
 		for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
 			if( i < this.numNullsToInsert ){
 				values.add(null);
+			}
+			else{
+			    values.add(min + this.generator.nextValue(this.numFreshsToInsert));
+			}
+		}
+		setDomain(values);
+	}
+	
+	@Override
+	public void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException {
+				
+		List<Long> values = new ArrayList<Long>();
+		
+		for( int i = 0; i < n; ++i ){
+			if( this.getGeneratedCounter() + i < this.numNullsToInsert ){
+			    values.add(null);
 			}
 			else{
 			    values.add(min + this.generator.nextValue(this.numFreshsToInsert));
@@ -131,7 +144,7 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 		setMinValue(min);
 		setMaxValue(max);
 		
-		this.boundariesSet = true;
+		this.setBoundariesSet();
 	}
 
 	@Override
@@ -146,13 +159,13 @@ public class IntColumn extends OrderedDomainColumn<Long> {
 	
 	@Override
 	public long getMinEncoding() throws BoundariesUnsetException {
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		if(!isBoundariesSet()) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		return min.longValue();
 	}
 	
 	@Override
 	public long getMaxEncoding() throws BoundariesUnsetException {
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		if(!isBoundariesSet()) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		return this.max.longValue();
 	}
 

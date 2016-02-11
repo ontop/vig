@@ -26,7 +26,6 @@ import it.unibz.inf.data_pumper.basic_datatypes.Schema;
 import it.unibz.inf.data_pumper.column_types.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.column_types.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.main.DEBUGEXCEPTION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +42,6 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	// Encodings
 	private long minEncoding;
 	
-	private boolean boundariesSet = false;
-
 	public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
 		super(name, type, index, schema);
 
@@ -96,22 +93,20 @@ public class StringColumn extends OrderedDomainColumn<String> {
 	}
 
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException{
+	public void createValues(Schema schema, DBMSConnection db) throws ValueUnsetException{
 		
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
-		
-		// Debug
-		if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
-			if( this.numFreshsToInsert >= this.characters.length()){
-				try{
-					throw new DEBUGEXCEPTION();
-				}
-				catch(DEBUGEXCEPTION e){
-					e.printStackTrace();
-					System.exit(1);
-				}
-			}
-		}
+//		// Debug
+//		if( this.schema.getTableName().equals("wellbore_development_all") && this.getName().equals("wlbNamePart3") && datatypeLength > 1 ){
+//			if( this.numFreshsToInsert >= this.characters.length()){
+//				try{
+//					throw new DEBUGEXCEPTION();
+//				}
+//				catch(DEBUGEXCEPTION e){
+//					e.printStackTrace();
+//					System.exit(1);
+//				}
+//			}
+//		}
 		
 		List<String> values = new ArrayList<String>();
 				
@@ -146,6 +141,31 @@ public class StringColumn extends OrderedDomainColumn<String> {
 				
 		setDomain(values);
 	}
+	
+	@Override
+	public void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException{
+		
+		List<String> values = new ArrayList<String>();
+		
+		for( int i = 0; i < n; ++i ){
+		    
+		    if( this.getGeneratedCounter() + i < this.numNullsToInsert ){
+			values.add(null);
+		    }
+		    else{
+			String trail = encode(minEncoding + this.generator.nextValue(this.numFreshsToInsert));
+			
+			StringBuilder zeroes = new StringBuilder();
+			for( int j = 0; j < min.length() - trail.length(); ++j ){
+			    zeroes.append("0");
+			}
+			String valueToAdd = zeroes.toString() + trail;
+			
+			values.add(valueToAdd);
+		    }
+		}
+		setDomain(values);
+	}
 
 	@Override
 	public void fillDomainBoundaries(Schema schema, DBMSConnection db) throws ValueUnsetException{
@@ -171,7 +191,7 @@ public class StringColumn extends OrderedDomainColumn<String> {
 			}
 		}
 		
-		this.boundariesSet = true;
+		this.setBoundariesSet();
 	}
 	
 	private String lowerBoundValue(){

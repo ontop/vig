@@ -35,9 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
-		
-	private boolean boundariesSet = false;
-	
+			
 	public BigDecimalColumn(String name, MySqlDatatypes type, int index, int datatypeFirstLength, Schema schema) {
 		super(name, type, index, schema);
 		domain = null;
@@ -53,9 +51,7 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 	}
 	
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) throws BoundariesUnsetException {
-		
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+	public void createValues(Schema schema, DBMSConnection db) throws ValueUnsetException {
 		
 		List<BigDecimal> values = new ArrayList<BigDecimal>();
 		
@@ -79,6 +75,22 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		}
 		
 		setDomain(values);
+	}
+	
+	@Override
+	public void createNValues(Schema schema, DBMSConnection db, int n) throws ValueUnsetException {
+
+	    List<BigDecimal> values = new ArrayList<BigDecimal>();
+
+	    for( int i = 0; i < n; ++i ){
+		if( this.getGeneratedCounter() + i < this.numNullsToInsert ){
+		    values.add(null);
+		}
+		else{
+		    values.add(min.add(new BigDecimal(this.generator.nextValue(this.numFreshsToInsert))));
+		}
+	    }
+	    setDomain(values);
 	}
 
 	@Override
@@ -119,18 +131,18 @@ public class BigDecimalColumn extends OrderedDomainColumn<BigDecimal>{
 		setMinValue(min);
 		setMaxValue(max);
 		
-		this.boundariesSet = true;
+		this.setBoundariesSet();
 	}
 	
 	@Override
 	public long getMaxEncoding() throws BoundariesUnsetException {
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		if(!isBoundariesSet()) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		return this.max.longValue();
 	};
 
 	@Override
 	public long getMinEncoding() throws BoundariesUnsetException {
-		if(!boundariesSet) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
+		if(!isBoundariesSet()) throw new BoundariesUnsetException("fillDomainBoundaries() hasn't been called yet");
 		return this.min.longValue();
 	}
 
