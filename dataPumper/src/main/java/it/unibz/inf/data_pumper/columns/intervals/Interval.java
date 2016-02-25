@@ -233,4 +233,8 @@ public abstract class Interval<T> {
      * to the nFreshs.
      */
     public abstract void synchronizeMinMaxNFreshs();
+
+    public void intersect(Interval<?> interval) {
+		
+    }
 };
