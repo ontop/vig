@@ -16,6 +16,13 @@ public class FkInterval {
 	}
     }
     
+    public boolean isEmpty(){
+	for( Interval<?> i : this.fkTupleSchema ){
+	    if( i.isEmpty() ) return true;
+	}
+	return false;
+    }
+    
     public String schema(){
 	
 	StringBuilder result = new StringBuilder();

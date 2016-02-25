@@ -118,7 +118,7 @@ public abstract class Interval<T> {
     
     /**
      * 
-     * CONTRACT: Each overrider should call the Interval implementation
+     * CONTRACT: Each overrider should call <b>this</b> implementation
      * @param newMin
      */
     public void updateMinEncodingAndValue(long newMin){
@@ -234,7 +234,24 @@ public abstract class Interval<T> {
      */
     public abstract void synchronizeMinMaxNFreshs();
 
-    public void intersect(Interval<?> interval) {
-		
+    public void intersect(Interval<?> that) {
+	
+	// Assert: same type
+	assert this.getType().equals(that.getType()) : "Type mismatch between intervals";
+	
+	if( that.minEncoding > this.minEncoding ){
+	    this.updateMinEncodingAndValue(that.minEncoding);
+	}
+	if( that.maxEncoding < this.maxEncoding ){
+	    this.updateMaxEncodingAndValue(that.maxEncoding);
+	}
+    }
+    
+    /**
+     * 
+     * @return Is the interval empty?
+     */
+    public boolean isEmpty() {
+	return this.minEncoding == this.maxEncoding;
     }
 };
