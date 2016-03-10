@@ -15,23 +15,6 @@ import vig_test.constants.DBConstants;
 import vig_test.constants.NPDConstants;
 import exceptions.AssertionFailedException;
 
-//abstract class Constants{
-//    
-//    static final String CSVS_PATH = "src/main/resources/csvs";
-//    static final String DB_NAME = "npd_clean_to_pump";
-//
-//    static abstract class Bashs{
-//	static final String INIT_SCHEMA = "src/main/resources/bashs/initDatabaseSchema.sh";
-//	static final String PUMP_DATA = "src/main/resources/bashs/pumpDataToNpd.sh";
-//	static final String CHECK_FKs = "src/main/resources/bashs/executeSql.sh src/main/resources/sqls/check_fkeys.sql npd_clean_to_pump tir gr3g4r10 mysql";
-//    }
-//    
-//    abstract class SQLs{
-//	static final String DROP_DB = "DROP DATABASE IF EXISTS";
-//	static final String CREATE_DB = "CREATE DATABASE";
-//    }
-//}
-
 public class PumpFullDatabase {
 
     private static final String PAR_SCALE = "--scale=10";
