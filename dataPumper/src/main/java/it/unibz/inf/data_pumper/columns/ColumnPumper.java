@@ -172,7 +172,8 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 		interval.setNFreshsToInsert(interval.getNFreshsToInsert() - 1);
 		interval.updateMaxEncodingAndValue(interval.getMaxEncoding() - 1);
 	}
-
+	
+	@Deprecated
 	public List<ColumnPumper<T>> getRefersToClosure() {
 	    
 	    List<ColumnPumper<T>> result = new LinkedList<>();
@@ -191,6 +192,7 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	    return result;
 	}
 	
+	@Deprecated
 	public List<ColumnPumper<T>> getReferredByClosure() {
 	    
 	    List<ColumnPumper<T>> result = new LinkedList<>();

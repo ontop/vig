@@ -20,21 +20,21 @@ package it.unibz.inf.data_pumper.mappings;
  * #L%
  */
 
-import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.utils.Pair;
-import it.unibz.inf.data_pumper.utils.Template;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
+//import it.unibz.inf.data_pumper.connection.DBMSConnection;
+//import it.unibz.inf.data_pumper.utils.Pair;
+//import it.unibz.inf.data_pumper.utils.Template;
+//
+//import java.sql.PreparedStatement;
+//import java.sql.ResultSet;
+//import java.sql.SQLException;
+//import java.util.ArrayList;
+//import java.util.Collections;
+//import java.util.HashMap;
+//import java.util.List;
+//import java.util.Map;
+//import java.util.Set;
+//
+//import org.apache.log4j.Logger;
 
 //import utils.MyHashMapList;
 //import core.CSVPlayer;
@@ -221,127 +221,127 @@ public class TupleStore {
 
 class DuplicateRatiosFinder{
 	
-	private static Logger logger = Logger.getLogger(DuplicateRatiosFinder.class.getCanonicalName());
-	
-	private float findDuplicateRatio(TupleTemplateDecorator ttD){
-		// (select wlbName, wlbCoreNumber from wellbore_core) union all (select wlbName, wlbCoreNumber from wellbore_core);
-		// (select wlbName, wlbCoreNumber from wellbore_core) union (select wlbName, wlbCoreNumber from wellbore_core);
-		
-		if( ttD.getReferredTables().size() < 2 ) return 0; // TODO Anyways, I have a bug giving duplicate columns in the projection
-		                                                    //      evaluated in fillTemplate(), for table licence_task (funct npdv:name).
-		                                                    //      DEBUG
-		
-		DBMSConnection dbOriginal = TupleStoreFactory.getInstance().getDBMSConnection();
-		
-		// Find duplicates ratios
-		int nTables = ttD.getReferredTables().size();
-		
-		Pair<String, String> templDiff_templUnion = getTemplateStrings(nTables); 
-		
-		Template tDiff = new Template(templDiff_templUnion.first);
-		Template tUnion = new Template(templDiff_templUnion.second);
-		
-		fillTemplate(tDiff, ttD);
-		fillTemplate(tUnion, ttD);
-		
-		logger.debug("tDiff: "+tDiff.getFilled());
-		logger.debug("tUnion: "+tUnion.getFilled());
-		
-		PreparedStatement stmtDiff = dbOriginal.getPreparedStatement(tDiff);
-		int numDiff = countNumResults(stmtDiff);
-		
-		PreparedStatement stmtUnion = dbOriginal.getPreparedStatement(tUnion);
-		int numUnion = countNumResults(stmtUnion);
-		
-		float dupRatio = (float)(numDiff - numUnion) / (float)numDiff;
-		
-		closeStatements(stmtDiff, stmtUnion);
-		
-		logger.debug("THE DUP RATIO IS" + dupRatio);
-		
-		return dupRatio; 
-	}
-	
-	private void closeStatements(PreparedStatement stmtDiff,
-			PreparedStatement stmtUnion) {
-		try {
-			stmtDiff.close();
-			stmtUnion.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private int countNumResults(PreparedStatement stmt) {
-		
-		int result = 0;
-		
-		try {
-			ResultSet rs = stmt.executeQuery();
-			if( rs.next() ){
-				result = rs.getInt(1);
-			}
-			else throw new SQLException("The COUNT did not went smoothly");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-
-	private void fillTemplate(Template template, TupleTemplate tt) {
-		
-		Set<String> referredTables = tt.getReferredTables();
-		
-		int i = 1;
-		for( String tableName : referredTables ){
-			StringBuilder builder = new StringBuilder();	
-			builder.append("SELECT ");
-			builder.append(projList(tableName, tt));
-			builder.append(" FROM " + tableName);
-						
-			template.setNthPlaceholder(i, builder.toString());
-			++i;
-		}
-	}
-
-	private String projList(String tableName, TupleTemplate tt) {
-		
-		StringBuilder builder = new StringBuilder();
-		List<String> colNames = tt.getColumnsInTable(tableName);
-		
-		for( int i = 0; i < colNames.size(); ++i ){
-			
-			String colName = colNames.get(i);
-			
-			builder.append(colName);
-			if( i < colNames.size() - 1 ) builder.append(", ");
-		}
-				
-		return builder.toString();
-	}
-
-	private Pair<String, String> getTemplateStrings(int nTables) {
-		StringBuilder builderDiff = new StringBuilder();
-		StringBuilder builderSet = new StringBuilder();
-		builderDiff.append("SELECT COUNT(*) FROM (");
-		builderSet.append("SELECT COUNT(*) FROM (");
-		for( int i = 0; i < nTables; ++i ){
-			builderDiff.append("(?)");
-			builderSet.append("(?)");
-			if( i < nTables - 1 ){
-				builderDiff.append(" union all ");
-				builderSet.append(" union ");
-			}
-		}
-		builderDiff.append(") alias");
-		builderSet.append(") alias");
-				
-		return new Pair<String, String>(builderDiff.toString(), builderSet.toString());
-	}
-	
-	void fillDupRatio(TupleTemplateDecorator ttD) {
-		
-		float dupRatio = findDuplicateRatio(ttD);
-		ttD.setDupR(dupRatio);
-	}
+//	private static Logger logger = Logger.getLogger(DuplicateRatiosFinder.class.getCanonicalName());
+//	
+//	private float findDuplicateRatio(TupleTemplateDecorator ttD){
+//		// (select wlbName, wlbCoreNumber from wellbore_core) union all (select wlbName, wlbCoreNumber from wellbore_core);
+//		// (select wlbName, wlbCoreNumber from wellbore_core) union (select wlbName, wlbCoreNumber from wellbore_core);
+//		
+//		if( ttD.getReferredTables().size() < 2 ) return 0; // TODO Anyways, I have a bug giving duplicate columns in the projection
+//		                                                    //      evaluated in fillTemplate(), for table licence_task (funct npdv:name).
+//		                                                    //      DEBUG
+//		
+//		DBMSConnection dbOriginal = TupleStoreFactory.getInstance().getDBMSConnection();
+//		
+//		// Find duplicates ratios
+//		int nTables = ttD.getReferredTables().size();
+//		
+//		Pair<String, String> templDiff_templUnion = getTemplateStrings(nTables); 
+//		
+//		Template tDiff = new Template(templDiff_templUnion.first);
+//		Template tUnion = new Template(templDiff_templUnion.second);
+//		
+//		fillTemplate(tDiff, ttD);
+//		fillTemplate(tUnion, ttD);
+//		
+//		logger.debug("tDiff: "+tDiff.getFilled());
+//		logger.debug("tUnion: "+tUnion.getFilled());
+//		
+//		PreparedStatement stmtDiff = dbOriginal.getPreparedStatement(tDiff);
+//		int numDiff = countNumResults(stmtDiff);
+//		
+//		PreparedStatement stmtUnion = dbOriginal.getPreparedStatement(tUnion);
+//		int numUnion = countNumResults(stmtUnion);
+//		
+//		float dupRatio = (float)(numDiff - numUnion) / (float)numDiff;
+//		
+//		closeStatements(stmtDiff, stmtUnion);
+//		
+//		logger.debug("THE DUP RATIO IS" + dupRatio);
+//		
+//		return dupRatio; 
+//	}
+//	
+//	private void closeStatements(PreparedStatement stmtDiff,
+//			PreparedStatement stmtUnion) {
+//		try {
+//			stmtDiff.close();
+//			stmtUnion.close();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
+//
+//	private int countNumResults(PreparedStatement stmt) {
+//		
+//		int result = 0;
+//		
+//		try {
+//			ResultSet rs = stmt.executeQuery();
+//			if( rs.next() ){
+//				result = rs.getInt(1);
+//			}
+//			else throw new SQLException("The COUNT did not went smoothly");
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		return result;
+//	}
+//
+//	private void fillTemplate(Template template, TupleTemplate tt) {
+//		
+//		Set<String> referredTables = tt.getReferredTables();
+//		
+//		int i = 1;
+//		for( String tableName : referredTables ){
+//			StringBuilder builder = new StringBuilder();	
+//			builder.append("SELECT ");
+//			builder.append(projList(tableName, tt));
+//			builder.append(" FROM " + tableName);
+//						
+//			template.setNthPlaceholder(i, builder.toString());
+//			++i;
+//		}
+//	}
+//
+//	private String projList(String tableName, TupleTemplate tt) {
+//		
+//		StringBuilder builder = new StringBuilder();
+//		List<String> colNames = tt.getColumnsInTable(tableName);
+//		
+//		for( int i = 0; i < colNames.size(); ++i ){
+//			
+//			String colName = colNames.get(i);
+//			
+//			builder.append(colName);
+//			if( i < colNames.size() - 1 ) builder.append(", ");
+//		}
+//				
+//		return builder.toString();
+//	}
+//
+//	private Pair<String, String> getTemplateStrings(int nTables) {
+//		StringBuilder builderDiff = new StringBuilder();
+//		StringBuilder builderSet = new StringBuilder();
+//		builderDiff.append("SELECT COUNT(*) FROM (");
+//		builderSet.append("SELECT COUNT(*) FROM (");
+//		for( int i = 0; i < nTables; ++i ){
+//			builderDiff.append("(?)");
+//			builderSet.append("(?)");
+//			if( i < nTables - 1 ){
+//				builderDiff.append(" union all ");
+//				builderSet.append(" union ");
+//			}
+//		}
+//		builderDiff.append(") alias");
+//		builderSet.append(") alias");
+//				
+//		return new Pair<String, String>(builderDiff.toString(), builderSet.toString());
+//	}
+//	
+//	void fillDupRatio(TupleTemplateDecorator ttD) {
+//		
+//		float dupRatio = findDuplicateRatio(ttD);
+//		ttD.setDupR(dupRatio);
+//	}
 };

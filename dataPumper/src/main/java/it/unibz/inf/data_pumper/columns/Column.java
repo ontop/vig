@@ -37,8 +37,8 @@ public abstract class Column {
 	private boolean independent;
 	private boolean autoincrement;
 	protected Schema schema;
-	private List<QualifiedName> referencesTo; // this.name subseteq that.name
-	private List<QualifiedName> referencedBy; // that.name subseteq this.name
+	private List<QualifiedName> referencesTo; // this.name subseteq that.name TODO Change this
+	private List<QualifiedName> referencedBy; // that.name subseteq this.name TODO Change this
 	
 	// Length of the datatype
 	protected int datatypeLength;
@@ -56,8 +56,8 @@ public abstract class Column {
 		this.independent = false;
 		this.allDifferent = false;
 		this.autoincrement = false;
-		referencesTo = new ArrayList<QualifiedName>();
-		referencedBy = new ArrayList<QualifiedName>();
+		referencesTo = new ArrayList<QualifiedName>(); // TODO
+		referencedBy = new ArrayList<QualifiedName>(); // TODO
 		this.index = index;
 		this.datatypeLength = 15; // A default value
 		
@@ -117,13 +117,15 @@ public abstract class Column {
 		return name;
 	}
 	
+	@Deprecated
 	public List<QualifiedName> referencesTo() {
 		return referencesTo;
 	}
 	
+	@Deprecated
 	public List<QualifiedName> referencedBy() {
 		return referencedBy;
-	}	
+	}
 	
 	public String toString(){
 		return this.schema.getTableName() + "." + this.name;

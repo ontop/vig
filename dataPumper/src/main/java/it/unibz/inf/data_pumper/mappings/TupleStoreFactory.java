@@ -20,15 +20,15 @@ package it.unibz.inf.data_pumper.mappings;
  * #L%
  */
 
-import it.unibz.inf.data_pumper.configuration.Conf;
-import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.main.Main;
+//import it.unibz.inf.data_pumper.configuration.Conf;
+//import it.unibz.inf.data_pumper.connection.DBMSConnection;
+//import it.unibz.inf.data_pumper.core.main.Main;
+//
+//import org.apache.log4j.Logger;
 
-import org.apache.log4j.Logger;
-
-import utils.MyHashMapList;
-import core.CSVPlayer;
-import core.TuplesToCSV;
+//import utils.MyHashMapList;
+//import core.CSVPlayer;
+//import core.TuplesToCSV;
 
 /**
  * 
@@ -37,55 +37,55 @@ import core.TuplesToCSV;
  */
 @Deprecated
 public class TupleStoreFactory {
-	private final String obdaFile;
-	private final TupleStore store;
-	private final TuplesPicker picker;
-	private final DBMSConnection dbmsConnOriginal;
+//	private final String obdaFile;
+//	private final TupleStore store;
+//	private final TuplesPicker picker;
+//	private final DBMSConnection dbmsConnOriginal;
+//	
+//	private static String outCSVFile = Main.optResources.getValue() + "/mappingsCSV.csv";
+//	private static TupleStoreFactory instance = null;
+//	
+//	private static Logger logger = Logger.getLogger(TupleStoreFactory.class.getCanonicalName());
+//	
+//	private TupleStoreFactory(DBMSConnection dbmsConnOriginal){
+//		
+//		this.obdaFile = Conf.getInstance().mappingsFile();
+//		this.dbmsConnOriginal = dbmsConnOriginal;
+//		this.picker = TuplesPicker.getInstance();
+//		
+//		TuplesToCSV tuplesExtractor = new TuplesToCSV(obdaFile, outCSVFile);
+//		try {
+//			tuplesExtractor.play();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		CSVPlayer csvParser = new CSVPlayer(outCSVFile);
+//		logger.debug(csvParser.printCSVFile());
+//		MyHashMapList<String, String> tuplesHash = 
+//				MyHashMapList.parse(csvParser.printCSVFile());
+//		
+//		this.store = TupleStore.getInstance(tuplesHash);
+//	}
+//	
+//	public static TupleStoreFactory getInstance(){
+//		return instance;
+//	}
+//	
+//	public static void setInstance(DBMSConnection dbmsConnOriginal, String obdaFile){
+//		if( instance != null ) return;
+//		instance = new TupleStoreFactory(dbmsConnOriginal);
+//	}
+//
+//	public DBMSConnection getDBMSConnection(){
+//		return this.dbmsConnOriginal;
+//	}
+//	
+//	public TupleStore getTupleStoreInstance(){
+//		return store;
+//	}
+//	
+//	public TuplesPicker getTuplesPickerInstance(){
+//		return picker;
+//	}
 	
-	private static String outCSVFile = Main.optResources.getValue() + "/mappingsCSV.csv";
-	private static TupleStoreFactory instance = null;
-	
-	private static Logger logger = Logger.getLogger(TupleStoreFactory.class.getCanonicalName());
-	
-	private TupleStoreFactory(DBMSConnection dbmsConnOriginal){
-		
-		this.obdaFile = Conf.getInstance().mappingsFile();
-		this.dbmsConnOriginal = dbmsConnOriginal;
-		this.picker = TuplesPicker.getInstance();
-		
-		TuplesToCSV tuplesExtractor = new TuplesToCSV(obdaFile, outCSVFile);
-		try {
-			tuplesExtractor.play();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		CSVPlayer csvParser = new CSVPlayer(outCSVFile);
-		logger.debug(csvParser.printCSVFile());
-		MyHashMapList<String, String> tuplesHash = 
-				MyHashMapList.parse(csvParser.printCSVFile());
-		
-		this.store = TupleStore.getInstance(tuplesHash);
-	}
-	
-	public static TupleStoreFactory getInstance(){
-		return instance;
-	}
-	
-	public static void setInstance(DBMSConnection dbmsConnOriginal, String obdaFile){
-		if( instance != null ) return;
-		instance = new TupleStoreFactory(dbmsConnOriginal);
-	}
-
-	public DBMSConnection getDBMSConnection(){
-		return this.dbmsConnOriginal;
-	}
-	
-	public TupleStore getTupleStoreInstance(){
-		return store;
-	}
-	
-	public TuplesPicker getTuplesPickerInstance(){
-		return picker;
-	}
-	
-}
+};

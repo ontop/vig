@@ -14,6 +14,7 @@ pump () {
 : ${1?"Usage: $0 DB_NAME"}
 DB_NAME=$1
 
+# Copy freshly generated csvs into the dumpable folder
 cp src/main/resources/csvs/* /home/tir/dumps/csvs
 
 FILES=/home/tir/dumps/csvs/*                                     

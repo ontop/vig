@@ -34,13 +34,14 @@ public class Conf {
 	protected String confFile;
 	private static Conf instance = null;
 	
-	protected Conf(String resourcesDir){
-		this.confFile = resourcesDir + "/configuration.conf";
+	protected Conf(String confFile){
+		this.confFile = confFile;
 	};
-	
+		
 	public static Conf getInstance(){
 		if( instance == null ){
-			instance = new Conf(Main.optResources.getValue());
+		    String confFile = Main.optResources.getValue() + "/" + Main.optConfig.getValue();
+		    instance = new Conf(confFile);
 		}
 		return instance;
 	}
@@ -72,7 +73,7 @@ public class Conf {
 	/** Returns the obda file containing the mappings 
 	 * @throws IOException **/
 	public  String mappingsFile() throws IOException{
-		return searchTag("obda-file");
+	    return searchTag("obda-file");
 	}
 	/** Returns the configuration scheme for the data generation **/
 	public String pumperType() throws IOException{
