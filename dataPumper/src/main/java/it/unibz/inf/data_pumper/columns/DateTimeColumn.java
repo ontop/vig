@@ -45,7 +45,7 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	}
 
 	@Override
-	public void generateValues(Schema schema, DBMSConnection db) {
+	public void createValues(Schema schema, DBMSConnection db) {
 
 	    if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 
@@ -56,6 +56,33 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 
 	    for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
 		if( i < this.numNullsToInsert ){
+		    values.add(null);
+		}
+		else{
+		    long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
+		    int intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
+		    Interval<Timestamp> interval = this.intervals.get(intervalIndex);
+		    Calendar c = Calendar.getInstance();
+		    c.setTime(interval.getMinValue());
+
+		    long nextValue = this.map(seqIndex) * DatetimeInterval.MILLISECONDS_PER_DAY + c.getTimeInMillis();
+		    values.add(new Timestamp(nextValue));
+		}
+		setDomain(values);
+	    }
+	}
+	
+	@Override
+	public void createNValues(Schema schema, DBMSConnection db, long n) {
+
+	    if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+
+	    List<Timestamp> values = new ArrayList<Timestamp>();
+
+	    // 86400 Seconds in one day
+
+	    for( int i = 0; i < n; ++i ){
+		if( this.getGeneratedCounter() + i < this.numNullsToInsert ){
 		    values.add(null);
 		}
 		else{

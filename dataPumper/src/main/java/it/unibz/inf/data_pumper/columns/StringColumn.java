@@ -25,7 +25,6 @@ import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
 import it.unibz.inf.data_pumper.columns.intervals.StringInterval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 import it.unibz.inf.data_pumper.tables.Schema;
 
@@ -60,7 +59,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
     }
 
     @Override
-    public void generateValues(Schema schema, DBMSConnection db) {
+    public void createValues(Schema schema, DBMSConnection db) {
 
 	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
 
@@ -74,6 +73,38 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	    }
 	    else{
 		
+		long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
+		intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
+		
+		StringInterval interval = (StringInterval) this.intervals.get(intervalIndex);
+
+		String trail = interval.encode(interval.getMinEncoding() + this.map(seqIndex));
+
+		StringBuilder zeroes = new StringBuilder();
+		for( int j = 0; j < interval.lowerBoundValue().length() - trail.length(); ++j ){
+		    zeroes.append("0");
+		}
+		String valueToAdd = zeroes.toString() + trail;
+		values.add(valueToAdd);
+	    }
+	}				
+	setDomain(values);
+    }
+    
+    @Override
+    public void createNValues(Schema schema, DBMSConnection db, long n) {
+
+	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+
+	int intervalIndex = 0;
+
+	List<String> values = new ArrayList<String>();
+	
+	for( int i = 0; i < n; ++i ){
+	    if( this.getGeneratedCounter() + i < this.numNullsToInsert ){
+		values.add(null);
+	    }
+	    else{
 		long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
 		intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
 		

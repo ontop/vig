@@ -150,9 +150,9 @@ public class Schema{
 	return primaryKey;
     }
 
-    public void reset() {
+    public void resetColumnsDomains() {
 	for( ColumnPumper<? extends Object> cP : columns ){
-	    cP.reset();
+	    cP.resetDomain();
 	}
     }
 }

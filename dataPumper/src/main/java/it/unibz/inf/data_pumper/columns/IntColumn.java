@@ -51,10 +51,10 @@ public class IntColumn extends MultiIntervalColumn<Long> {
     }
     
     @Override
-    public void generateValues(Schema schema, DBMSConnection db) {
+    public void createValues(Schema schema, DBMSConnection db) {
 
-        if(!firstIntervalSet) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
-        
+	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+	
         List<Long> values = new ArrayList<Long>();
         
         for( int i = 0; i < this.getNumRowsToInsert(); ++i ){
@@ -68,6 +68,31 @@ public class IntColumn extends MultiIntervalColumn<Long> {
 		IntInterval interval = (IntInterval) this.intervals.get(intervalIndex);
         	
 		long toAdd = interval.getMinEncoding() + this.map(seqIndex);
+		
+        	values.add(toAdd);        
+            }
+        }
+        setDomain(values);
+    }
+    
+    @Override
+    public void createNValues(Schema schema, DBMSConnection db, long n) {
+
+	if( !this.firstIntervalSet ) throw new BoundariesUnsetException("fillFirstIntervalBoundaries() hasn't been called yet");
+	
+        List<Long> values = new ArrayList<Long>();
+        
+        for( int i = 0; i < n; ++i ){
+            if( this.getGeneratedCounter() + i < this.numNullsToInsert ){
+        	values.add(null);
+            }	
+            else{
+        	long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
+        	int intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
+		
+        	IntInterval interval = (IntInterval) this.intervals.get(intervalIndex);
+        	
+        	long toAdd = interval.getMinEncoding() + this.map(seqIndex);
 		
         	values.add(toAdd);        
             }

@@ -23,6 +23,8 @@ package it.unibz.inf.data_pumper.columns;
 import java.sql.SQLException;
 import java.util.List;
 
+import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
+import it.unibz.inf.data_pumper.columns.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.tables.Schema;
@@ -40,6 +42,7 @@ public interface ColumnPumperInterface<T> {
 	 *
 	 */
 	public void generateValues(Schema schema, DBMSConnection db);
+	boolean generateNValues(Schema schema, DBMSConnection db, long n) throws BoundariesUnsetException, ValueUnsetException;
 	public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException;
 	
 	public void setDuplicatesRatio(float ratio);
@@ -90,7 +93,7 @@ public interface ColumnPumperInterface<T> {
 	public void incrementNumFreshs();
 	public void decrementNumFreshs();
 	
-	public void reset(); // To reset the internal state
+	public void resetDomain(); // To reset the internal state
 
 	boolean dupsCorrectionFactorApplied();
 };

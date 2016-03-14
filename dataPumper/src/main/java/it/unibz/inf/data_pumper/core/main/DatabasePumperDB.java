@@ -21,6 +21,8 @@ package it.unibz.inf.data_pumper.core.main;
  */
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
+import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
+import it.unibz.inf.data_pumper.columns.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.statistics.creators.table.TableStatisticsFinder;
@@ -50,6 +52,8 @@ public class DatabasePumperDB extends DatabasePumper {
     protected final LogToFile persistence;
 
     protected static double scaleFactor;
+
+    private static long LINES_BUF_SIZE=10000; // Keep in RAM at most 10000 values for a table
 
     public DatabasePumperDB(){
 	this.dbOriginal = DBMSConnection.getInstance();
@@ -94,10 +98,21 @@ public class DatabasePumperDB extends DatabasePumper {
 	    nRows = (int) (nRows * scaleFactor);
 	    logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
 
-	    fillDomainsForSchema(schema, dbOriginal);			
-	    printDomain(schema);
-
-	    schema.reset();
+//	    fillDomainsForSchema(schema, dbOriginal);		
+	        
+	    try {
+		persistence.openFile(schema.getTableName() + ".csv");
+		
+		while( !fillDomainsUpToNForSchema(schema, dbOriginal, LINES_BUF_SIZE) ){
+		    printDomain(schema, LINES_BUF_SIZE);
+		    schema.resetColumnsDomains(); // Release memory 
+		}
+		// Print the last values
+		printDomain(schema, nRows % LINES_BUF_SIZE);
+		schema.resetColumnsDomains();
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
 	}
 	long endTime = System.currentTimeMillis();
 
@@ -213,10 +228,11 @@ public class DatabasePumperDB extends DatabasePumper {
 	    }
 	}
     }
+    
     private void printDomain(Schema schema) {
-
+	
 	List<ColumnPumper<? extends Object>> cols = schema.getColumns();
-
+	
 	StringBuilder line = new StringBuilder();
 	try {
 	    persistence.openFile(schema.getTableName() + ".csv");
@@ -224,11 +240,11 @@ public class DatabasePumperDB extends DatabasePumper {
 		line.delete(0, line.length());
 		for( int j = 0; j < cols.size(); ++j ){
 		    if( j != 0 ) line.append("`");
-
+		    
 		    ColumnPumper<? extends Object> col = cols.get(j);
 		    line.append(col.getNthInDomain(i));
 		}
-
+		
 		String value = line.toString();
 
 		persistence.appendLine(value);
@@ -239,9 +255,27 @@ public class DatabasePumperDB extends DatabasePumper {
 	    persistence.closeFile();
 	    System.exit(1);
 	}
-	persistence.closeFile();
-
     }
+    
+    private void printDomain(Schema schema, long nToPrint) {
+
+	List<ColumnPumper<? extends Object>> cols = schema.getColumns();
+	StringBuilder line = new StringBuilder();
+
+	for( int i = 0; i < nToPrint; ++i ){
+	    line.delete(0, line.length());
+	    for( int j = 0; j < cols.size(); ++j ){
+		if( j != 0 ) line.append("`");
+
+		ColumnPumper<? extends Object> col = cols.get(j);
+		line.append(col.getNthInDomain(i));
+	    }
+
+	    String value = line.toString();
+	    persistence.appendLine(value);
+	}	
+    }
+    
     /**
      * 
      * This method puts in listColumns all the columns and initializes, for each of them, 
@@ -284,5 +318,21 @@ public class DatabasePumperDB extends DatabasePumper {
 
     public static double getScaleFactor(){
 	return scaleFactor;
+    }
+
+    private boolean fillDomainsUpToNForSchema(Schema schema, DBMSConnection originalDb, long n){
+	
+	boolean filled = false;
+	
+	for( ColumnPumper<? extends Object> column : schema.getColumns() ){
+	    try {
+		filled = column.generateNValues(schema, originalDb, n);
+	    } catch (BoundariesUnsetException | ValueUnsetException e) {
+		e.printStackTrace();
+		DatabasePumper.closeEverything();
+		System.exit(1);
+	    }
+	}
+	return filled;
     }
 };

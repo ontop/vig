@@ -70,9 +70,9 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 
     @Override
     /** This method has to be called whenever information held for the column can be released **/
-    public void reset(){
+    public void resetDomain(){
 	if( domain != null ) domain.clear();
-	domainIndex = 0;
+//	domainIndex = 0;
 	System.gc();
     }
 
@@ -118,9 +118,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
     //	}
 
     public void setDomain(List<T> newDomain){
-	if( domain == null ){
-	    domain = newDomain;
-	}
+	domain = newDomain;
     }
 
     public String getNthInDomain(int n){
@@ -173,6 +171,12 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 	return localIndex;
     }
     
+    /**
+     * Given a sequence index <b>seqIndex</b>, this method returns 
+     * the index of the interval in which <b>seqIndex</b>falls.
+     * @param seqIndex : An index in a sequence
+     * @return An interval index
+     */
     int getIntervalIndexFromSeqIndex(long seqIndex) {
 	
 	int i = 0;
@@ -194,6 +198,5 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 	
 	return i;
     }
-
 }
 

@@ -23,6 +23,7 @@ package it.unibz.inf.data_pumper.columns;
 import java.util.LinkedList;
 import java.util.List;
 
+import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.columns.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
 import it.unibz.inf.data_pumper.columns_cluster.ColumnsCluster;
@@ -51,6 +52,9 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	protected CyclicGroupGenerator generator;
 	
 	protected ColumnsCluster<T> cluster;
+	
+	private long generatedCounter = 0;
+	private boolean boundariesSet = false;
 	
 	// For general purposes
 	public boolean visited;
@@ -171,6 +175,42 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 		Interval<T> interval = this.getIntervals().get(0);
 		interval.setNFreshsToInsert(interval.getNFreshsToInsert() - 1);
 		interval.updateMaxEncodingAndValue(interval.getMaxEncoding() - 1);
+	}
+	
+	public abstract void createValues(Schema schema, DBMSConnection db);
+	public abstract void createNValues(Schema schema, DBMSConnection db, long n);
+	
+	
+	@Override
+	public void generateValues(Schema schema, DBMSConnection db)
+		throws BoundariesUnsetException, ValueUnsetException{
+	    
+	    createValues(schema, db);
+	    
+	    this.generatedCounter = this.numRowsToInsert;
+	}
+
+	@Override
+	public boolean generateNValues(Schema schema, DBMSConnection db, long n)
+		throws BoundariesUnsetException, ValueUnsetException{
+	    
+	    long nOld = n;
+	    
+	    n = this.numRowsToInsert - this.generatedCounter > n ? n : this.numRowsToInsert - this.generatedCounter;
+	    
+	    createNValues(schema, db, n);
+	    
+	    this.generatedCounter += n;
+	    
+	    return n != nOld; // true: All the values have been generated
+	}
+	
+	/**
+	 * 
+	 * @return The number of values generated so far for <b>this</b> column.
+	 */
+	protected long getGeneratedCounter(){
+	    return this.generatedCounter;
 	}
 	
 	@Deprecated
