@@ -85,6 +85,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	    throw new RuntimeException("Exception while pumping the database"); 
 	}
 
+	// Check
 	for( String tableName : dbOriginal.getAllTableNames() ){
 	    Schema schema = dbOriginal.getSchema(tableName);
 	    schemas.add(schema);
@@ -112,7 +113,11 @@ public class DatabasePumperDB extends DatabasePumper {
 		schema.resetColumnsDomains();
 	    } catch (IOException e) {
 		e.printStackTrace();
+		dbOriginal.close();
+		persistence.closeFile();
+		System.exit(1);
 	    }
+	    persistence.closeFile();
 	}
 	long endTime = System.currentTimeMillis();
 
