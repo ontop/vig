@@ -30,3 +30,7 @@ tmp.*
 plugin-runtime
 
 *.obda
+
+# CSVs
+
+*.csv
