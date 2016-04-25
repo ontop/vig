@@ -500,6 +500,7 @@ class CorrelatedColumnsExtractor{
     <T> List<CorrelatedColumnsList<T>> extractCorrelatedColumns() {
 
 	class LocalUtils{
+	    // Add all fields to the same set 
 	    Set<Field> extractCore(Set<Set<Field>> list){
 		Set<Field> result = new HashSet<Field>();
 
@@ -670,6 +671,13 @@ class CorrelatedColumnsExtractor{
 	}
     }
 
+    // Each argument of a template has a set of filling fields
+    /**
+     * For each function template F, do:
+     * -- Each argument of F has a set of filling fields
+     * @param templates
+     * @return
+     */
     private Set<Set<Field>> extractCorrelatedFields(
 	    List<FunctionTemplate> templates) {
 
@@ -679,6 +687,7 @@ class CorrelatedColumnsExtractor{
 	    for( int i = 0; i < fT.getArity(); ++i ){
 		Argument arg = fT.getArgumentOfIndex(i);
 
+		// Each argument of the template has a set of filling fields
 		Set<Field> fillingFields = arg.getFillingFields();
 
 		if( fillingFields.size() > 1 ){
