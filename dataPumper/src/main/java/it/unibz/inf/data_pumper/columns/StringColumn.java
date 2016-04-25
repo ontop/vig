@@ -23,8 +23,10 @@ package it.unibz.inf.data_pumper.columns;
 
 import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
-import it.unibz.inf.data_pumper.columns.intervals.StringInterval;
+import it.unibz.inf.data_pumper.columns.intervals.StringIntervalStandard;
+import it.unibz.inf.data_pumper.columns.intervals.StringIntervalFixedDomain;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 import it.unibz.inf.data_pumper.tables.Schema;
 
@@ -39,7 +41,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
     private static final int MAX_LENGTH = 20;
 
     // Characters out of which Strings will be formed
-    String characters = StringInterval.characters;
+    String characters = StringIntervalStandard.characters;
 
     public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
 	super(name, type, index, schema);
@@ -76,7 +78,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
 		intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
 		
-		StringInterval interval = (StringInterval) this.intervals.get(intervalIndex);
+		StringIntervalStandard interval = (StringIntervalStandard) this.intervals.get(intervalIndex);
 
 		String trail = interval.encode(interval.getMinEncoding() + this.map(seqIndex));
 
@@ -108,7 +110,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
 		intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
 		
-		StringInterval interval = (StringInterval) this.intervals.get(intervalIndex);
+		StringIntervalStandard interval = (StringIntervalStandard) this.intervals.get(intervalIndex);
 
 		String trail = interval.encode(interval.getMinEncoding() + this.map(seqIndex));
 
@@ -131,25 +133,49 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	// Create the single initial interval
 	List<ColumnPumper<String>> involvedCols = new LinkedList<ColumnPumper<String>>();
 	involvedCols.add(this);
-	Interval<String> initialInterval = getIntervalInstance(this.getQualifiedName().toString(), involvedCols);
-
-	initialInterval.updateMinEncodingAndValue(0);
-	initialInterval.updateMaxEncodingAndValue(this.numFreshsToInsert);
-
+	
+	Interval<String> initialInterval = null;
+	
+	if( this.getDuplicateRatio() == 1 ){
+	    // FixedDomain
+	    initialInterval = getFixedIntervalInstance(this.getQualifiedName().toString(), involvedCols);
+	}
+	else{
+	
+	    initialInterval = getIntervalInstance(this.getQualifiedName().toString(), involvedCols);
+	    
+	    initialInterval.updateMinEncodingAndValue(0);
+	    initialInterval.updateMaxEncodingAndValue(this.numFreshsToInsert);
+	}
+	
 	this.intervals.add(initialInterval);
-
 	this.firstIntervalSet = true;
     }
 
-    protected Interval<String> getIntervalInstance(
+    protected StringIntervalStandard getIntervalInstance(
 	    String qualifiedName, List<ColumnPumper<String>> involvedCols){
-	Interval<String> interval = new StringInterval(qualifiedName, this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
+	
+	StringIntervalStandard interval = new StringIntervalStandard(qualifiedName, this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
+	
+	return interval;
+    }
+    
+    protected StringIntervalFixedDomain getFixedIntervalInstance(
+	    String qualifiedName, List<ColumnPumper<String>> involvedCols) throws SQLException {
+	
+	StringIntervalFixedDomain interval = new StringIntervalFixedDomain(qualifiedName, this.getType(), this.numFreshsToInsert, involvedCols);
+			
 	return interval;
     }
 
     @Override
     public void addInterval(String name, long minEncoding, long maxEncoding) {
-	 Interval<String> toAdd = new StringInterval(name, getType(), minEncoding, maxEncoding, this.datatypeLength);
+	
+	if( this.getDuplicateRatio() == 1 ){
+	    throw new DebugException("Multi-Interval not supported for fixed columns");
+	}
+	
+	 Interval<String> toAdd = new StringIntervalStandard(name, getType(), minEncoding, maxEncoding, this.datatypeLength);
 	 toAdd.updateMaxEncodingAndValue(maxEncoding);
 	 toAdd.updateMinEncodingAndValue(minEncoding);
 	 this.addInterval(toAdd);

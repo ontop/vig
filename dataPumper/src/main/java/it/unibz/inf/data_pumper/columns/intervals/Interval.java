@@ -228,12 +228,6 @@ public abstract class Interval<T> {
         return builder.toString();
     }
 
-    /**
-     * It pushes the minimum down, or the maximum up, according
-     * to the nFreshs.
-     */
-    public abstract void synchronizeMinMaxNFreshs();
-
     public void intersect(Interval<?> that) {
 	
 	// Assert: same type
@@ -254,4 +248,6 @@ public abstract class Interval<T> {
     public boolean isEmpty() {
 	return this.minEncoding == this.maxEncoding;
     }
+    
+    public abstract void synchronizeMinMaxNFreshs();
 };

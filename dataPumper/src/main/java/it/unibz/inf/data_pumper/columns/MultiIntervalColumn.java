@@ -120,7 +120,7 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
     public void setDomain(List<T> newDomain){
 	domain = newDomain;
     }
-
+       
     public String getNthInDomain(int n){
 	String result = domain.get(n) == null ? NULL : domain.get(n).toString() ;
 	if( result == null ){
@@ -134,6 +134,20 @@ public abstract class MultiIntervalColumn<T> extends ColumnPumper<T> {
 	}
 	return result;
     }
+    
+//    public String getNthInDomain(int n){
+//	String result = domain.get(n) == null ? NULL : domain.get(n).toString() ;
+//	if( result == null ){
+//	    return NULL;
+//	}
+//	if( this.getType().equals(MySqlDatatypes.BIGINT) ){
+//	    if( result.indexOf(".") != -1 ){
+//		String value1 = result.substring(0, result.indexOf("."));
+//		result = value1;
+//	    }
+//	}
+//	return result;
+//    } OLD
 
     @Override
     public long countFreshsInIntersectedIntervals() {

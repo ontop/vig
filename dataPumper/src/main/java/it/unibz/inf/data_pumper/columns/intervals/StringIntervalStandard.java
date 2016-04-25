@@ -7,21 +7,21 @@ import java.util.List;
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 
-public class StringInterval extends Interval<String> {
+public class StringIntervalStandard extends StringInterval {
 
     public static String characters = "0123456789abcdefghijklmnopqrstuvwxyz"; // Ordered from the least to the bigger (String.compareTo)
     protected final int datatypeLength;
 
     private boolean maxFoundOnce = false;
     
-    public StringInterval(String key,
+    public StringIntervalStandard(String key,
 	    MySqlDatatypes type,
 	    long nValues, int datatypeLength, List<ColumnPumper<String>> involvedCols) {
 	super(key, type, nValues, involvedCols);
 	this.datatypeLength = datatypeLength;
     }
 
-    public StringInterval(String name, MySqlDatatypes type, long minEncoding,
+    public StringIntervalStandard(String name, MySqlDatatypes type, long minEncoding,
 	    long maxEncoding, int datatypeLength) {
 	super(name, type, minEncoding, maxEncoding);
 	this.datatypeLength = datatypeLength;
@@ -68,6 +68,7 @@ public class StringInterval extends Interval<String> {
     }
 
     // Encode in base 62
+    @Override
     public String encode(long value) {
 	
 	// Assert
@@ -124,7 +125,8 @@ public class StringInterval extends Interval<String> {
 
 	return trail;
     }
-
+    
+    @Override
     public String lowerBoundValue(){
 	StringBuilder builder = new StringBuilder();
 
@@ -135,7 +137,8 @@ public class StringInterval extends Interval<String> {
 	return builder.toString();
     }
 
-    private String upperBoundValue(){
+    @Override
+    protected String upperBoundValue(){
 	StringBuilder builder = new StringBuilder();
 
 	for( int i = 0; i < datatypeLength; ++i ){
@@ -148,8 +151,8 @@ public class StringInterval extends Interval<String> {
     @Override
     public Interval<String> getCopyInstance() {
 
-	StringInterval result =
-		new StringInterval(
+	StringIntervalStandard result =
+		new StringIntervalStandard(
 			this.getKey(), this.getType(), 
 			this.nFreshsToInsert, this.datatypeLength, 
 			new LinkedList<>(this.intervalColumns));
