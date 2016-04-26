@@ -301,7 +301,9 @@ public class DatabasePumperDB extends DatabasePumper {
 
 		float nullRatio = tStatsFinder.findNullRatio(s, c);
 		c.setNullRatio(nullRatio);
-
+		
+		c.setScaleFactor(percentage);
+		
 		int nRows = dbOriginal.getNRows(s.getTableName());
 		nRows = (int) (nRows * percentage);
 		c.setNumRowsToInsert(nRows);

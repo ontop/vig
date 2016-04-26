@@ -70,7 +70,7 @@ public class StringIntervalStandard extends StringInterval {
     // Encode in base 62
     @Override
     public String encode(long value) {
-	
+		
 	// Assert
 	assert value >= 0 : "Encoding of a negative value for column " + this.toString();
  

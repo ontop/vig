@@ -2,6 +2,7 @@ package it.unibz.inf.data_pumper.columns.intervals;
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 import it.unibz.inf.data_pumper.utils.Template;
 
@@ -23,6 +24,10 @@ public class StringIntervalFixedDomain extends StringInterval {
 	fixedDomainValues = new ArrayList<String>();
 	
 	create();
+	
+	this.setNFreshsToInsert(fixedDomainValues.size());
+	this.maxEncoding = fixedDomainValues.size();
+	this.minEncoding = 0;
     }
     
     private void create() throws SQLException{
@@ -50,7 +55,10 @@ public class StringIntervalFixedDomain extends StringInterval {
     
     @Override
     public String encode(long value){
-	return fixedDomainValues.get((int) value);
+	if( value > fixedDomainValues.size() ){
+	    throw new DebugException("Out of index for interval " + this.toString() );
+	}
+	return fixedDomainValues.get((int) value - 1 );
     }
 
     @Override
@@ -71,7 +79,7 @@ public class StringIntervalFixedDomain extends StringInterval {
 
     @Override
     public long getMinEncoding() {
-	return 0;
+	return this.minEncoding;
     }
 
     @Override

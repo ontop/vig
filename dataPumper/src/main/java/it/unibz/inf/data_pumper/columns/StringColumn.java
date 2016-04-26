@@ -23,6 +23,7 @@ package it.unibz.inf.data_pumper.columns;
 
 import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
+import it.unibz.inf.data_pumper.columns.intervals.StringInterval;
 import it.unibz.inf.data_pumper.columns.intervals.StringIntervalStandard;
 import it.unibz.inf.data_pumper.columns.intervals.StringIntervalFixedDomain;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
@@ -101,7 +102,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 	int intervalIndex = 0;
 
 	List<String> values = new ArrayList<String>();
-	
+		
 	for( int i = 0; i < n; ++i ){
 	    if( this.getGeneratedCounter() + i < this.numNullsToInsert ){
 		values.add(null);
@@ -110,7 +111,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 		long seqIndex = this.generator.nextValue(this.numFreshsToInsert);
 		intervalIndex = getIntervalIndexFromSeqIndex(seqIndex);
 		
-		StringIntervalStandard interval = (StringIntervalStandard) this.intervals.get(intervalIndex);
+		StringInterval interval = (StringInterval) this.intervals.get(intervalIndex);
 
 		String trail = interval.encode(interval.getMinEncoding() + this.map(seqIndex));
 
@@ -127,7 +128,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 
     @Override
     public void fillFirstIntervalBoundaries(Schema schema, DBMSConnection db) throws SQLException {
-
+	
 	this.initNumDupsNullsFreshs();
 
 	// Create the single initial interval

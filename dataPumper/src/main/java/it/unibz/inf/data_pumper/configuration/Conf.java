@@ -23,6 +23,8 @@ package it.unibz.inf.data_pumper.configuration;
 import it.unibz.inf.data_pumper.core.main.Main;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Reads the configuration info from a configuration file.
@@ -79,15 +81,27 @@ public class Conf {
 	public String pumperType() throws IOException{
 		return searchTag("pumper-type");
 	}
+		
+	public String fixed() throws IOException{
+	    return searchTag("fixed");
+	}
 	
 	protected String searchTag(String tag) throws IOException{
 	    try(BufferedReader in = new BufferedReader(
 			new FileReader(confFile))){
 		String s;
-		String[] s2 = new String[2];
 		while ((s = in.readLine()) != null){
-		    s2 = s.split("\\s+");
-		    if (s2[0].equals(tag)){ in.close(); return s2[1]; }
+		    List<String> s2 = Arrays.asList(s.split("\\s+"));
+		    if (s2.get(0).equals(tag)){
+			in.close();
+			StringBuilder resultBuilder = new StringBuilder();
+			for( int i = 1; i < s2.size(); ++i ){
+			    if( s2.get(i).startsWith("#") ) break; // Comment
+			    if( i > 1 ) resultBuilder.append(" ");
+			    resultBuilder.append( s2.get(i) );
+			}
+			return resultBuilder.toString();
+		    }
 		}
 		in.close();
 	    }catch(IOException e){

@@ -14,8 +14,10 @@ import it.unibz.inf.vig_mappings_analyzer.datatypes.Argument;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Field;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -48,8 +50,18 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 
     @Override
     protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
+	List<String> fixedCols = null;
+	try {
+	    fixedCols = Arrays.asList( Conf.getInstance().fixed().split("\\s+") );
+	} catch (IOException e) {
+	    e.printStackTrace();
+	    DatabasePumperOBDA.closeEverything();
+	}
+	
 	for( ColumnPumper<? extends Object> cP : listColumns ){
-	    
+	    if( fixedCols.contains( cP.getQualifiedName().toString() ) ){
+		cP.setFixed();
+	    }
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 	}
 	// At this point, each column is initialized with statistical information
@@ -114,6 +126,11 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    for( int i = 0; i < cCL.size() && !stop; ++i ){
 		ColumnPumper<T> cP = cCL.get(i);
 				
+		if( cP.getDuplicateRatio() == 1 ){
+		    String suggestion = ". You might specify this column as 'non-fixed' in the configuration file";
+		    throw new DebugException("Cluster analysis NOT allowed on fixed-domain column "+cP.getSchema().getTableName()+"."+cP.getName()+suggestion);
+		}
+		
 		stop = utils.insert(insertedIntervals, cP, visited);
 	    }
 	    if( stop ){
