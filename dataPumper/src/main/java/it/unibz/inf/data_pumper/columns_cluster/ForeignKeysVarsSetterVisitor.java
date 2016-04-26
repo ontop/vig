@@ -6,10 +6,10 @@ import java.util.Set;
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.tables.QualifiedName;
 import it.unibz.inf.data_pumper.utils.Pair;
 import it.unibz.inf.data_pumper.utils.traversers.Node;
 import it.unibz.inf.data_pumper.utils.traversers.visitors.Visitor;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 import abstract_constraint_program.ACPLongVar;
 import abstract_constraint_program.ACPOperator;
 import abstract_constraint_program.AbstractConstraintProgram;

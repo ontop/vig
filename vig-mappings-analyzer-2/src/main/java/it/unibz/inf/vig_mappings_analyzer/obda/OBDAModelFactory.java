@@ -18,12 +18,8 @@ import java.util.Collection;
 //import org.apache.log4j.Logger;
 
 public class OBDAModelFactory {
-        
-    // Parameters
-//    private String obdaFile = "resources/npd-v2-ql_a.obda";
-//
-//    private static Logger logger = Logger.getLogger(JoinableColumnsFinder.class.getCanonicalName());
-
+    
+    private static OBDAModel instance = null;
     
     /**
      * Load the OBDA model from an external .obda file
@@ -35,6 +31,11 @@ public class OBDAModelFactory {
 	ModelIOManager ioManager = new ModelIOManager(obdaModel);
 	ioManager.load(obdaFile);
 	return obdaModel;
+    }
+    
+    public static OBDAModel getSingletonOBDAModel(String obdaFile) throws Exception{
+	if( instance == null )	instance = makeOBDAModel(obdaFile);
+	return instance;
     }
     
     /** Retrieve the connection parameters in order to instantiate the

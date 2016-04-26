@@ -22,6 +22,7 @@ package it.unibz.inf.data_pumper.core.statistics.creators.table;
 
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.tables.*;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

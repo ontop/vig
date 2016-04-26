@@ -30,8 +30,8 @@ import it.unibz.inf.data_pumper.columns_cluster.ColumnsCluster;
 import it.unibz.inf.data_pumper.columns_cluster.ColumnsClusterImpl;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
-import it.unibz.inf.data_pumper.tables.QualifiedName;
 import it.unibz.inf.data_pumper.tables.Schema;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 public abstract class ColumnPumper<T> extends Column implements ColumnPumperInterface<T>{
 

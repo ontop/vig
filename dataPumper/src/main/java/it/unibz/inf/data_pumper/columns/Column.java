@@ -21,8 +21,8 @@ package it.unibz.inf.data_pumper.columns;
  */
 
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
-import it.unibz.inf.data_pumper.tables.QualifiedName;
 import it.unibz.inf.data_pumper.tables.Schema;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 import java.util.ArrayList;
 import java.util.List;

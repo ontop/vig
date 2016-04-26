@@ -8,11 +8,14 @@ import it.unibz.inf.data_pumper.columns_cluster.ColumnsCluster;
 import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.InstanceNullException;
-import it.unibz.inf.data_pumper.tables.QualifiedName;
+import it.unibz.inf.vig_mappings_analyzer.core.FixedDomColsFinder;
 import it.unibz.inf.vig_mappings_analyzer.core.JoinableColumnsFinder;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Argument;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Field;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
+import it.unibz.inf.vig_mappings_analyzer.obda.OBDAModelFactory;
+import it.unibz.krdb.obda.model.OBDAModel;
+import it.unibz.krdb.obda.parser.SQLQueryParser;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -28,6 +31,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
+
 /**
  * @author tir
  *
@@ -36,11 +41,18 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 
     // Aggregated classes
     private CorrelatedColumnsExtractor cCE;
+    private Set<QualifiedName> fixedDomainCols;
 
     public DatabasePumperOBDA() {
-	super();
+	super();	
 	try {
-	    JoinableColumnsFinder jCF = new JoinableColumnsFinder(Conf.getInstance().mappingsFile());
+	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel( Conf.getInstance().mappingsFile() );
+	    SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
+	    
+	    fixedDomainCols = FixedDomColsFinder.makeInstance(model, parser).findFixedDomainCols();
+	    
+	    JoinableColumnsFinder jCF = JoinableColumnsFinder.makeInstance(model, parser);
+	    
 	    this.cCE = new CorrelatedColumnsExtractor(jCF);
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -50,16 +62,22 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 
     @Override
     protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
-	List<String> fixedCols = null;
+	List<String> manuallySpecifiedFixedCols = null;
 	try {
-	    fixedCols = Arrays.asList( Conf.getInstance().fixed().split("\\s+") );
+	    manuallySpecifiedFixedCols = Arrays.asList( Conf.getInstance().fixed().split("\\s+") );
+	    
+	    for( String name : manuallySpecifiedFixedCols ){
+		this.fixedDomainCols.add( QualifiedName.makeFromDotSeparated(name) );
+	    }
+	    
+	    
 	} catch (IOException e) {
 	    e.printStackTrace();
 	    DatabasePumperOBDA.closeEverything();
 	}
 	
 	for( ColumnPumper<? extends Object> cP : listColumns ){
-	    if( fixedCols.contains( cP.getQualifiedName().toString() ) ){
+	    if( this.fixedDomainCols.contains( cP.getQualifiedName().toString() ) ){
 		cP.setFixed();
 	    }
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);

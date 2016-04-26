@@ -2,8 +2,8 @@ package it.unibz.inf.data_pumper.columns_cluster;
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.tables.QualifiedName;
 import it.unibz.inf.data_pumper.utils.traversers.Node;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 import java.util.LinkedList;
 import java.util.List;

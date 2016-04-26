@@ -7,8 +7,8 @@ import java.util.List;
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.main.DebugException;
-import it.unibz.inf.data_pumper.tables.QualifiedName;
 import it.unibz.inf.data_pumper.tables.Schema;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 

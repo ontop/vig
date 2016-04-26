@@ -1,4 +1,4 @@
-package it.unibz.inf.data_pumper.tables;
+package it.unibz.inf.vig_mappings_analyzer.core.utils;
 
 /*
  * #%L
@@ -35,7 +35,15 @@ public class QualifiedName {
 		tableName = splits[0];
 		colName = splits[1];
 	}
-		
+	
+	public static QualifiedName makeFromDotSeparated(String dotSeparated){
+	    String[] splits = dotSeparated.split("\\.");
+	    
+	    assert splits.length == 2 : "Not dotSeparated, it was: "+dotSeparated;
+	    
+	    return new QualifiedName(splits[0], splits[1]);
+	}
+	
 	public String getTableName() {
 		return tableName;
 	}

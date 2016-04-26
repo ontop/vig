@@ -28,9 +28,9 @@ import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.statistics.creators.table.TableStatisticsFinder;
 import it.unibz.inf.data_pumper.core.statistics.creators.table.TableStatisticsFinderImpl;
 import it.unibz.inf.data_pumper.persistence.LogToFile;
-import it.unibz.inf.data_pumper.tables.QualifiedName;
 import it.unibz.inf.data_pumper.tables.Schema;
 import it.unibz.inf.data_pumper.utils.UtilsMath;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 import java.io.IOException;
 import java.sql.SQLException;

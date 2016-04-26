@@ -23,88 +23,34 @@ package it.unibz.inf.vig_mappings_analyzer.core;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Argument;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Field;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
-import it.unibz.krdb.obda.io.ModelIOManager;
+import it.unibz.inf.vig_mappings_analyzer.obda.OBDAModelFactory;
 import it.unibz.krdb.obda.model.CQIE;
 import it.unibz.krdb.obda.model.Function;
-import it.unibz.krdb.obda.model.OBDADataFactory;
-import it.unibz.krdb.obda.model.OBDADataSource;
 import it.unibz.krdb.obda.model.OBDAMappingAxiom;
 import it.unibz.krdb.obda.model.OBDAModel;
 import it.unibz.krdb.obda.model.OBDASQLQuery;
 import it.unibz.krdb.obda.model.Term;
 import it.unibz.krdb.obda.model.Variable;
-import it.unibz.krdb.obda.model.impl.OBDADataFactoryImpl;
-import it.unibz.krdb.obda.model.impl.RDBMSourceParameterConstants;
 import it.unibz.krdb.obda.parser.SQLQueryParser;
-import it.unibz.krdb.sql.DBMetadata;
 import it.unibz.krdb.sql.api.ParsedSQLQuery;
 import it.unibz.krdb.sql.api.RelationJSQL;
 
 import java.net.URI;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+public class JoinableColumnsFinder extends OntopConnection {
 
-public class JoinableColumnsFinder {
-
-    // Parameters
-    private String obdaFile = "resources/npd-v2-ql_a.obda";
-
-    // Internal State
-    private SQLQueryParser translator;
-    private OBDAModel obdaModel;
-
-    private static Logger logger = Logger.getLogger(JoinableColumnsFinder.class.getCanonicalName());
-
-    public JoinableColumnsFinder(String obdaFile) throws Exception {
-	this.obdaFile = obdaFile;
-	init();
+    private JoinableColumnsFinder( OBDAModel model, SQLQueryParser parser ) {
+	super(model, parser);
     }
-
-    public void findJoinsInMappings() {
-	// TODO
+    
+    public static JoinableColumnsFinder makeInstance( OBDAModel model, SQLQueryParser parser ){
+	return new JoinableColumnsFinder(model, parser);
     }
-
-    private void init() throws Exception{
-	/*
-	 * Load the OBDA model from an external .obda file
-	 */
-	OBDADataFactory fac = OBDADataFactoryImpl.getInstance();
-	this.obdaModel = fac.getOBDAModel();
-	ModelIOManager ioManager = new ModelIOManager(obdaModel);
-	ioManager.load(obdaFile);
-
-
-	/* Retrieve the connection parameters in order to instantiate the
-	 * SQL parser.
-	 */
-	Collection<OBDADataSource> sources = obdaModel.getSources();
-	OBDADataSource source = sources.iterator().next();
-
-	String url = source.getParameter(RDBMSourceParameterConstants.DATABASE_URL);
-	String username = source.getParameter(RDBMSourceParameterConstants.DATABASE_USERNAME);
-	String password = source.getParameter(RDBMSourceParameterConstants.DATABASE_PASSWORD);
-	//		String driver = source.getParameter(RDBMSourceParameterConstants.DATABASE_DRIVER);
-
-	Connection localConnection = DriverManager.getConnection(url, username, password);
-
-
-	// Init metadata
-	// Parse mappings. Just to get the table names in use
-	//		MappingParser mParser = new MappingParser(localConnection, obdaModel.getMappings(source.getSourceID()));
-	//		List<RelationJSQL> realTables = mParser.getRealTables();
-	//		DBMetadata metadata = JDBCConnectionManager.getMetaData(localConnection, realTables);
-
-	// The SQL Translator TODO Continue this
-	this.translator = new SQLQueryParser(new DBMetadata(localConnection.getMetaData()));
-    }
-
+    
     public List<FunctionTemplate> findFunctionTemplates() throws Exception {
 
 	List<FunctionTemplate> result = new ArrayList<FunctionTemplate>();
@@ -203,8 +149,12 @@ public class JoinableColumnsFinder {
     }
 
     public static void main(String[] args){
+	
 	try {
-	    JoinableColumnsFinder a = new JoinableColumnsFinder("src/main/resources/npd-v2-ql_a.obda");
+	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
+	    SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
+
+	    JoinableColumnsFinder a = new JoinableColumnsFinder(model, parser);
 	    List<FunctionTemplate> fTemplates = a.findFunctionTemplates();
 
 	    // Remove templates picking from a single place
