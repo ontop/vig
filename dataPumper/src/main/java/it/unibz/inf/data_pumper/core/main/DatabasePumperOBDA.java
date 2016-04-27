@@ -65,12 +65,11 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	List<String> manuallySpecifiedFixedCols = null;
 	try {
 	    manuallySpecifiedFixedCols = Arrays.asList( Conf.getInstance().fixed().split("\\s+") );
-	    
-	    for( String name : manuallySpecifiedFixedCols ){
-		this.fixedDomainCols.add( QualifiedName.makeFromDotSeparated(name) );
+	    if( !manuallySpecifiedFixedCols.get(0).equals("error") ){
+		for( String name : manuallySpecifiedFixedCols ){
+		    this.fixedDomainCols.add( QualifiedName.makeFromDotSeparated(name) );
+		}
 	    }
-	    
-	    
 	} catch (IOException e) {
 	    e.printStackTrace();
 	    DatabasePumperOBDA.closeEverything();

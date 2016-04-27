@@ -3,11 +3,14 @@
 # Build and skip the unit tests
 mvn -Dmaven.test.skip=true install
 
-if [ -d vig-distribution/target/resources ]
+if [ -d vig-distribution/target/src/main/resources ]
 then
-echo
+echo 
 else
-cp -r dataPumper/src/main/resources vig-distribution/target/
+    mkdir vig-distribution/target/src/
+    mkdir vig-distribution/target/src/main
+    
+    cp -r dataPumper/src/main/resources vig-distribution/target/src/main/
 fi
 
 cd vig-distribution/
