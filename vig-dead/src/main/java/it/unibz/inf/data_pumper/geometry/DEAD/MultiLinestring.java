@@ -24,13 +24,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 public class MultiLinestring implements Comparable<MultiLinestring>{
 	
 	protected List<Linestring> linestrings;
 	
-	protected static Logger logger = Logger.getLogger(MultiLinestring.class.getCanonicalName());
+//	protected static Logger logger = Logger.getLogger(MultiLinestring.class.getCanonicalName());
 	
 	public MultiLinestring(String multiLinestringWKT){
 		linestrings = new ArrayList<Linestring>();

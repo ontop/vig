@@ -46,7 +46,7 @@ public class Polygon extends MultiLinestring{
 	public static Polygon getInstanceFromRectangle(BigDecimal minX, BigDecimal minY, BigDecimal maxX, BigDecimal maxY){
 		
 		if( minX.compareTo(maxX) == 0 && minY.compareTo(maxY) == 0 ){
-			logger.error("Impossible to obtain a polygon from input coordinares");
+//			logger.error("Impossible to obtain a polygon from input coordinares");
 		}
 		
 		StringBuilder rectangleWKT = new StringBuilder();
