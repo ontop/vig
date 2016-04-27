@@ -3,7 +3,7 @@
 	<groupId>it.unibz.inf.vig</groupId>
 	<artifactId>vig</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<name>vig</name>
 	<url></url>
 
