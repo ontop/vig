@@ -3,7 +3,7 @@
   <parent>
     <groupId>it.unibz.inf.vig</groupId>
     <artifactId>vig</artifactId>
-    <version>1.0.0</version>
+    <version>1.7.0</version>
   </parent>
   <artifactId>vig-mappings-analyzer</artifactId>
  
