@@ -1,4 +1,4 @@
-vig
+vig (v 1.7.0)
 ===
 
 Virtual Instances Generator
@@ -9,7 +9,6 @@ The generator is bundled as a multi-module maven (http://maven.apache.org/) proj
 
 Build and JAR
 ----
-Note: We highly reccomend to use the pre-compiled executable that can be found in "executableJar" folder.
 
 VIG is bundled as a maven project, therefore it can be built using the standard maven commands. In order to save time, there is a build script that does the job as well.
 
