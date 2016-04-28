@@ -1,8 +1,11 @@
 package it.unibz.inf.data_pumper.core.main;
 
+import java.util.List;
+
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.InstanceNullException;
 import it.unibz.inf.data_pumper.persistence.LogToFile;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 /*
  * #%L
@@ -27,12 +30,16 @@ import it.unibz.inf.data_pumper.persistence.LogToFile;
 public abstract class DatabasePumper {
 	
 	protected boolean pureRandom = false;
+	// For parallelization
+	protected List<QualifiedName> restrictToTables;
+	protected List<QualifiedName> restrictoToColumns;
 	
 	public abstract void pumpDatabase(double percentage);
 	
 	public void setPureRandomGeneration() {
 		pureRandom = true;
 	}
+	
 	
 	protected static void closeEverything(){
 		try {
@@ -44,4 +51,12 @@ public abstract class DatabasePumper {
 			LogToFile.getInstance().closeFile();
 		}
 	}
-}
+
+	public void addRestrictToTableElement(QualifiedName qualifiedName) {
+	    this.restrictToTables.add(qualifiedName);
+	}
+	
+	public void addRestrictToColumnElement( QualifiedName qN ){
+	    this.restrictoToColumns.add( qN );
+	}
+};

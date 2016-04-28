@@ -54,11 +54,13 @@ public class DatabasePumperDB extends DatabasePumper {
     protected static double scaleFactor;
 
     private static long LINES_BUF_SIZE=10000; // Keep in RAM at most 10000 values for a table
-
+    
     public DatabasePumperDB(){
 	this.dbOriginal = DBMSConnection.getInstance();
 	this.tStatsFinder = new TableStatisticsFinderImpl(dbOriginal);
 	this.persistence = LogToFile.getInstance();
+	this.restrictToTables = new ArrayList<>();
+	this.restrictoToColumns = new ArrayList<>();
     }
     /**
      * 
@@ -68,9 +70,9 @@ public class DatabasePumperDB extends DatabasePumper {
      */
     public void pumpDatabase(double scaleFactor){
 
-
 	long startTime = System.currentTimeMillis();
 
+	// Initialization
 	List<Schema> schemas = new LinkedList<Schema>();
 	List<ColumnPumper<? extends Object>> listColumns = new ArrayList<ColumnPumper<? extends Object>>();
 	initListAllColumns(listColumns, scaleFactor);
@@ -92,38 +94,113 @@ public class DatabasePumperDB extends DatabasePumper {
 	    checkPrimaryKeys(schema); 
 	}
 
-	for( Schema schema : schemas ){
-
-	    int nRows = dbOriginal.getNRows(schema.getTableName());
-
-	    nRows = (int) (nRows * scaleFactor);
-	    logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
-
-//	    fillDomainsForSchema(schema, dbOriginal);		
-	        
-	    try {
-		persistence.openFile(schema.getTableName() + ".csv");
-		
-		while( !fillDomainsUpToNForSchema(schema, dbOriginal, LINES_BUF_SIZE) ){
-		    printDomain(schema, LINES_BUF_SIZE);
-		    schema.resetColumnsDomains(); // Release memory 
-		}
-		// Print the last values
-		printDomain(schema, nRows % LINES_BUF_SIZE);
-		schema.resetColumnsDomains();
-	    } catch (IOException e) {
-		e.printStackTrace();
-		dbOriginal.close();
-		persistence.closeFile();
-		System.exit(1);
-	    }
-	    persistence.closeFile();
-	}
+	// Generation
+	generate(schemas, scaleFactor);
+	
 	long endTime = System.currentTimeMillis();
 
 	logger.info("Database pumped in " + (endTime - startTime) + " msec.");
     }
     
+    private void generateForColumn( ColumnPumper<? extends Object> cP, double scaleFactor ){
+	int nRows = dbOriginal.getNRows(cP.getSchema().getTableName());
+
+	nRows = (int) (nRows * scaleFactor);
+	logger.info("Pump column "+cP.getQualifiedName().toString()+" of "+nRows+" values, please.");
+
+	try {
+	    persistence.openFile( cP.getQualifiedName().toString()+ ".csv" );
+
+	    while( !fillDomainUpToNForColumn(cP, dbOriginal, LINES_BUF_SIZE) ){
+		printColumnDomain(cP, LINES_BUF_SIZE);
+		cP.resetDomain(); // Release memory 
+	    }
+	    // Print the last values
+	    printColumnDomain(cP, nRows % LINES_BUF_SIZE);
+	    cP.resetDomain(); // Release Memory
+	} catch (IOException e) {
+	    e.printStackTrace();
+	    dbOriginal.close();
+	    persistence.closeFile();
+	    System.exit(1);
+	}
+	persistence.closeFile();
+    }
+    
+    private void generateForTable(Schema schema, double scaleFactor){
+	int nRows = dbOriginal.getNRows(schema.getTableName());
+
+	nRows = (int) (nRows * scaleFactor);
+	logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
+
+	try {
+	    persistence.openFile(schema.getTableName() + ".csv");
+
+	    while( !fillDomainsUpToNForSchema(schema, dbOriginal, LINES_BUF_SIZE) ){
+		printDomain(schema, LINES_BUF_SIZE);
+		schema.resetColumnsDomains(); // Release memory 
+	    }
+	    // Print the last values
+	    printDomain(schema, nRows % LINES_BUF_SIZE);
+	    schema.resetColumnsDomains();
+	} catch (IOException e) {
+	    e.printStackTrace();
+	    dbOriginal.close();
+	    persistence.closeFile();
+	    System.exit(1);
+	}
+	persistence.closeFile();
+    }
+
+    private void generate( List<Schema> schemas, double scaleFactor ) {
+	
+	class LocalUtils{
+	    List<Schema> schemas;
+	    
+	    LocalUtils(List<Schema> schemas){
+		this.schemas = schemas;
+	    }
+	    
+	    Schema getSchemaFromName( QualifiedName name ){
+		Schema result = null;
+		for( Schema s : schemas ){
+		    if( s.getTableName().equals( name.getTableName() ) ){
+			result = s;
+			break;
+		    }
+		}
+		return result;
+	    }
+	    
+	    ColumnPumper<? extends Object> getColumnPumperFromName( QualifiedName name ){
+		ColumnPumper<? extends Object> result = null;
+		Schema s = getSchemaFromName( name );
+		result = s.getColumn( name.getColName() );
+		
+		return result;
+	    }
+	};
+	
+	LocalUtils utils = new LocalUtils(schemas);
+	
+	if( restrictToTables.size() == 0 && restrictoToColumns.size() == 0 ){
+	    for( Schema schema : schemas ){
+		generateForTable(schema, scaleFactor);
+	    }
+	}
+	else{
+	    if( restrictToTables.size() != 0 ){
+		for( QualifiedName q : restrictToTables ){
+		    generateForTable( utils.getSchemaFromName(q), scaleFactor );
+		}
+	    }
+	    if( restrictoToColumns.size() != 0 ){
+		for( QualifiedName q : restrictoToColumns ){
+		    generateForColumn( utils.getColumnPumperFromName(q), scaleFactor );
+		}
+	    }
+	}
+    }
     /** This method simply verifies that the boundaries of each interval X
      *  are consistent w.r.t. the number of freshs to insert in X
      */
@@ -262,6 +339,14 @@ public class DatabasePumperDB extends DatabasePumper {
 	}
     }
     
+    private void printColumnDomain( ColumnPumper<? extends Object> col, long nToPrint ){
+
+	for( int i = 0; i < nToPrint; ++i ){
+	    String value = col.getNthInDomain(i);
+	    persistence.appendLine(value);
+	}
+    }
+    
     private void printDomain(Schema schema, long nToPrint) {
 
 	List<ColumnPumper<? extends Object>> cols = schema.getColumns();
@@ -327,6 +412,19 @@ public class DatabasePumperDB extends DatabasePumper {
 	return scaleFactor;
     }
 
+    private boolean fillDomainUpToNForColumn( ColumnPumper<? extends Object> cP, DBMSConnection originalDb, long n ){
+	boolean filled = false;
+	
+	try {
+	    filled = cP.generateNValues(cP.getSchema(), originalDb, n);
+	} catch (BoundariesUnsetException | ValueUnsetException e) {
+	    e.printStackTrace();
+	    DatabasePumper.closeEverything();
+	    System.exit(1);
+	}
+	return filled;
+    }
+    
     private boolean fillDomainsUpToNForSchema(Schema schema, DBMSConnection originalDb, long n){
 	
 	boolean filled = false;

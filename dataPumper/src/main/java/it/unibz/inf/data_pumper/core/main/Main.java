@@ -24,6 +24,7 @@ package it.unibz.inf.data_pumper.core.main;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -36,6 +37,7 @@ import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.persistence.statistics.xml_model.*;
 import it.unibz.inf.data_pumper.tables.Schema;
 import it.unibz.inf.data_pumper.utils.ExecutionStatisticsProfiler;
+import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 import it.unibz.inf.vig_options.core.DoubleOption;
 import it.unibz.inf.vig_options.core.Option;
 import it.unibz.inf.vig_options.core.StringOption;
@@ -58,6 +60,8 @@ public class Main {
     private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
     public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
     public static StringOption optConfig = new StringOption("--conf", "Name of the configuration file", "CONFIGURATION", "configuration.conf");
+    public static StringOption optTables = new StringOption("--tables", "Restrict the generation to a list of tables. E.g., --tables=table1,table2,table3,etc.", "PUMPER", "");
+    public static StringOption optColumns = new StringOption("--columns", "Restrict the generation to a list of columns. E.g., --columns=table1.col1,table2.col2,etc.", "PUMPER", "");
     
     // Xml Model of the Data
     private static DatabaseModelCreator dbModelCreator;
@@ -80,7 +84,23 @@ public class Main {
 	}
 
 	DatabasePumper pumper = pumperType == PumperType.DB ? new DatabasePumperDB() : new DatabasePumperOBDA();
-
+	
+	String restrictToTablesPar = optTables.getValue();
+	if( !restrictToTablesPar.equals("") ){
+	    List<String> tableNames = Arrays.asList( restrictToTablesPar.split("\\,") );
+	    for( String tN : tableNames ){
+		pumper.addRestrictToTableElement( new QualifiedName(tN, null) );
+	    }
+	}
+	String restrictToColsPar = optColumns.getValue();
+	if( !restrictToColsPar.equals("") ){
+	    List<String> colFullNames = Arrays.asList( restrictToColsPar.split("\\,") );
+	    for( String colFullName : colFullNames ){
+		String[] splits = colFullName.split("\\.");
+		pumper.addRestrictToColumnElement( new QualifiedName( splits[0], splits[1] ) );
+	    }
+	}
+	
 	if( randomGen ){
 	    pumper.setPureRandomGeneration();
 	}	
