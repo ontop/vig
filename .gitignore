@@ -29,7 +29,6 @@ tmp.*
 # Ontop specific
 plugin-runtime
 
-*.obda
 
 # CSVs
 
