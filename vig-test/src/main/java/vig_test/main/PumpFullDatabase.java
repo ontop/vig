@@ -17,7 +17,7 @@ import exceptions.AssertionFailedException;
 
 public class PumpFullDatabase {
 
-    private static final String PAR_SCALE = "--scale=50";
+    private static final String PAR_SCALE = "--scale=1";
     private static final String PAR_NPD_CONF = "--conf=configuration.conf";
     
     public static void main( String[] args ){
