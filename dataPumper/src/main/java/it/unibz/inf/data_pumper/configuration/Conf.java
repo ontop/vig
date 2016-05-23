@@ -86,6 +86,10 @@ public class Conf {
 	    return searchTag("fixed");
 	}
 	
+	public String nonFixed() throws IOException{
+	    return searchTag("non-fixed");
+	}
+	
 	protected String searchTag(String tag) throws IOException{
 	    try(BufferedReader in = new BufferedReader(
 			new FileReader(confFile))){

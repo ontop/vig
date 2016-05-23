@@ -36,11 +36,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prvName">
-                <dupsRatio>0.9700854420661926</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="apaAreaType">
-                <dupsRatio>0.08760683983564377</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.9102563858032227</nullsRatio>
             </column>
             <column name="urlNPD">
@@ -79,7 +79,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="baaAreaPolyActive">
-                <dupsRatio>0.9914893507957458</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="baaDateApproved">
@@ -114,7 +114,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="baaKind">
-                <dupsRatio>0.918367326259613</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="baaDateApproved">
@@ -169,7 +169,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="baaAreaPolyNationCode2">
-                <dupsRatio>0.9971014261245728</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="baaAreaPolyBlockName">
@@ -282,7 +282,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="baaTransferKind">
-                <dupsRatio>0.20861172676086426</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.788418710231781</nullsRatio>
             </column>
             <column name="cmpLongName">
@@ -337,19 +337,19 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="cmpLicenceOperCurrent">
-                <dupsRatio>0.9962406158447266</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="cmpLicenceOperFormer">
-                <dupsRatio>0.9962406158447266</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="cmpLicenceLicenseeCurrent">
-                <dupsRatio>0.9962406158447266</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="cmpLicenceLicenseeFormer">
-                <dupsRatio>0.9962406158447266</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="dateSyncNPD">
@@ -451,7 +451,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="nmaName">
-                <dupsRatio>0.9928740859031677</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fldName">
@@ -624,7 +624,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclSurface">
-                <dupsRatio>0.9969087839126587</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclCurrentOperatorName">
@@ -632,7 +632,7 @@
                 <nullsRatio>0.06027820706367493</nullsRatio>
             </column>
             <column name="fclKind">
-                <dupsRatio>0.9629057049751282</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclBelongsToName">
@@ -668,7 +668,7 @@
                 <nullsRatio>0.03554868698120117</nullsRatio>
             </column>
             <column name="fclNsCode">
-                <dupsRatio>0.9984543919563293</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclEwDeg">
@@ -684,7 +684,7 @@
                 <nullsRatio>0.03554868698120117</nullsRatio>
             </column>
             <column name="fclEwCode">
-                <dupsRatio>0.9969087839126587</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclWaterDepth">
@@ -731,7 +731,7 @@
                 <nullsRatio>0.06372549384832382</nullsRatio>
             </column>
             <column name="fclKind">
-                <dupsRatio>0.9754902124404907</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclFunctions">
@@ -739,7 +739,7 @@
                 <nullsRatio>0.343137264251709</nullsRatio>
             </column>
             <column name="fclNationName">
-                <dupsRatio>0.9215686321258545</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclFactPageUrl">
@@ -770,7 +770,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclSurface">
-                <dupsRatio>0.9967948794364929</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="fclCurrentOperatorName">
@@ -1376,11 +1376,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlMainArea">
-                <dupsRatio>0.9868131875991821</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.009890110231935978</nullsRatio>
             </column>
             <column name="prlStatus">
-                <dupsRatio>0.997802197933197</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlDateGranted">
@@ -1443,7 +1443,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlAreaPolyNationCode">
-                <dupsRatio>0.9996550679206848</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlAreaPolyBlockName">
@@ -1451,7 +1451,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlAreaPolyStratigraphical">
-                <dupsRatio>0.9993101358413696</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlAreaPolyPolyNo">
@@ -1673,7 +1673,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="ptlMessageKindDesc">
-                <dupsRatio>0.9988323450088501</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="ptlMessageDateUpdated">
@@ -1822,7 +1822,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlTransferKind">
-                <dupsRatio>0.9993830919265747</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="cmpLongName">
@@ -1893,11 +1893,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="pipMedium">
-                <dupsRatio>0.9322034120559692</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="pipMainGrouping">
-                <dupsRatio>0.9661017060279846</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="pipDimension">
@@ -1916,7 +1916,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlCurrentArea">
-                <dupsRatio>0.9986657500267029</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlDateGranted">
@@ -1956,7 +1956,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlAreaPolyStratigraphical">
-                <dupsRatio>0.9986657500267029</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlNpdidLicence">
@@ -1999,7 +1999,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlCurrentArea">
-                <dupsRatio>0.9993101358413696</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlDateGranted">
@@ -2071,7 +2071,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlAreaPolyStratigraphical">
-                <dupsRatio>0.9993101358413696</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="prlNpdidLicence">
@@ -2106,7 +2106,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="seaMarketAvailable">
-                <dupsRatio>0.9987212419509888</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="seaSurveyTypeMain">
@@ -2186,7 +2186,7 @@
                 <nullsRatio>0.717391312122345</nullsRatio>
             </column>
             <column name="seaPolygonKind">
-                <dupsRatio>0.9987212419509888</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="seaArea_id">
@@ -2213,7 +2213,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="seaMarketAvailable">
-                <dupsRatio>0.9777777791023254</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="seaSurveyTypeMain">
@@ -2308,11 +2308,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="seaGeographicalArea">
-                <dupsRatio>0.9985114336013794</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="seaSurveyTypeMain">
-                <dupsRatio>0.997916042804718</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="seaSurveyTypePart">
@@ -2348,15 +2348,15 @@
                 <nullsRatio>0.9339088797569275</nullsRatio>
             </column>
             <column name="seaSampling">
-                <dupsRatio>0.08008335530757904</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.9193212389945984</nullsRatio>
             </column>
             <column name="seaShallowDrilling">
-                <dupsRatio>0.07948794215917587</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.9199166297912598</nullsRatio>
             </column>
             <column name="seaGeotechnical">
-                <dupsRatio>0.08097647875547409</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.9184281229972839</nullsRatio>
             </column>
             <column name="dateSyncNPD">
@@ -2706,7 +2706,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="ptlMessageKindDesc">
-                <dupsRatio>0.9847561120986938</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="tufName">
@@ -2812,7 +2812,7 @@
                 <nullsRatio>0.25241947174072266</nullsRatio>
             </column>
             <column name="wlbMainArea">
-                <dupsRatio>0.9993653893470764</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbGeodeticDatum">
@@ -2832,7 +2832,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNsCode">
-                <dupsRatio>0.9960336089134216</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0038077107165008783</nullsRatio>
             </column>
             <column name="wlbEwDeg">
@@ -2848,7 +2848,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbEwCode">
-                <dupsRatio>0.9950817227363586</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.004600983578711748</nullsRatio>
             </column>
             <column name="wlbNsDecDeg">
@@ -2899,7 +2899,7 @@
                 <nullsRatio>5.239716847427189E-4</nullsRatio>
             </column>
             <column name="wlbCoreIntervalUom">
-                <dupsRatio>0.982577919960022</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.017160072922706604</nullsRatio>
             </column>
             <column name="wlbTotalCoreLength">
@@ -2911,7 +2911,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbCoreSampleAvailable">
-                <dupsRatio>0.9997380375862122</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNpdidWellbore">
@@ -2985,7 +2985,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbPurposePlanned">
-                <dupsRatio>0.9958910942077637</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0030816642101854086</nullsRatio>
             </column>
             <column name="wlbContent">
@@ -3017,7 +3017,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbDiscoveryWellbore">
-                <dupsRatio>0.9994863867759705</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbKellyBushElevation">
@@ -3037,7 +3037,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbMainArea">
-                <dupsRatio>0.9992296099662781</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbDrillingFacility">
@@ -3057,7 +3057,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbMultilateral">
-                <dupsRatio>0.9994863867759705</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbContentPlanned">
@@ -3097,7 +3097,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNsCode">
-                <dupsRatio>0.9997432231903076</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbEwDeg">
@@ -3113,7 +3113,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbEwCode">
-                <dupsRatio>0.9984591603279114</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.001284026657231152</nullsRatio>
             </column>
             <column name="wlbNsDecDeg">
@@ -3145,7 +3145,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNamePart3">
-                <dupsRatio>0.9938367009162903</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNamePart4">
@@ -3153,11 +3153,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNamePart5">
-                <dupsRatio>0.4563430845737457</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.5408320426940918</nullsRatio>
             </column>
             <column name="wlbNamePart6">
-                <dupsRatio>0.0</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>1.0</nullsRatio>
             </column>
             <column name="wlbFactPageUrl">
@@ -3169,7 +3169,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbDiskosWellboreType">
-                <dupsRatio>0.9989727735519409</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbDiskosWellboreParent">
@@ -3358,11 +3358,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbPurpose">
-                <dupsRatio>0.9987179636955261</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbStatus">
-                <dupsRatio>0.9820512533187866</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.013461538590490818</nullsRatio>
             </column>
             <column name="wlbContent">
@@ -3394,7 +3394,7 @@
                 <nullsRatio>0.3807692229747772</nullsRatio>
             </column>
             <column name="wlbDiscoveryWellbore">
-                <dupsRatio>0.9987179636955261</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbBottomHoleTemperature">
@@ -3426,7 +3426,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbAgeAtTd">
-                <dupsRatio>0.9679487347602844</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.012179487384855747</nullsRatio>
             </column>
             <column name="wlbFormationAtTd">
@@ -3434,7 +3434,7 @@
                 <nullsRatio>0.16794872283935547</nullsRatio>
             </column>
             <column name="wlbMainArea">
-                <dupsRatio>0.9980769157409668</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbDrillingFacility">
@@ -3450,7 +3450,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbMultilateral">
-                <dupsRatio>0.9993589520454407</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbPurposePlanned">
@@ -3482,7 +3482,7 @@
                 <nullsRatio>0.5275641083717346</nullsRatio>
             </column>
             <column name="wlbAgeWithHc1">
-                <dupsRatio>0.5679486989974976</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.4166666567325592</nullsRatio>
             </column>
             <column name="wlbFormationWithHc2">
@@ -3490,7 +3490,7 @@
                 <nullsRatio>0.821794867515564</nullsRatio>
             </column>
             <column name="wlbAgeWithHc2">
-                <dupsRatio>0.20705127716064453</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.7833333611488342</nullsRatio>
             </column>
             <column name="wlbFormationWithHc3">
@@ -3498,7 +3498,7 @@
                 <nullsRatio>0.9750000238418579</nullsRatio>
             </column>
             <column name="wlbAgeWithHc3">
-                <dupsRatio>0.022435897961258888</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.9698718190193176</nullsRatio>
             </column>
             <column name="wlbDrillingDays">
@@ -3506,7 +3506,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbReentry">
-                <dupsRatio>0.9987179636955261</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbGeodeticDatum">
@@ -3526,7 +3526,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNsCode">
-                <dupsRatio>0.9993589520454407</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbEwDeg">
@@ -3542,7 +3542,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbEwCode">
-                <dupsRatio>0.9993589520454407</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNsDecDeg">
@@ -3574,7 +3574,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNamePart3">
-                <dupsRatio>0.0</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>1.0</nullsRatio>
             </column>
             <column name="wlbNamePart4">
@@ -3582,11 +3582,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNamePart5">
-                <dupsRatio>0.3115384578704834</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.6801282167434692</nullsRatio>
             </column>
             <column name="wlbNamePart6">
-                <dupsRatio>0.0</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>1.0</nullsRatio>
             </column>
             <column name="wlbPressReleaseUrl">
@@ -3602,7 +3602,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbDiskosWellboreType">
-                <dupsRatio>0.9980769157409668</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbDiskosWellboreParent">
@@ -3869,7 +3869,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbMainArea">
-                <dupsRatio>0.9952437281608582</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbEntryYear">
@@ -3901,7 +3901,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNsCode">
-                <dupsRatio>0.970273494720459</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.028537455946207047</nullsRatio>
             </column>
             <column name="wlbEwDeg">
@@ -3917,7 +3917,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbEwCode">
-                <dupsRatio>0.9690844416618347</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.028537455946207047</nullsRatio>
             </column>
             <column name="wlbNsDecDeg">
@@ -3949,7 +3949,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNamePart3">
-                <dupsRatio>0.9988109469413757</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNamePart4">
@@ -3957,11 +3957,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="wlbNamePart5">
-                <dupsRatio>0.003567181993275881</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>0.9928656220436096</nullsRatio>
             </column>
             <column name="wlbNamePart6">
-                <dupsRatio>0.0</dupsRatio>
+                <dupsRatio>1.0</dupsRatio>
                 <nullsRatio>1.0</nullsRatio>
             </column>
             <column name="wlbDateUpdated">

@@ -88,12 +88,7 @@ public class Schema{
 	    columns.add(new BigDecimalColumn(colName, MySqlDatatypes.DOUBLE, index, this));
 	else if( typeString.startsWith("bigint") ) columns.add(new BigDecimalColumn(colName, MySqlDatatypes.BIGINT, index, this));
 	else if( typeString.startsWith("char") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString), this));
-	else if( typeString.startsWith("varchar") ){
-		if( colName.equals("wlbNamePart3") ){
-		    logger.debug("CIAO");
-		}
-	    columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString), this));
-	}
+	else if( typeString.startsWith("varchar") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, TypeStringParser.getUnaryDatatypeSize(typeString), this));
 	else if( typeString.startsWith("text") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, this));
 	else if( typeString.startsWith("longtext") ) columns.add(new StringColumn(colName, MySqlDatatypes.VARCHAR, index, this));
 	else if( typeString.startsWith("datetime") ) columns.add(new DateTimeColumn(colName, MySqlDatatypes.DATETIME, index, this));

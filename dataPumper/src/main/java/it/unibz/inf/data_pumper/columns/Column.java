@@ -158,4 +158,8 @@ public abstract class Column {
 	public int hashCode() {
 	    return (this.getSchema().getTableName() + "." + this.getName()).hashCode();
 	}
+	
+	public int getDatatypeLength(){
+	    return this.datatypeLength;
+	}
 }

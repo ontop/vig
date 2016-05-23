@@ -63,11 +63,18 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
     @Override
     protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
 	List<String> manuallySpecifiedFixedCols = null;
+	List<String> manuallySpecifiedNonFixedCols = null;
 	try {
 	    manuallySpecifiedFixedCols = Arrays.asList( Conf.getInstance().fixed().split("\\s+") );
+	    manuallySpecifiedNonFixedCols = Arrays.asList( Conf.getInstance().nonFixed().split("\\s+") );
 	    if( !manuallySpecifiedFixedCols.get(0).equals("error") ){
 		for( String name : manuallySpecifiedFixedCols ){
 		    this.fixedDomainCols.add( QualifiedName.makeFromDotSeparated(name) );
+		}
+	    }
+	    if( !manuallySpecifiedNonFixedCols.get(0).equals("error") ){
+		for( String name : manuallySpecifiedNonFixedCols ){
+		    this.fixedDomainCols.remove( QualifiedName.makeFromDotSeparated(name) );
 		}
 	    }
 	} catch (IOException e) {
@@ -76,7 +83,8 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	}
 	
 	for( ColumnPumper<? extends Object> cP : listColumns ){
-	    if( this.fixedDomainCols.contains( cP.getQualifiedName().toString() ) ){
+	    	    
+	    if( this.fixedDomainCols.contains( cP.getQualifiedName() ) || cP.getDatatypeLength() < 3 ){
 		cP.setFixed();
 	    }
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
