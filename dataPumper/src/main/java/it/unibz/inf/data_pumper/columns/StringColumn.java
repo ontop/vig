@@ -47,7 +47,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
     public StringColumn(String name, MySqlDatatypes type, int index, int datatypeLength, Schema schema){
 	super(name, type, index, schema);
 
-	this.datatypeLength = datatypeLength > MAX_LENGTH ? this.datatypeLength = MAX_LENGTH : this.datatypeLength;
+	this.datatypeLength = datatypeLength > MAX_LENGTH ? this.datatypeLength = MAX_LENGTH : datatypeLength;
 	this.numFreshsToInsert = 0;
 
 	this.intervals = new ArrayList<Interval<String>>();
@@ -155,7 +155,7 @@ public class StringColumn extends MultiIntervalColumn<String> {
 
     protected StringIntervalStandard getIntervalInstance(
 	    String qualifiedName, List<ColumnPumper<String>> involvedCols){
-	
+		
 	StringIntervalStandard interval = new StringIntervalStandard(qualifiedName, this.getType(), this.numFreshsToInsert, this.datatypeLength, involvedCols);
 	
 	return interval;

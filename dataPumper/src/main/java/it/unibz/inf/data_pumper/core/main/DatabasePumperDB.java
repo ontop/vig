@@ -131,6 +131,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	int nRows = dbOriginal.getNRows(schema.getTableName());
 
 	nRows = (int) (nRows * scaleFactor);
+	
 	logger.info("Pump "+schema.getTableName()+" of "+nRows+" rows, please.");
 
 	try {

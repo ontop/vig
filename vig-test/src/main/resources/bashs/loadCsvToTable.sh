@@ -46,6 +46,7 @@ then
 	    if [ $DB_TYPE == mysql ]
 	    then
 		echo 'SET foreign_key_checks = 0;' > sql.tmp
+		echo 'SET GLOBAL sql_mode = STRICT_TRANS_TABLES;'
 		echo LOAD DATA INFILE "'"${CSV}"'" INTO TABLE $TABLE_NAME FIELDS TERMINATED BY "'"'`'"'" >> sql.tmp
 		cat sql.tmp 
 		mysql $DB_ADDR --user=$USER --password=gregario < sql.tmp
