@@ -23,7 +23,7 @@ Before running, a few things need to be configured. Please refer to the wiki pag
 Experimental Evaluations
 ----
 
-Checkout to `evaluations/results` branch.
+Checkout to `evaluations/results` branch. Evaluations will be in the "evaluations" folder.
 
 Contacts
 ----------
