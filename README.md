@@ -20,6 +20,11 @@ Configure and Run
 ----
 Before running, a few things need to be configured. Please refer to the wiki page (https://github.com/ontop/vig/wiki) for more information. 
 
+Experimental Evaluations
+----
+
+Checkout to `evaluations/results` branch.
+
 Contacts
 ----------
 
