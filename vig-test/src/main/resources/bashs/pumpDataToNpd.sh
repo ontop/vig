@@ -22,5 +22,6 @@ FILES=/home/tir/dumps/csvs/*
 for F in $FILES 
 do
     #echo $F
+    echo "[script][pumpDataToNpd.sh] $F $DB_NAME $USER"
     pump $F $DB_NAME $USER 
 done

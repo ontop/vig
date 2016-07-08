@@ -247,8 +247,11 @@ class IntervalsBoundariesFinder<T>{
 		else{
 		    long nToInsertInPreviousInterval = 0;
 		    if( true || !optimization2 ){ // FIXME: optimization2 is broken
-			nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
-		    }else{
+			if( cP.getName().equals("wlbWell") ){
+			    nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
+			    System.out.println("DEBUGG!!!");
+			}
+			}else{
 			DatabasePumperOBDA.logger.info("Applying Optimization 2");
 			nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
 			if( nToInsertInPreviousInterval != 0 ){
@@ -619,6 +622,7 @@ class CorrelatedColumnsExtractor{
 		    else{
 			allFixed = false;
 			msgTrailer.append(" " + cP.getQualifiedName().toString());
+			
 		    }
 		} catch (InstanceNullException e) {
 		    e.printStackTrace();
@@ -629,6 +633,7 @@ class CorrelatedColumnsExtractor{
 		try{
 		    throw new ManualParamenterRequiredException(msg + msgTrailer);
 		} catch ( ManualParamenterRequiredException e ){
+		    e.printStackTrace();
 		    DatabasePumperOBDA.closeEverything();
 		}
 	    }
