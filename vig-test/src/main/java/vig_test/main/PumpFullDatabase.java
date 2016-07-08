@@ -34,8 +34,8 @@ public class PumpFullDatabase {
 
     private static void npdTests() {	
 	
-	npdTestsOfType(PAR_SCALE, PAR_NPD_DB_CONF);
-	npdTestsOfType(PAR_SCALE, PAR_NPD_OBDA_CONF);
+//	npdTestsOfType(PAR_SCALE, PAR_NPD_DB_CONF);
+//	npdTestsOfType(PAR_SCALE, PAR_NPD_OBDA_CONF);
 	npdTestsOfType(PAR_SCALE, PAR_NPD_RAND_CONF);
     }
 
@@ -46,8 +46,8 @@ public class PumpFullDatabase {
 	creator.createTestDatabase();
 	
 	String[] parameters = new String[2];
-	parameters[0] = PAR_SCALE;
-	parameters[1] = PAR_NPD_OBDA_CONF;
+	parameters[0] = parScale;
+	parameters[1] = parNpdDbConf;
 	
 	Main.main(parameters);// That is, pump with size 1
 

@@ -247,11 +247,8 @@ class IntervalsBoundariesFinder<T>{
 		else{
 		    long nToInsertInPreviousInterval = 0;
 		    if( true || !optimization2 ){ // FIXME: optimization2 is broken
-			if( cP.getName().equals("wlbWell") ){
-			    nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
-			    System.out.println("DEBUGG!!!");
-			}
-			}else{
+			nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
+		    }else{
 			DatabasePumperOBDA.logger.info("Applying Optimization 2");
 			nToInsertInPreviousInterval = makeIntersectionQuery(cP, previouslyInserted);
 			if( nToInsertInPreviousInterval != 0 ){
@@ -585,7 +582,7 @@ class CorrelatedColumnsExtractor{
 	    maximalMerge(qCorrelatedFields, maximalMerge);
 	    
 	    // Davide> Check if fixed-domain cluster
-	    checkIfBothFixedNonFixedColumnsCluster(maximalMerge);
+	    checkIfBothFixedNonFixedColumnsCluster(maximalMerge); 
 	    
 	    result = constructCorrelatedColumnsList(maximalMerge, core);
 	
