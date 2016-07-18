@@ -1,10 +1,13 @@
 package it.unibz.inf.data_pumper.core.statistics.creators.table;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
+import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.tables.Schema;
@@ -21,10 +24,10 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 	@Override
 	public float findDuplicatesRatio(Schema s, ColumnPumper<? extends Object> column){
 		float ratio = 0; // Ratio of the duplicates
-
+		
 		// First of all, I need to understand the distribution of duplicates. Window analysis!
 		ratio = distribution.dupsRatioNaive(column.getName(), s.getTableName());
-		
+
 		return ratio;
 	}	
 
@@ -70,7 +73,7 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
     public <T> float findSharedRatio(
             List<ColumnPumper<T>> cols)
             throws SQLException {
-                
+		
         if( ! (cols.size() > 1) ){
             throw new DebugException("Violated assertion cols.size() > 1");
         }
