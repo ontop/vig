@@ -17,7 +17,7 @@ import exceptions.AssertionFailedException;
 
 public class PumpFullDatabase {
 
-    private static final String PAR_SCALE = "--scale=1";
+    private static final String PAR_SCALE = "--scale=5";
     private static final String PAR_NPD_OBDA_CONF = "--conf=configuration-npd-obda.conf";
     private static final String PAR_NPD_DB_CONF = "--conf=configuration-npd-db.conf";
     private static final String PAR_NPD_RAND_CONF = "--conf=configuration-npd-rand.conf";
@@ -35,8 +35,8 @@ public class PumpFullDatabase {
     private static void npdTests() {	
 	
 //	npdTestsOfType(PAR_SCALE, PAR_NPD_DB_CONF);
-//	npdTestsOfType(PAR_SCALE, PAR_NPD_OBDA_CONF);
-	npdTestsOfType(PAR_SCALE, PAR_NPD_RAND_CONF);
+	npdTestsOfType(PAR_SCALE, PAR_NPD_OBDA_CONF);
+//	npdTestsOfType(PAR_SCALE, PAR_NPD_RAND_CONF);
     }
 
     private static void npdTestsOfType(String parScale, String parNpdDbConf) {
