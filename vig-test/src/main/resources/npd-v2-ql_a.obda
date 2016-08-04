@@ -19,10 +19,10 @@ diskos:		http://sws.ifi.uio.no/data/diskos/
 diskosv:		http://sws.ifi.uio.no/vocab/diskos#
 
 [SourceDeclaration]
-sourceUri	x
-connectionUrl	jdbc:mysql://localhost/npd_clean_no_spatial
-username	usr
-password	pwd
+sourceUri	http://sws.ifi.uio.no/vocab/npd-v2
+connectionUrl	jdbc:mysql://host_addr/db_name
+username	x
+password	x
 driverClass	com.mysql.jdbc.Driver
 
 [MappingDeclaration] @collection [[
@@ -4708,8 +4708,8 @@ target		npd:wellbore/{wlbNpdidWellbore}/cores npdv:member npd:wellbore/{wlbNpdid
 source		SELECT wlbNpdidWellbore,wlbCoreNumber FROM wellbore_core
 
 mappingId	Mapping:NPD:Manual13
-target		npd:licence/{A.prlNpdidLicence}/task/{A.prlTaskRefID} npdv:dependsOnTask npd:licence/{B.prlNpdidLicence}/task/{B.prlTaskRefID} . 
-source		SELECT A.prlNpdidLicence, B.prlTaskID FROM licence_task AS A, licence_task AS B WHERE A.prlTaskRefID=B.prlTaskID
+target		npd:licence/{A.prlNpdidLicence}/task/{A.prlTaskID} npdv:dependsOnTask npd:licence/{B.prlNpdidLicence}/task/{B.prlTaskRefID} . 
+source 		SELECT A.prlNpdidLicence, A.prlTaskID, B.prlNpdidLicence, B.prlTaskRefID FROM licence_task AS A, licence_task AS B WHERE A.prlTaskID=B.prlTaskRefID
 
 mappingId	Mapping:NPD:ManualDavide2
 target		npd:wellbore/{wlbNpdidWellbore}/core/{wlbCoreNumber} npdv:coresTotalLength {wlbTotalCoreLength}^^xsd:decimal . 

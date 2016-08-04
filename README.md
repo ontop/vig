@@ -1,4 +1,4 @@
-vig (v 1.7.0)
+vig (v 1.8.0)
 ===
 
 Virtual Instances Generator
