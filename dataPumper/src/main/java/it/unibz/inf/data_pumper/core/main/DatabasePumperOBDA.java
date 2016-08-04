@@ -94,9 +94,10 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 
 	// search for correlated columns and order them by fresh values to insert
 	List<CorrelatedColumnsList<T>> correlatedCols = this.cCE.extractCorrelatedColumns();
-	
+
 	updateColumnBoundsWRTCorrelated(correlatedCols);
     }
+    
     
     /**
      * Take care of the multi-interval columns
@@ -152,8 +153,11 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 		ColumnPumper<T> cP = cCL.get(i);
 				
 		if( cP.getDuplicateRatio() == 1 ){
-		    String suggestion = ". You might specify this column as 'non-fixed' in the configuration file";
-		    throw new DebugException("Cluster analysis NOT allowed on fixed-domain column "+cP.getSchema().getTableName()+"."+cP.getName()+suggestion);
+//		    String suggestion = ". You might specify this column as 'non-fixed' in the configuration file";
+//		    throw new DebugException("Cluster analysis NOT allowed on fixed-domain column "+cP.getSchema().getTableName()+"."+cP.getName()+suggestion);
+		    
+		    // No columns cluster analysis for fixed columns
+		    throw new DebugException("Cluster analysis NOT allowed on fixed-domain column "+cP.getSchema().getTableName()+"."+cP.getName()+". This should not happen.");
 		}
 		
 		stop = utils.insert(insertedIntervals, cP, visited);
@@ -577,13 +581,66 @@ class CorrelatedColumnsExtractor{
 	    List<Set<Field>> maximalMerge = new ArrayList<Set<Field>>();
 	    maximalMerge(qCorrelatedFields, maximalMerge);
 	    
+	    // Davide> Check if fixed-domain cluster
+	    checkIfBothFixedNonFixedColumnsCluster(maximalMerge); 
+	    
 	    result = constructCorrelatedColumnsList(maximalMerge, core);
-
+	
 	} catch (Exception e) {
 	    e.printStackTrace();
 	    DatabasePumperOBDA.closeEverything();
 	}
 	return result;
+    }
+
+    private <T> void checkIfBothFixedNonFixedColumnsCluster(List<Set<Field>> maximalMerge) {
+	
+	
+	String msg = "VIG detected a columns cluster with fixed and non-fixed domain. Please, declare in the configuration file ALL columns in the cluster as fixed-domain."
+		+ " Please restart VIG after declaring in the configuration file (default: src/main/resources/configuration.conf) the following columns as fixed-domain: ";
+	
+	
+	for( Iterator<Set<Field>> it =  maximalMerge.iterator(); it.hasNext(); ){
+	    
+	    Set<Field> correlatedColsList = it.next();
+	    
+	    StringBuilder msgTrailer = new StringBuilder();
+	    boolean fixedFound = false;
+	    boolean allFixed = true;
+	    
+	    for( Field f : correlatedColsList ){
+		try {
+		    @SuppressWarnings("unchecked")
+		    ColumnPumper<T> cP = (ColumnPumper<T>) DBMSConnection.getInstance().getSchema(f.tableName).getColumn(f.colName);
+		    
+		    if( cP.isFixed() ){
+			fixedFound = true;
+		    }
+		    else{
+			allFixed = false;
+			msgTrailer.append(" " + cP.getQualifiedName().toString());
+			
+		    }
+		} catch (InstanceNullException e) {
+		    e.printStackTrace();
+		    DatabasePumperOBDA.closeEverything();
+		}
+	    }
+	    if( fixedFound && !allFixed ){
+		try{
+		    throw new ManualParamenterRequiredException(msg + msgTrailer);
+		} catch ( ManualParamenterRequiredException e ){
+		    e.printStackTrace();
+		    DatabasePumperOBDA.closeEverything();
+		}
+	    }
+	    else{
+		if( fixedFound && allFixed ){
+		    // Delete this columns cluster
+		    it.remove();
+		}
+	    }
+	}
     }
 
     /**

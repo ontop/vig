@@ -80,7 +80,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	try {
 	    establishColumnBounds(listColumns);
 	    updateBoundariesWRTForeignKeys(listColumns);
-	    checkIntervalsAssertions(listColumns);
+	    checkIntervalsAssertions(listColumns); // FIXME Try with size 5, there might be a bug
 	} catch (SQLException e) {
 	    e.printStackTrace();
 	    DatabasePumper.closeEverything();

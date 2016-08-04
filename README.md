@@ -1,4 +1,4 @@
-vig (v 1.7.0)
+vig (v 1.8.0)
 ===
 
 Virtual Instances Generator
@@ -19,6 +19,11 @@ The jar (with dependencies) can then be found under the vig-distribution/target 
 Configure and Run
 ----
 Before running, a few things need to be configured. Please refer to the wiki page (https://github.com/ontop/vig/wiki) for more information. 
+
+Publications
+----
+
+- [Short Technical Description of VIG](https://arxiv.org/abs/1607.06343)
 
 Contacts
 ----------

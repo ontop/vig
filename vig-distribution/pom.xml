@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>it.unibz.inf.vig</groupId>
 		<artifactId>vig</artifactId>
-		<version>1.7.0</version>
+		<version>1.8.0</version>
 	</parent>
 	<artifactId>vig-distribution</artifactId>
 
@@ -12,7 +12,7 @@
 		<dependency>
 			<groupId>it.unibz.inf.vig</groupId>
 			<artifactId>dataPumper</artifactId>
-			<version>1.7.0</version>
+			<version>1.8.0</version>
 		</dependency>
 	</dependencies>
 

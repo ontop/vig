@@ -64,7 +64,7 @@ public class JoinableColumnsFinder extends OntopConnection {
 
 		for( int i = 0; i < targetQuery.getBody().size(); ++i ){
 
-		    Function atom = targetQuery.getBody().get(0);
+		    Function atom = targetQuery.getBody().get(i); // FIXME Was "0" Davide> FIXED
 		    OBDASQLQuery sourceQuery = (OBDASQLQuery) a.getSourceQuery();
 
 		    // Construct the SQL query tree from the source query
@@ -107,9 +107,17 @@ public class JoinableColumnsFinder extends OntopConnection {
 
 				// Retrieve list of variables
 				List<Variable> varlist = new ArrayList<Variable>();
-				for( Variable v : f.getVariables() ){
-				    varlist.add(v);
+				
+				for( Term term : f.getTerms() ){
+				    if( term instanceof Variable ){
+					Variable v = (Variable)term;
+					varlist.add(v);
+				    }
 				}
+				
+//				for( Variable v : f.getVariables() ){ // Cazzo ritorna un SET!! FIXME Davide> Fixed: Look above.
+//				    varlist.add(v);
+//				}
 
 				//								List<Variable> varlist = new LinkedList<>();
 				//						        TermUtils.addReferencedVariablesTo(varlist, f); TODO For 1.14.1 (Next release)
