@@ -36,3 +36,6 @@ plugin-runtime
 
 # vig-test
 vig-test
+
+# .orig
+*.orig
