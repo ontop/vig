@@ -7,7 +7,7 @@ This repository contains the source code for the generator used in the NPD bench
 
 The generator is bundled as a multi-module maven (http://maven.apache.org/) project.
 
-Build and JAR
+Build JAR
 ----
 
 VIG is bundled as a maven project, therefore it can be built using the standard maven commands. In order to save time, there is a build script that does the job as well.
@@ -24,6 +24,11 @@ Publications
 ----
 
 - [Short Technical Description of VIG](https://arxiv.org/abs/1607.06343)
+
+Experimental Evaluations
+----
+
+Checkout to `evaluations/results` branch. Evaluations will be in the "evaluations" folder.
 
 Contacts
 ----------
