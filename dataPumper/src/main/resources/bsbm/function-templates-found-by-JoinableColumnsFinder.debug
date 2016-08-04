@@ -1,0 +1,23 @@
+[
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor{}/Offer{}
+ARGS: [[offer.publisher], [offer.nr]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer{}/Product{}
+ARGS: [[offer.producer, product.producer, review.producer], [product.nr, review.product, offer.product]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromVendor{}/Vendor{}
+ARGS: [[offer.vendor, vendor.nr]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite{}/Reviewer{}
+ARGS: [[review.publisher, person.publisher], [review.person, person.nr]], 
+TEMPLATE: http://downlode.org/rdf/iso-3166/countries#{}
+ARGS: [[producer.country, person.country, vendor.country]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite{}/RatingSite{}
+ARGS: [[review.publisher, person.publisher]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer{}/Producer{}
+ARGS: [[product.producer, producer.nr]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature{}
+ARGS: [[productfeature.nr]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/StandardizationInstitution{}
+ARGS: [[producttype.publisher, productfeature.publisher]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType{}
+ARGS: [[producttype.nr, producttype.parent]], 
+TEMPLATE: http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite{}/Review{}
+ARGS: [[review.publisher], [review.nr]]]
