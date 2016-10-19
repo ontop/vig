@@ -43,7 +43,7 @@
 		<module>vig-options</module>
 		<module>vig-distribution</module>
 		<module>vig-mappings-analyzer-2</module>
-		<module>vig-test</module>
+		<!-- <module>vig-test</module> -->
 		<module>vig-cpsolver</module>
 		<module>vig-dead</module>
 	</modules>
