@@ -1,5 +1,17 @@
 package it.unibz.inf.vig_mappings_analyzer.core;
 
+import it.unibz.inf.ontop.model.Function;
+import it.unibz.inf.ontop.model.OBDAMappingAxiom;
+import it.unibz.inf.ontop.model.OBDAModel;
+import it.unibz.inf.ontop.model.OBDASQLQuery;
+import it.unibz.inf.ontop.model.Term;
+import it.unibz.inf.ontop.model.Variable;
+import it.unibz.inf.ontop.parser.SQLQueryDeepParser;
+import it.unibz.inf.ontop.sql.DBMetadata;
+import it.unibz.inf.ontop.sql.QuotedID;
+import it.unibz.inf.ontop.sql.RelationID;
+import it.unibz.inf.ontop.sql.api.ParsedSQLQuery;
+
 /*
  * #%L
  * tupleSchemasExtractor
@@ -24,16 +36,7 @@ import it.unibz.inf.vig_mappings_analyzer.datatypes.Argument;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Field;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
 import it.unibz.inf.vig_mappings_analyzer.obda.OBDAModelFactory;
-import it.unibz.krdb.obda.model.CQIE;
-import it.unibz.krdb.obda.model.Function;
-import it.unibz.krdb.obda.model.OBDAMappingAxiom;
-import it.unibz.krdb.obda.model.OBDAModel;
-import it.unibz.krdb.obda.model.OBDASQLQuery;
-import it.unibz.krdb.obda.model.Term;
-import it.unibz.krdb.obda.model.Variable;
-import it.unibz.krdb.obda.parser.SQLQueryParser;
-import it.unibz.krdb.sql.api.ParsedSQLQuery;
-import it.unibz.krdb.sql.api.RelationJSQL;
+import net.sf.jsqlparser.expression.Expression;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -43,12 +46,12 @@ import java.util.Set;
 
 public class JoinableColumnsFinder extends OntopConnection {
 
-    private JoinableColumnsFinder( OBDAModel model, SQLQueryParser parser ) {
-	super(model, parser);
+    private JoinableColumnsFinder( OBDAModel model, DBMetadata meta) {
+	super(model, meta);
     }
     
-    public static JoinableColumnsFinder makeInstance( OBDAModel model, SQLQueryParser parser ){
-	return new JoinableColumnsFinder(model, parser);
+    public static JoinableColumnsFinder makeInstance( OBDAModel model, DBMetadata meta ){
+	return new JoinableColumnsFinder(model, meta);
     }
     
     public List<FunctionTemplate> findFunctionTemplates() throws Exception {
@@ -60,22 +63,24 @@ public class JoinableColumnsFinder extends OntopConnection {
 	    logger.info(uri);
 	    for( OBDAMappingAxiom a : obdaModel.getMappings(uri) ){
 
-		CQIE targetQuery = (CQIE) a.getTargetQuery();
+		List<Function> targetQuery = a.getTargetQuery();
 
-		for( int i = 0; i < targetQuery.getBody().size(); ++i ){
+		for( int i = 0; i < targetQuery.size(); ++i ){
 
-		    Function atom = targetQuery.getBody().get(i); // FIXME Was "0" Davide> FIXED
+		    Function atom = targetQuery.get(i); 
 		    OBDASQLQuery sourceQuery = (OBDASQLQuery) a.getSourceQuery();
 
 		    // Construct the SQL query tree from the source query
 		    String viewString = sourceQuery.toString();
 		    logger.info(viewString);
-		    ParsedSQLQuery queryParsed = translator.parseShallowly(viewString); 
+		    ParsedSQLQuery queryParsed = SQLQueryDeepParser.parse(this.meta, viewString);
 		    if( queryParsed.getTables().size() != 1 ){ /*++skipped;*/ continue; } // Skip joins for the moment
 
 		    //					++unskipped;
 
-		    RelationJSQL table = queryParsed.getTables().get(0);
+		    // alias -> originalName
+		    Map<RelationID, RelationID> tableMap = queryParsed.getTables();
+		    RelationID table = new ArrayList<>(tableMap.values()).get(0);
 		    String tableName = table.getTableName();
 
 		    // Get the terms in the atom, and build the related FunctionTemplate classes
@@ -93,17 +98,7 @@ public class JoinableColumnsFinder extends OntopConnection {
 			    }
 
 			    if( fT.isURI() ){ // Consider only Joins over URIs
-				Map<String, String> aliases = queryParsed.getAliasMap();	
-
-				//							    @Override
-				//							    public List<Variable> getVariablesList() {
-				//							        List<Variable> variables = new ArrayList<Variable>();
-				//							        for (Term t : terms) {
-				//							            for (Variable v : t.getReferencedVariables())
-				//							                variables.add(v);
-				//							        }
-				//							        return variables;
-				//								}
+				Map<QuotedID, Expression> aliases = queryParsed.getAliasMap();	
 
 				// Retrieve list of variables
 				List<Variable> varlist = new ArrayList<Variable>();
@@ -115,13 +110,6 @@ public class JoinableColumnsFinder extends OntopConnection {
 				    }
 				}
 				
-//				for( Variable v : f.getVariables() ){ // Cazzo ritorna un SET!! FIXME Davide> Fixed: Look above.
-//				    varlist.add(v);
-//				}
-
-				//								List<Variable> varlist = new LinkedList<>();
-				//						        TermUtils.addReferencedVariablesTo(varlist, f); TODO For 1.14.1 (Next release)
-
 				for( int cnt = 0; cnt < varlist.size(); ++cnt ){
 
 				    Variable v = varlist.get(cnt);
@@ -134,9 +122,9 @@ public class JoinableColumnsFinder extends OntopConnection {
 				    }
 				    String colName = v.toString();
 				    if( aliases.containsValue(v.toString()) ){
-					for( String originalName : aliases.keySet() ){
-					    if( aliases.get(originalName).equals(colName) ){
-						colName = originalName;
+					for( QuotedID originalName : aliases.keySet() ){
+					    if( aliases.get(originalName).toString().equals(colName) ){
+						colName = originalName.toString();
 						break;
 					    }
 					}
@@ -160,9 +148,9 @@ public class JoinableColumnsFinder extends OntopConnection {
 	
 	try {
 	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
-	    SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
+	    DBMetadata meta = OBDAModelFactory.makeDBMetadata(model);
 
-	    JoinableColumnsFinder a = new JoinableColumnsFinder(model, parser);
+	    JoinableColumnsFinder a = new JoinableColumnsFinder(model, meta);
 	    List<FunctionTemplate> fTemplates = a.findFunctionTemplates();
 
 	    // Remove templates picking from a single place

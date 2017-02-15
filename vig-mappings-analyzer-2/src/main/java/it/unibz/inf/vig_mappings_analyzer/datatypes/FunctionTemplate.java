@@ -1,9 +1,10 @@
 package it.unibz.inf.vig_mappings_analyzer.datatypes;
 
 import static org.junit.Assert.assertEquals;
+
+import it.unibz.inf.ontop.model.Function;
+import it.unibz.inf.ontop.model.Variable;
 import it.unibz.inf.vig_mappings_analyzer.core.exceptions.WrongArityException;
-import it.unibz.krdb.obda.model.Function;
-import it.unibz.krdb.obda.model.Variable;
 
 import java.util.ArrayList;
 import java.util.List;
