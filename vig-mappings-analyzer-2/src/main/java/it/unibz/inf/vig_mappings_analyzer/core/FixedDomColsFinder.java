@@ -9,11 +9,15 @@ import it.unibz.krdb.obda.model.OBDASQLQuery;
 import it.unibz.krdb.obda.parser.SQLQueryParser;
 import it.unibz.krdb.sql.api.ParsedSQLQuery;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.Test;
 
 public class FixedDomColsFinder extends OntopConnection {
     
@@ -65,10 +69,38 @@ public class FixedDomColsFinder extends OntopConnection {
 	return result;
     }
     
+    public static class FixedDomColsFinderTester{
+
+	private static final String OUTFILE="src/main/resources/FixedColsFinderOutTest.txt";
+
+	@Test
+	public void testFinder(){
+	    try {
+		OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
+		SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
+
+		FixedDomColsFinder instance = FixedDomColsFinder.makeInstance(model, parser);
+
+		StringBuilder testString = new StringBuilder();
+		try(BufferedReader in = new BufferedReader(
+			new FileReader(OUTFILE))){
+		    String s;
+		    while ((s = in.readLine()) != null){
+			testString.append(s);
+			testString.append("\n");
+		    }
+		}
+		org.junit.Assert.assertEquals(testString.toString(), instance.findFixedDomainCols()+"\n");
+	    }catch(Exception e){
+		e.printStackTrace();
+	    }
+	}
+    }
+    
     public static void main(String[] args){
 	
 	try {
-	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/test/npd-v2-ql_a.obda");
+	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
 	    SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
 	    
 	    FixedDomColsFinder instance = FixedDomColsFinder.makeInstance(model, parser);
