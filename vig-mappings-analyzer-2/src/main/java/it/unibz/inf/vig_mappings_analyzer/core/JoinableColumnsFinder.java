@@ -38,11 +38,17 @@ import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
 import it.unibz.inf.vig_mappings_analyzer.obda.OBDAModelFactory;
 import net.sf.jsqlparser.expression.Expression;
 
+import static org.junit.Assert.*;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Test;
 
 public class JoinableColumnsFinder extends OntopConnection {
 
@@ -143,8 +149,45 @@ public class JoinableColumnsFinder extends OntopConnection {
 	}	
 	return result;
     }
+    
+    public static class TestJoinableColumnsFinder{
 
-    public static void main(String[] args){
+	private static final String OUTFILE="src/main/resources/JoinableColumnFinderOutTest.txt";
+
+	@Test
+	public void testNPD(){
+	    try{
+		OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
+		SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
+
+		JoinableColumnsFinder a = new JoinableColumnsFinder(model, parser);
+		List<FunctionTemplate> fTemplates = a.findFunctionTemplates();
+
+		// Remove templates picking from a single place
+		List<FunctionTemplate> output = new ArrayList<FunctionTemplate>();
+
+		for( FunctionTemplate t : fTemplates ){
+		    if( t.getArity() > 0 ){
+			output.add(t);
+		    }
+		}
+		StringBuilder testString = new StringBuilder();
+		try(BufferedReader in = new BufferedReader(
+			new FileReader(OUTFILE))){
+		    String s;
+		    while ((s = in.readLine()) != null){
+			testString.append(s);
+			testString.append("\n");
+		    }
+		}
+		org.junit.Assert.assertEquals(testString.toString(), output.toString()+"\n");
+	    } catch (Exception e) {
+		e.printStackTrace();
+	    }
+	}
+    };
+	
+	public static void main(String[] args){
 	
 	try {
 	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
