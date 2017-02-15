@@ -37,9 +37,6 @@ import it.unibz.inf.vig_mappings_analyzer.datatypes.Field;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
 import it.unibz.inf.vig_mappings_analyzer.obda.OBDAModelFactory;
 import net.sf.jsqlparser.expression.Expression;
-
-import static org.junit.Assert.*;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URI;
@@ -55,11 +52,11 @@ public class JoinableColumnsFinder extends OntopConnection {
     private JoinableColumnsFinder( OBDAModel model, DBMetadata meta) {
 	super(model, meta);
     }
-    
+
     public static JoinableColumnsFinder makeInstance( OBDAModel model, DBMetadata meta ){
 	return new JoinableColumnsFinder(model, meta);
     }
-    
+
     public List<FunctionTemplate> findFunctionTemplates() throws Exception {
 
 	List<FunctionTemplate> result = new ArrayList<FunctionTemplate>();
@@ -108,14 +105,14 @@ public class JoinableColumnsFinder extends OntopConnection {
 
 				// Retrieve list of variables
 				List<Variable> varlist = new ArrayList<Variable>();
-				
+
 				for( Term term : f.getTerms() ){
 				    if( term instanceof Variable ){
 					Variable v = (Variable)term;
 					varlist.add(v);
 				    }
 				}
-				
+
 				for( int cnt = 0; cnt < varlist.size(); ++cnt ){
 
 				    Variable v = varlist.get(cnt);
@@ -149,7 +146,7 @@ public class JoinableColumnsFinder extends OntopConnection {
 	}	
 	return result;
     }
-    
+
     public static class TestJoinableColumnsFinder{
 
 	private static final String OUTFILE="src/main/resources/JoinableColumnFinderOutTest.txt";
@@ -158,7 +155,7 @@ public class JoinableColumnsFinder extends OntopConnection {
 	public void testNPD(){
 	    try{
 		OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
-		SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
+		DBMetadata parser = OBDAModelFactory.makeDBMetadata(model);
 
 		JoinableColumnsFinder a = new JoinableColumnsFinder(model, parser);
 		List<FunctionTemplate> fTemplates = a.findFunctionTemplates();
@@ -186,9 +183,9 @@ public class JoinableColumnsFinder extends OntopConnection {
 	    }
 	}
     };
-	
-	public static void main(String[] args){
-	
+
+    public static void main(String[] args){
+
 	try {
 	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
 	    DBMetadata meta = OBDAModelFactory.makeDBMetadata(model);

@@ -22,6 +22,11 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+/**
+ * FIXME Currently broken
+ * @author Davide Lanti
+ *
+ */
 public class MappingsProfiler {
 
     // Internal State

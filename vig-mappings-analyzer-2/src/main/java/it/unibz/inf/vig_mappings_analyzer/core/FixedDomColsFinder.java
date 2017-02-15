@@ -1,13 +1,14 @@
 package it.unibz.inf.vig_mappings_analyzer.core;
 
+import it.unibz.inf.ontop.model.Function;
+import it.unibz.inf.ontop.model.OBDAMappingAxiom;
+import it.unibz.inf.ontop.model.OBDAModel;
+import it.unibz.inf.ontop.model.OBDASQLQuery;
+import it.unibz.inf.ontop.parser.SQLQueryDeepParser;
+import it.unibz.inf.ontop.sql.DBMetadata;
+import it.unibz.inf.ontop.sql.api.ParsedSQLQuery;
 import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 import it.unibz.inf.vig_mappings_analyzer.obda.OBDAModelFactory;
-import it.unibz.krdb.obda.model.CQIE;
-import it.unibz.krdb.obda.model.OBDAMappingAxiom;
-import it.unibz.krdb.obda.model.OBDAModel;
-import it.unibz.krdb.obda.model.OBDASQLQuery;
-import it.unibz.krdb.obda.parser.SQLQueryParser;
-import it.unibz.krdb.sql.api.ParsedSQLQuery;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -17,12 +18,12 @@ import java.util.Set;
 
 public class FixedDomColsFinder extends OntopConnection {
     
-    private FixedDomColsFinder(OBDAModel obdaModel, SQLQueryParser parser) {
-	super(obdaModel, parser);
+    private FixedDomColsFinder(OBDAModel obdaModel, DBMetadata meta) {
+	super(obdaModel, meta);
     }
     
-    public static FixedDomColsFinder makeInstance(OBDAModel model, SQLQueryParser parser){
-	return new FixedDomColsFinder(model, parser);
+    public static FixedDomColsFinder makeInstance(OBDAModel model, DBMetadata meta){
+	return new FixedDomColsFinder(model, meta);
     }
 
     public Set<QualifiedName> findFixedDomainCols() throws Exception {
@@ -34,22 +35,22 @@ public class FixedDomColsFinder extends OntopConnection {
 	    logger.info(uri);
 	    for( OBDAMappingAxiom a : obdaModel.getMappings(uri) ){
 
-		CQIE targetQuery = (CQIE) a.getTargetQuery();
+		List<Function> targetQuery =  a.getTargetQuery();
 
-		for( int i = 0; i < targetQuery.getBody().size(); ++i ){
+		for( int i = 0; i < targetQuery.size(); ++i ){
 
 		    OBDASQLQuery sourceQuery = (OBDASQLQuery) a.getSourceQuery();
 
 		    // Construct the SQL query tree from the source query
 		    String viewString = sourceQuery.toString();
 		    logger.info(viewString);
-		    ParsedSQLQuery queryParsed = translator.parseShallowly(viewString); 
+		    ParsedSQLQuery queryParsed = SQLQueryDeepParser.parse(meta, viewString); 
 		    if( queryParsed.getTables().size() != 1 ){ /*++skipped;*/ continue; } // Support for single table only
 		    
 		    if( queryParsed.getWhereClause() != null ){
 			// Format: colName = 'JACK-UP 3 LEGS'
 			
-			String raw = queryParsed.getWhereClause().getRawConditions().toString();
+			String raw = queryParsed.getWhereClause().toString();
 			List<String> splits = Arrays.asList( raw.split("\\s*=\\s*") );
 			if( splits.size() == 2 ){
 			    String value = splits.get(1);
@@ -69,9 +70,9 @@ public class FixedDomColsFinder extends OntopConnection {
 	
 	try {
 	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/test/npd-v2-ql_a.obda");
-	    SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
+	    DBMetadata meta = OBDAModelFactory.makeDBMetadata(model);
 	    
-	    FixedDomColsFinder instance = FixedDomColsFinder.makeInstance(model, parser);
+	    FixedDomColsFinder instance = FixedDomColsFinder.makeInstance(model, meta);
 	    System.out.println( instance.findFixedDomainCols() );
 	}catch(Exception e){
 	    e.printStackTrace();
