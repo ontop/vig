@@ -22,7 +22,7 @@ public class FunctionTemplate{
     public FunctionTemplate(Function f){
 	
 	templateString = cleanURIFromVariables(f.toString());
-	arity = isURI() ? f.getArity() -1 : f.getArity(); 
+	arity = isURI() ? (f.getArity() <= 1 ? 1 : f.getArity() -1) : f.getArity(); // URI(ee) has arity 1.
     }
     
     public FunctionTemplate(Variable v){
@@ -124,9 +124,16 @@ public class FunctionTemplate{
 
 	if( uri.startsWith("URI(") ){
 	    this.isURI = true;
-	    int begin = uri.indexOf("\"") + 1;
-	    int end = uri.lastIndexOf("\"");
-	    result = uri.substring(begin, end);
+	    if( uri.contains("\"") ){
+		int begin = uri.indexOf("\"") + 1;
+		int end = uri.lastIndexOf("\"");
+		result = uri.substring(begin, end);
+	    }
+	    else{
+		// DEBUG: URI is URI(ee) (e.g., <{ee}> in the mapping)
+		result = "{}";
+		this.arity = 1; // Strangely, getArity() from ontop returns a zero.
+	    }
 	}
 	else{
 	    this.isURI = false;

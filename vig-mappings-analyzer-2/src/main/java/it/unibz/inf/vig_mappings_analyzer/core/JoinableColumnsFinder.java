@@ -76,6 +76,10 @@ public class JoinableColumnsFinder extends OntopConnection {
 		    // Construct the SQL query tree from the source query
 		    String viewString = sourceQuery.toString();
 		    logger.info(viewString);
+		    if( viewString.contains("www") ){
+			// TODO Remove
+			System.out.println("DEBUG"); 
+		    }
 		    ParsedSQLQuery queryParsed = SQLQueryDeepParser.parse(this.meta, viewString);
 		    if( queryParsed.getTables().size() != 1 ){ /*++skipped;*/ continue; } // Skip joins for the moment
 

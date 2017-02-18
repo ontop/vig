@@ -59,7 +59,8 @@ public class FixedDomColsFinder extends OntopConnection {
 			if( splits.size() == 2 ){
 			    String value = splits.get(1);
 			    if( value.startsWith("'") ){ // String only, for the moment
-				QualifiedName toAdd = new QualifiedName( queryParsed.getTables().get(0).toString(), splits.get(0) );
+				String tableName = queryParsed.getTables().values().iterator().next().toString();
+				QualifiedName toAdd = new QualifiedName( tableName, splits.get(0) );
 				result.add(toAdd);
 			    }
 			}
@@ -72,10 +73,10 @@ public class FixedDomColsFinder extends OntopConnection {
     
     public static class FixedDomColsFinderTester{
 
-	private static final String OUTFILE="src/main/resources/FixedColsFinderOutTest.txt";
+	private static final String OUTFILE_NPD="src/main/resources/FixedColsFinderOutTest.txt";
 
 	@Test
-	public void testFinder(){
+	public void testFinderNPD(){
 	    try {
 		OBDAModel model = OBDAModelFactory.getSingletonOBDAModel("src/main/resources/npd-v2-ql_a.obda");
 		DBMetadata meta = OBDAModelFactory.makeDBMetadata(model);
@@ -84,7 +85,7 @@ public class FixedDomColsFinder extends OntopConnection {
 
 		StringBuilder testString = new StringBuilder();
 		try(BufferedReader in = new BufferedReader(
-			new FileReader(OUTFILE))){
+			new FileReader(OUTFILE_NPD))){
 		    String s;
 		    while ((s = in.readLine()) != null){
 			testString.append(s);

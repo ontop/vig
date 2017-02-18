@@ -8,15 +8,14 @@ import it.unibz.inf.data_pumper.columns_cluster.ColumnsCluster;
 import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.InstanceNullException;
+import it.unibz.inf.ontop.model.OBDAModel;
+import it.unibz.inf.ontop.sql.DBMetadata;
 import it.unibz.inf.vig_mappings_analyzer.core.FixedDomColsFinder;
 import it.unibz.inf.vig_mappings_analyzer.core.JoinableColumnsFinder;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Argument;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Field;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
 import it.unibz.inf.vig_mappings_analyzer.obda.OBDAModelFactory;
-import it.unibz.krdb.obda.model.OBDAModel;
-import it.unibz.krdb.obda.parser.SQLQueryParser;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,11 +46,11 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	super();	
 	try {
 	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel( Conf.getInstance().mappingsFile() );
-	    SQLQueryParser parser = OBDAModelFactory.makeSQLParser(model);
+	    DBMetadata meta = OBDAModelFactory.makeDBMetadata(model);
 	    
-	    fixedDomainCols = FixedDomColsFinder.makeInstance(model, parser).findFixedDomainCols();
+	    fixedDomainCols = FixedDomColsFinder.makeInstance(model, meta).findFixedDomainCols();
 	    
-	    JoinableColumnsFinder jCF = JoinableColumnsFinder.makeInstance(model, parser);
+	    JoinableColumnsFinder jCF = JoinableColumnsFinder.makeInstance(model, meta);
 	    
 	    this.cCE = new CorrelatedColumnsExtractor(jCF);
 	} catch (Exception e) {

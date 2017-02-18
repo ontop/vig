@@ -381,6 +381,7 @@ public class DatabasePumperDB extends DatabasePumper {
 	for( String tableName : dbOriginal.getAllTableNames()){
 	    Schema s = dbOriginal.getSchema(tableName);
 	    for( ColumnPumper<? extends Object> c : s.getColumns() ){
+		System.err.println("initAllColumns: Col: " + c);
 		listColumns.add(c);
 		float dupsRatio = tStatsFinder.findDuplicatesRatio(s, c);
 		c.setDuplicatesRatio(dupsRatio);
