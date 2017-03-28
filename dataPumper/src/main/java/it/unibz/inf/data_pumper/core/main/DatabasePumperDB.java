@@ -385,6 +385,7 @@ public class DatabasePumperDB extends DatabasePumper {
     private void initListAllColumns(List<ColumnPumper<? extends Object>> listColumns, double percentage) {
 	for( String tableName : dbOriginal.getAllTableNames()){
 	    Schema s = dbOriginal.getSchema(tableName);
+	    
 	    for( ColumnPumper<? extends Object> c : s.getColumns() ){
 		listColumns.add(c);
 		float dupsRatio = tStatsFinder.findDuplicatesRatio(s, c);
@@ -403,7 +404,7 @@ public class DatabasePumperDB extends DatabasePumper {
     }
 
     protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
-	for( ColumnPumper<? extends Object> cP : listColumns ){
+	for( ColumnPumper<? extends Object> cP : listColumns ){	    
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 	}
     }

@@ -83,6 +83,10 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 	    	    
+	    if( cP.getSchema().getTableName().equals("fclPoint") ){
+		System.err.println("DEBUG!!");
+	    }
+	    
 	    // TODO Make this thing nicer, and document it
 	    if( this.fixedDomainCols.contains( cP.getQualifiedName() ) || cP.getDatatypeLength() < 3 ){
 		cP.setFixed();
@@ -110,11 +114,14 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    cP.visited = false;
 	}
 	
-	
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 
+	    if( cP.getQualifiedName().toString().equals("fclPoint.fclNpdidFacility") ){
+		System.err.println("DEBUG!!");
+	    }
 	    if( cP.visited ) continue;
 	    ColumnsCluster<? extends Object> cluster = cP.getCluster();
+	    
 	    
 	    if( cluster.hasMultiInterval() ){
 		cluster.adaptIntervalsFromMultiIntervalCols();
@@ -211,6 +218,12 @@ class IntervalsBoundariesFinder<T>{
 	    LinkedList<Interval<T>> newIntervals = new LinkedList<Interval<T>>();
 	    for( ListIterator<Interval<T>> it = insertedIntervals.listIterator(lastIndex) ; it.hasPrevious(); ){
 		Interval<T> previouslyInserted = it.previous();
+		
+		if( previouslyInserted.getKey().equals("facility_fixed.fclNpdidFacility---wellbore_exploration_all.fclNpdidFacilityDrilling---wellbore_development_all.fclNpdidFacilityDrilling") ){
+		    if( cP.getQualifiedName().toString().equals("pipLine.pipNpdidFromFacility") ){
+			System.err.println("DEBUG DatabasePumperOBDA!!");
+		    }
+		}
 
 		if( maxEncodingEncountered < previouslyInserted.getMaxEncoding() ){
 		    maxEncodingEncountered = previouslyInserted.getMaxEncoding();
@@ -260,6 +273,10 @@ class IntervalsBoundariesFinder<T>{
 			return true;
 		    }
 
+		    if( previouslyInserted.getKey().equals("facility_fixed.fclNpdidFacility---wellbore_exploration_all.fclNpdidFacilityDrilling---wellbore_development_all.fclNpdidFacilityDrilling---pipLine.pipNpdidFromFacility") ){
+			    System.err.println("DEBUG DatabasePumperOBDA!!");
+		    }
+		    
 		    // For all superIntervals Reduce (ABC is superInterval of AB is superInterval of B)
 		    long insertedInSuperIntervals = countInsertedInSuperIntervals(cP, previouslyInserted, newIntervals);
 		    long nToInsertInPreviousIntervalBAK = nToInsertInPreviousInterval;
@@ -287,9 +304,17 @@ class IntervalsBoundariesFinder<T>{
 
 		    if( nToInsertInPreviousInterval > 0 ){ // Create a new "SubInterval"
 			
+			if( previouslyInserted.getKey().equals("facility_fixed.fclNpdidFacility---wellbore_exploration_all.fclNpdidFacilityDrilling---wellbore_development_all.fclNpdidFacilityDrilling---pipLine.pipNpdidFromFacility") ){
+			    System.err.println("DEBUG DatabasePumperOBDA!!");
+			}
+			
 			// Make sub interval ( with the right boundaries )
 			Interval<T> toInsert = makeSubInterval(previouslyInserted, cP, nToInsertInPreviousInterval);
 
+			if( toInsert.getKey().equals("facility_fixed.fclNpdidFacility---wellbore_exploration_all.fclNpdidFacilityDrilling---wellbore_development_all.fclNpdidFacilityDrilling---pipLine.pipNpdidFromFacility---wellbore_development_all.fclNpdidFacilityProducing") ){
+			    System.err.println("DEBUG DatabasePumperOBDA!!");
+			}
+			
 			// Split
 			boolean killOldInterval = previouslyInserted.adaptBounds(toInsert);
 
