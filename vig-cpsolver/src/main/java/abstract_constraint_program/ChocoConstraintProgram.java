@@ -118,6 +118,7 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 	
 	boolean result = false;
 	
+	boolean first = true;
 	while( !result ){
 	    System.out.println("REDO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	    IntStrategy strat1 = IntStrategyFactory.custom(IntStrategyFactory.maxDomainSize_var_selector(), IntStrategyFactory.min_value_selector(), this.variables.toArray(new IntVar[0]));
@@ -125,7 +126,12 @@ public class ChocoConstraintProgram implements AbstractConstraintProgram<IntVar,
 //	    IntStrategy strat = IntStrategyFactory.custom(this.varsSelector, this.valsSelector, this.variables.toArray(new IntVar[0]));
 	    this.solver.set(strat1);
 	    
-	    result = this.solver.findSolution();
+	    if( first ){
+		result = this.solver.findSolution();
+		first = false;
+	    }
+	    else	    
+		result = this.solver.nextSolution();
 	}
 	
 //	Chatterbox.showSolutions(solver);

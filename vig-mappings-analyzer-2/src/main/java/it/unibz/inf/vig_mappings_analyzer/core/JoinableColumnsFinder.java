@@ -88,6 +88,7 @@ public class JoinableColumnsFinder extends OntopConnection {
 
 		    // Get the terms in the atom, and build the related FunctionTemplate classes
 		    for( Term t : atom.getTerms() ){
+			
 			if( t instanceof Function ){
 			    Function f = (Function) t;
 			    FunctionTemplate fT = new FunctionTemplate(f);
@@ -101,6 +102,9 @@ public class JoinableColumnsFinder extends OntopConnection {
 			    }
 
 			    if( fT.isURI() ){ // Consider only Joins over URIs
+				if( !t.toString().contains("{") ){
+				    continue;
+				}
 				Map<QuotedID, Expression> aliases = queryParsed.getAliasMap();	
 
 				// Retrieve list of variables
@@ -164,6 +168,8 @@ public class JoinableColumnsFinder extends OntopConnection {
 		List<FunctionTemplate> output = new ArrayList<FunctionTemplate>();
 
 		for( FunctionTemplate t : fTemplates ){
+		    if( !t.toString().contains("{") )
+			System.err.println("DEBUG!!");
 		    if( t.getArity() > 0 ){
 			output.add(t);
 		    }

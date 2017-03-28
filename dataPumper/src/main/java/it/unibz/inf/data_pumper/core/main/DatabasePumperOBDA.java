@@ -784,7 +784,7 @@ class CorrelatedColumnsExtractor{
 
 	for( FunctionTemplate fT : templates ){
 	    for( int i = 0; i < fT.getArity(); ++i ){
-		Argument arg = fT.getArgumentOfIndex(i);
+		Argument arg = fT.getArgumentOfIndex( i );
 
 		// Each argument of the template has a set of filling fields
 		Set<Field> fillingFields = arg.getFillingFields();
