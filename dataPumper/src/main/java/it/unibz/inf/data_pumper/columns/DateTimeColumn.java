@@ -115,10 +115,20 @@ public class DateTimeColumn extends MultiIntervalColumn<Timestamp>{
 	    Timestamp min = new Timestamp(0);
 	    Timestamp max = new Timestamp(Long.MAX_VALUE);
 
-	    if( result.next() && (result.getTimestamp(1) != null) ){
-		min = result.getTimestamp(1);
-		max = result.getTimestamp(2);
+	    if( result.next() ){
+		// Avoid zero-dates 
+		String stringDate = result.getString(1);
+		if( stringDate != null && stringDate.equals("0000-00-00") ){
+		    
+		}
+		else{
+		    if( (result.getTimestamp(1) != null) ){
+			min = result.getTimestamp(1);
+			max = result.getTimestamp(2);
+		    }
+		}
 	    }
+	    
 	    stmt.close();
 	    
 	    Calendar upperBound = Calendar.getInstance();

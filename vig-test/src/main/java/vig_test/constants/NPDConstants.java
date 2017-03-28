@@ -1,5 +1,7 @@
 package vig_test.constants;
 
+import vig_test_unit.constants.DBConstants;
+
 public class NPDConstants extends DBConstants{
     public NPDConstants(){
 	this.connPars = new NPDConnectionParameters();

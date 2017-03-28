@@ -246,6 +246,11 @@ public class DatabasePumperDB extends DatabasePumper {
 	    freshs.add(cP.getNumFreshsToInsert());
 	}
 
+	if( freshs.isEmpty() ){
+	    // No Pk
+	    return;
+	}
+	
 	long lcm = UtilsMath.lcm(freshs);
 
 	boolean violation = false;

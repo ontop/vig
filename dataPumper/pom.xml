@@ -96,5 +96,10 @@
   	<version>1.8.0</version>
   	<scope>compile</scope>
   </dependency>
+  <dependency>
+  	<groupId>it.unibz.inf.vig</groupId>
+  	<artifactId>vig-test-unit</artifactId>
+    <version>1.8.0</version>  
+  </dependency>
   </dependencies>
 </project>

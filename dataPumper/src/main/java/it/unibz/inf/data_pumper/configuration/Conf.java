@@ -113,4 +113,8 @@ public class Conf {
 	    }
 	    return "error";
 	}
+
+	public String ccAnalysisTimeout() throws IOException {
+	    return searchTag("ccAnalysisTimeout");
+	}
 }

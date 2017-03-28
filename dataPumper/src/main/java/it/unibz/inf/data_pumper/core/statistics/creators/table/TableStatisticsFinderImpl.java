@@ -1,13 +1,10 @@
 package it.unibz.inf.data_pumper.core.statistics.creators.table;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
-import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.main.DebugException;
 import it.unibz.inf.data_pumper.tables.Schema;
@@ -94,18 +91,7 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
             int colNRowsOriginal = DBMSConnection.getInstance().getNRows(beingInsertedCol.getSchema().getTableName());
             int nDupsOriginal = (int) (colNRowsOriginal * beingInsertedCol.getDuplicateRatio());
             int nNullsOriginal = (int) (colNRowsOriginal * beingInsertedCol.getNullRatio());
-            
-//            if( beingInsertedCol.toString().equals("apaAreaNet.apaAreaType") ){
-//        	System.err.println("CIAO!!");
-//            }
-//            
-//            if( beingInsertedCol.dupsCorrectionFactorApplied() ){
-//        	// Same check of method ColumnPumper.checkIfTooManyDups()
-//        	if( nDupsOriginal + nNullsOriginal >= colNRowsOriginal ){
-//        	    nDupsOriginal = colNRowsOriginal - nNullsOriginal - 1;
-//        	} 
-//            }
-            
+                       
             int nDistinctOriginal = colNRowsOriginal - nDupsOriginal - nNullsOriginal; 
             
             sharedRatio = ((float) sharedDistinctRowsOriginal) / ((float) nDistinctOriginal);

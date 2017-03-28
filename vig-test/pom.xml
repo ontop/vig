@@ -13,5 +13,10 @@
 			<artifactId>dataPumper</artifactId>
 			<version>1.8.0</version>
 		</dependency>
+		<dependency>
+			<groupId>it.unibz.inf.vig</groupId>
+			<artifactId>vig-test-unit</artifactId>
+			<version>1.8.0</version>
+		</dependency>
 	</dependencies>
 </project>

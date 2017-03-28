@@ -1,5 +1,7 @@
 package it.unibz.inf.data_pumper.core.statistics.creators.table;
 
+import it.unibz.inf.data_pumper.configuration.Conf;
+
 /*
  * #%L
  * dataPumper
@@ -21,9 +23,9 @@ package it.unibz.inf.data_pumper.core.statistics.creators.table;
  */
 
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.tables.*;
 import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,17 +35,16 @@ import org.apache.log4j.Logger;
 
 import com.mysql.jdbc.exceptions.MySQLTimeoutException;
 
-
 public class Distribution {
 	private DBMSConnection dbmsConn;
-	private int timeout =  1200 ; // (20 mins) ( This thing should be a parameter ) 
+	private int timeout = getTimeoutInfo();
 	
 	private static Logger logger = Logger.getLogger(Distribution.class.getCanonicalName());
 	
 	public Distribution(DBMSConnection dbmsConn){
 		this.dbmsConn = dbmsConn;
 	}
-	
+
 	/**
 	 * Returns the percentage of duplicates in various fixed-size windows of the table
 	 * TODO
@@ -210,4 +211,17 @@ public class Distribution {
                     
         return result;
     }
+    
+    private int getTimeoutInfo() {
+	    int timeout = 100; // Default: 100 seconds
+	    try {
+		String timeoutString = Conf.getInstance().ccAnalysisTimeout() ;
+		if( !timeoutString.equals("error") ){
+		   timeout = Integer.parseInt( timeoutString );
+		}
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    } 
+	    return timeout;
+	}
 };

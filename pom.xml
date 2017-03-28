@@ -46,6 +46,7 @@
 		<module>vig-test</module>
 		<module>vig-cpsolver</module>
 		<module>vig-dead</module>
+		<module>vig-test-unit</module>
 	</modules>
 
 

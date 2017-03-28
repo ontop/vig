@@ -83,6 +83,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 	    	    
+	    // TODO Make this thing nicer, and document it
 	    if( this.fixedDomainCols.contains( cP.getQualifiedName() ) || cP.getDatatypeLength() < 3 ){
 		cP.setFixed();
 	    }
