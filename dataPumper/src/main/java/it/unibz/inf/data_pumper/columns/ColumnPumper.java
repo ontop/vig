@@ -123,14 +123,14 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 
     protected void initNumDupsNullsFreshs() {
 
-	this.numDupsToInsert = (long) (this.getNumRowsToInsert() * this.getDuplicateRatio());
-	this.numNullsToInsert = (long) (this.getNumRowsToInsert() * this.getNullRatio());
+	this.numDupsToInsert = Math.round(this.getNumRowsToInsert() * this.getDuplicateRatio());
+	this.numNullsToInsert = Math.round(this.getNumRowsToInsert() * this.getNullRatio());
 
 	if( this.isFixed() ) {
 	    this.setDuplicatesRatio(1);
 	    this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;
-	    this.numFreshsToInsert = (long) (this.numFreshsToInsert / this.scaleFactor);
-	    this.numDupsToInsert = this.getNumRowsToInsert() - (this.numFreshsToInsert + this.numNullsToInsert);
+	    this.numFreshsToInsert = Math.round(this.numFreshsToInsert / this.scaleFactor);
+	    this.numDupsToInsert = this.getNumRowsToInsert() - Math.round(this.numFreshsToInsert + this.numNullsToInsert);
 	}
 	else{
 	    this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;			

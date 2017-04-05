@@ -49,8 +49,8 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
 						refName, refTableName);
 		
 		int colNRowsOriginal = DBMSConnection.getInstance().getNRows(col.getSchema().getTableName());
-		int nDupsOriginal = (int) (colNRowsOriginal * col.getDuplicateRatio());
-		int nNullsOriginal = (int) (colNRowsOriginal * col.getNullRatio());
+		int nDupsOriginal = Math.round(colNRowsOriginal * col.getDuplicateRatio());
+		int nNullsOriginal = Math.round(colNRowsOriginal * col.getNullRatio());
 		int nDistinctOriginal = colNRowsOriginal - nDupsOriginal - nNullsOriginal;
 		
 		if( sharedDistinctRowsOriginal != 0 ){
@@ -89,8 +89,8 @@ public class TableStatisticsFinderImpl implements TableStatisticsFinder{
             ColumnPumper<T> beingInsertedCol = cols.get(0);
             
             int colNRowsOriginal = DBMSConnection.getInstance().getNRows(beingInsertedCol.getSchema().getTableName());
-            int nDupsOriginal = (int) (colNRowsOriginal * beingInsertedCol.getDuplicateRatio());
-            int nNullsOriginal = (int) (colNRowsOriginal * beingInsertedCol.getNullRatio());
+            int nDupsOriginal = Math.round(colNRowsOriginal * beingInsertedCol.getDuplicateRatio());
+            int nNullsOriginal = Math.round(colNRowsOriginal * beingInsertedCol.getNullRatio());
                        
             int nDistinctOriginal = colNRowsOriginal - nDupsOriginal - nNullsOriginal; 
             
