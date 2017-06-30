@@ -397,7 +397,7 @@ public class DatabasePumperDB extends DatabasePumper {
 		c.setScaleFactor(percentage);
 		
 		int nRows = dbOriginal.getNRows(s.getTableName());
-		nRows = (int) Math.round(nRows * percentage);
+		nRows = (int) (nRows * percentage);
 		c.setNumRowsToInsert(nRows);
 	    }
 	}	
