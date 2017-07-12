@@ -3,7 +3,7 @@
   <parent>
     <groupId>it.unibz.inf.vig</groupId>
     <artifactId>vig</artifactId>
-    <version>1.8.0</version>
+    <version>1.8.0-SNAPSHOT</version>
   </parent>
   <artifactId>vig-dead</artifactId>
 </project>
