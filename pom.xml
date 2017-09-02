@@ -3,9 +3,9 @@
 	<groupId>it.unibz.inf.vig</groupId>
 	<artifactId>vig</artifactId>
 	<packaging>pom</packaging>
-	<version>1.8.0-SNAPSHOT</version>
+	<version>1.8.1</version>
 	<name>vig</name>
-	<url></url>
+	<url />
 
 	<licenses>
 		<license>
@@ -152,7 +152,7 @@
 					</execution>
 				</executions>
 			</plugin>
-            <!-- Uncomment the following block when releasing/deploying
+            <!-- Uncomment the following block when releasing/deploying             
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
@@ -166,7 +166,7 @@
 					</execution>
 				</executions>
 			</plugin>
-            -->
+		-->
 		</plugins>
 	</build>
 
