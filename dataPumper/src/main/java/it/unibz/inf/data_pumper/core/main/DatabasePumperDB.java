@@ -396,12 +396,28 @@ public class DatabasePumperDB extends DatabasePumper {
 	    
 	    for( ColumnPumper<? extends Object> c : s.getColumns() ){
 		listColumns.add(c);
-		float dupsRatio = tStatsFinder.findDuplicatesRatio(s, c);
-		c.setDuplicatesRatio(dupsRatio);
-
-		float nullRatio = tStatsFinder.findNullRatio(s, c);
-		c.setNullRatio(nullRatio);
 		
+		float dupsRatio = 0;
+		float nullRatio = 0;
+		
+		if( !isPureRandom() ){
+		    dupsRatio = tStatsFinder.findDuplicatesRatio(s, c);
+		    nullRatio = tStatsFinder.findNullRatio(s, c);
+		}else{ // Pure random generation, do not take into account for database statistics
+		    if( c.isPrimary() ){ // If part of a key, do not duplicate anything, so as to avoid problems
+			dupsRatio = 0; nullRatio = 0;
+		    }
+		    else{
+			dupsRatio = (float)Math.random();
+			nullRatio = (float)Math.random();
+			if( dupsRatio + nullRatio > 1 ){
+			    nullRatio = 0;
+			}
+		    }
+		}
+		
+		c.setDuplicatesRatio(dupsRatio);
+		c.setNullRatio(nullRatio);
 		c.setScaleFactor(percentage);
 		
 		int nRows = dbOriginal.getNRows(s.getTableName());
@@ -436,15 +452,12 @@ public class DatabasePumperDB extends DatabasePumper {
 	    	   	    
 	    // TODO Make this thing nicer, and document it
 	    if( this.fixedDomainCols.contains( cP.getQualifiedName() ) || cP.getDatatypeLength() < 3 ){
-		cP.setFixed();
+		if( !this.isPureRandom() ) cP.setFixed(); // Fixed-domain cols forbidden in pure-random
 	    }
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 	}
 	// At this point, each column is initialized with statistical information
 	// like null, dups ratio, num rows and freshs to insert, etc.
-//	for( ColumnPumper<? extends Object> cP : listColumns ){	    
-//	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
-//	}
     }
 
     private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){

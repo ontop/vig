@@ -40,7 +40,10 @@ public abstract class DatabasePumper {
 		pureRandom = true;
 	}
 	
-	
+	public boolean isPureRandom(){
+	    return this.pureRandom;
+	}
+		
 	protected static void closeEverything(){
 		try {
 			DBMSConnection.getInstance().close();
