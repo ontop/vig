@@ -40,7 +40,6 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 
     // Aggregated classes
     private CorrelatedColumnsExtractor cCE;
-    private Set<QualifiedName> fixedDomainCols;
 
     public DatabasePumperOBDA() {
 	super();	
@@ -60,35 +59,9 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
     }
 
     @Override
-    protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
-	List<String> manuallySpecifiedFixedCols = null;
-	List<String> manuallySpecifiedNonFixedCols = null;
-	try {
-	    manuallySpecifiedFixedCols = Arrays.asList( Conf.getInstance().fixed().split("\\s+") );
-	    manuallySpecifiedNonFixedCols = Arrays.asList( Conf.getInstance().nonFixed().split("\\s+") );
-	    if( !manuallySpecifiedFixedCols.get(0).equals("error") ){
-		for( String name : manuallySpecifiedFixedCols ){
-		    this.fixedDomainCols.add( QualifiedName.makeFromDotSeparated(name) );
-		}
-	    }
-	    if( !manuallySpecifiedNonFixedCols.get(0).equals("error") ){
-		for( String name : manuallySpecifiedNonFixedCols ){
-		    this.fixedDomainCols.remove( QualifiedName.makeFromDotSeparated(name) );
-		}
-	    }
-	} catch (IOException e) {
-	    e.printStackTrace();
-	    DatabasePumperOBDA.closeEverything();
-	}
+    protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException {
 	
-	for( ColumnPumper<? extends Object> cP : listColumns ){
-	    	   	    
-	    // TODO Make this thing nicer, and document it
-	    if( this.fixedDomainCols.contains( cP.getQualifiedName() ) || cP.getDatatypeLength() < 3 ){
-		cP.setFixed();
-	    }
-	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
-	}
+	super.establishColumnBounds(listColumns);
 	// At this point, each column is initialized with statistical information
 	// like null, dups ratio, num rows and freshs to insert, etc.
 
@@ -198,7 +171,8 @@ class IntervalsBoundariesFinder<T>{
 	
 	// Assert 
 	if( cP.getIntervals().size() != 1 ){
-	    throw new DebugException("Intervals size != 1");
+	    throw new DebugException("Intervals size != 1, actually " + cP.getIntervals().size() + " "
+	    	+ "for column " + cP.getQualifiedName().toString());
 	}
 
 	visitedList.add(cP);

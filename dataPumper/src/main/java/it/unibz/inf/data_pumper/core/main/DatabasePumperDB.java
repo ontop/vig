@@ -24,6 +24,7 @@ import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.columns.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
+import it.unibz.inf.data_pumper.configuration.Conf;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.statistics.creators.table.TableStatisticsFinder;
 import it.unibz.inf.data_pumper.core.statistics.creators.table.TableStatisticsFinderImpl;
@@ -35,9 +36,12 @@ import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -54,6 +58,10 @@ public class DatabasePumperDB extends DatabasePumper {
     protected static double scaleFactor;
 
     private static long LINES_BUF_SIZE=10000; // Keep in RAM at most 10000 values for a table
+    
+    // This atribute is protected as in OBDA mode there's the automatic
+    // search for fixed-domain columns.
+    protected Set<QualifiedName> fixedDomainCols = new HashSet<>();
     
     public DatabasePumperDB(){
 	this.dbOriginal = DBMSConnection.getInstance();
@@ -404,9 +412,39 @@ public class DatabasePumperDB extends DatabasePumper {
     }
 
     protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
-	for( ColumnPumper<? extends Object> cP : listColumns ){	    
+	List<String> manuallySpecifiedFixedCols = null;
+	List<String> manuallySpecifiedNonFixedCols = null;
+	try {
+	    manuallySpecifiedFixedCols = Arrays.asList( Conf.getInstance().fixed().split("\\s+") );
+	    manuallySpecifiedNonFixedCols = Arrays.asList( Conf.getInstance().nonFixed().split("\\s+") );
+	    if( !manuallySpecifiedFixedCols.get(0).equals("error") ){
+		for( String name : manuallySpecifiedFixedCols ){
+		    this.fixedDomainCols.add( QualifiedName.makeFromDotSeparated(name) );
+		}
+	    }
+	    if( !manuallySpecifiedNonFixedCols.get(0).equals("error") ){
+		for( String name : manuallySpecifiedNonFixedCols ){
+		    this.fixedDomainCols.remove( QualifiedName.makeFromDotSeparated(name) );
+		}
+	    }
+	} catch (IOException e) {
+	    e.printStackTrace();
+	    DatabasePumperOBDA.closeEverything();
+	}
+	
+	for( ColumnPumper<? extends Object> cP : listColumns ){
+	    	   	    
+	    // TODO Make this thing nicer, and document it
+	    if( this.fixedDomainCols.contains( cP.getQualifiedName() ) || cP.getDatatypeLength() < 3 ){
+		cP.setFixed();
+	    }
 	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
 	}
+	// At this point, each column is initialized with statistical information
+	// like null, dups ratio, num rows and freshs to insert, etc.
+//	for( ColumnPumper<? extends Object> cP : listColumns ){	    
+//	    cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
+//	}
     }
 
     private void fillDomainsForSchema(Schema schema, DBMSConnection originalDb){

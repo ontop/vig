@@ -28,8 +28,8 @@ public class PumpFullDatabase {
     private static void npdTests() {	
 	
 //	npdTestsOfType(PAR_SCALE, PAR_NPD_DB_CONF);
-	npdTestsOfType(PAR_SCALE, PAR_NPD_OBDA_CONF);
-//	npdTestsOfType(PAR_SCALE, PAR_NPD_RAND_CONF);
+//	npdTestsOfType(PAR_SCALE, PAR_NPD_OBDA_CONF);
+	npdTestsOfType(PAR_SCALE, PAR_NPD_RAND_CONF);
     }
 
     private static void npdTestsOfType(String parScale, String parNpdDbConf) {
