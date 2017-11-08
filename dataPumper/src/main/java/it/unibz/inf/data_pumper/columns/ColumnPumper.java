@@ -58,6 +58,7 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
     // For general purposes
     public boolean visited;
     private double scaleFactor;
+    private boolean notNull;
 
     public ColumnPumper(String name, MySqlDatatypes type, int index, Schema schema){ // index: index of the column
 	super(name, type, index, schema);
@@ -73,6 +74,7 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	this.numDupsNullRowsSet = false;
 	visited = false;
 	this.fixed = false;
+	this.notNull = false;
     }
 
     //	@Override
@@ -133,7 +135,12 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	    this.numDupsToInsert = this.getNumRowsToInsert() - Math.round(this.numFreshsToInsert + this.numNullsToInsert);
 	}
 	else{
-	    this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;			
+	    this.numFreshsToInsert = this.getNumRowsToInsert() - this.numDupsToInsert - this.numNullsToInsert;
+	    if( this.numFreshsToInsert == 0 ){
+		logger.info("Zero freshs to insert. Setting to at least one.");
+		this.numDupsToInsert = 0; this.numNullsToInsert = 0;
+		this.numFreshsToInsert = this.getNumRowsToInsert();
+	    }
 	}
 
 	//	    checkIfTooManyDups();
@@ -263,5 +270,13 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 
     public void setFixed(){
 	this.fixed = true;
+    }
+
+    public void setNotNull() {
+	this.notNull = true;
+    }
+    
+    public boolean isNotNull(){
+	return this.notNull;
     }
 };

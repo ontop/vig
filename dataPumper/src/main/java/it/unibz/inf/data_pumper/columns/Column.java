@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 public abstract class Column {
 	private final String name;
 	private final MySqlDatatypes type;
-	private boolean allDifferent;
+	private boolean unique;
 	private boolean primary;
 	private boolean independent;
 	private boolean autoincrement;
@@ -54,7 +54,7 @@ public abstract class Column {
 		this.type = type;
 		this.primary = false;
 		this.independent = false;
-		this.allDifferent = false;
+		this.unique = false;
 		this.autoincrement = false;
 		referencesTo = new ArrayList<QualifiedName>(); // TODO
 		referencedBy = new ArrayList<QualifiedName>(); // TODO
@@ -101,12 +101,12 @@ public abstract class Column {
 		independent = true;
 	}
 
-	public boolean isAllDifferent() {
-		return allDifferent;
+	public boolean isUnique() {
+		return unique;
 	}
 
-	public void setAllDifferent() {
-		allDifferent = true;
+	public void setUnique() {
+		unique = true;
 	}
 
 	public MySqlDatatypes getType() {

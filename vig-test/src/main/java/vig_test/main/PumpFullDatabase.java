@@ -10,7 +10,7 @@ import vig_test_unit_scripts.SQLScriptsExecuter;
 
 public class PumpFullDatabase {
 
-    private static final String PAR_SCALE = "--scale=5";
+    private static final String PAR_SCALE = "--scale=1";
     private static final String PAR_NPD_OBDA_CONF = "--conf=configuration-npd-obda.conf";
     private static final String PAR_NPD_DB_CONF = "--conf=configuration-npd-db.conf";
     private static final String PAR_NPD_RAND_CONF = "--conf=configuration-npd-rand.conf";

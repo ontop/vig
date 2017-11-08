@@ -270,12 +270,17 @@ public class DBMSConnection {
 
 		    schema.addColumn(result.getString(1), result.getString(2), ++index);
 
-
 		    // Primary keys need to be all different
 		    logger.debug(result.getString(4));
 		    if( result.getString(4).equals("PRI") ){ 
 			schema.getColumn(result.getString(1)).setPrimary();
-		    }		
+		    }
+		    if( result.getString(4).equals("UNI") ){ 
+			schema.getColumn(result.getString(1)).setUnique();;
+		    }
+		    if( result.getString(3).equals("NO") ){
+			schema.getColumn(result.getString(1)).setNotNull();
+		    }
 		}
 		stmt.close();
 
@@ -285,7 +290,7 @@ public class DBMSConnection {
 		for( ColumnPumper<?> c : schema.getColumns() ){
 		    if( c.isPrimary() ){ ref = c; ++cnt; }
 		}
-		if( cnt == 1 ) ref.setAllDifferent();
+		if( cnt == 1 ) ref.setUnique();
 
 
 		// Now let's retrieve foreign keys

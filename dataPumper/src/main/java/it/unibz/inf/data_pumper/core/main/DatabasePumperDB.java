@@ -87,8 +87,8 @@ public class DatabasePumperDB extends DatabasePumper {
 
 	try {
 	    establishColumnBounds(listColumns);
-	    updateBoundariesWRTForeignKeys(listColumns);
-	    checkIntervalsAssertions(listColumns); // FIXME Try with size 5, there might be a bug
+	    if( !this.isPureRandom() ) updateBoundariesWRTForeignKeys(listColumns);
+	    checkIntervalsAssertions(listColumns); 
 	} catch (SQLException e) {
 	    e.printStackTrace();
 	    DatabasePumper.closeEverything();
@@ -404,12 +404,12 @@ public class DatabasePumperDB extends DatabasePumper {
 		    dupsRatio = tStatsFinder.findDuplicatesRatio(s, c);
 		    nullRatio = tStatsFinder.findNullRatio(s, c);
 		}else{ // Pure random generation, do not take into account for database statistics
-		    if( c.isPrimary() ){ // If part of a key, do not duplicate anything, so as to avoid problems
+		    if( c.isPrimary() || c.isUnique() ){ // If part of a key, do not duplicate anything, so as to avoid problems
 			dupsRatio = 0; nullRatio = 0;
 		    }
 		    else{
 			dupsRatio = (float)Math.random();
-			nullRatio = (float)Math.random();
+			nullRatio = c.isNotNull() ? 0 : (float)Math.random();
 			if( dupsRatio + nullRatio > 1 ){
 			    nullRatio = 0;
 			}
