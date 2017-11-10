@@ -89,4 +89,4 @@ Check here for [[Troubleshooting]] .
 
 ## Coming Soon ...
 
-For a list of the new features currently under development, refer to [Development](CHANGELOG.md) page.
+For a list of the new features currently under development, refer to [Development](v1.8.0/CHANGELOG.md) page.
