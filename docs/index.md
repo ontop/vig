@@ -1,6 +1,4 @@
-==========================
-VIG Official Documentation
-==========================
+# VIG Official Documentation
 
 Current version:
 
