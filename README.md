@@ -1,4 +1,4 @@
-vig (v 1.8.0)
+vig (v 1.8.1)
 ===
 
 Virtual Instances Generator
@@ -23,7 +23,16 @@ Before running, a few things need to be configured. Please refer to the wiki pag
 Publications
 ----
 
-- [Short Technical Description of VIG](https://arxiv.org/abs/1607.06343)
+* **Davide Lanti, Guohui Xiao, Diego Calvanese:
+Fast and Simple Data Scaling for OBDA Benchmarks. BLINK@ISWC 2016
+   Available at http://ceur-ws.org/Vol-1700/paper-06.pdf
+
+* **Data Scaling in OBDA Benchmarks: The VIG Approach**. Davide Lanti, Guohui Xiao, Diego Calvanese. 2016 
+   Available at https://arxiv.org/abs/1607.06343.
+
+* **Davide Lanti, Guohui Xiao, Diego Calvanese:
+An Evaluation of VIG with the BSBM Benchmark. International Semantic Web Conference (Posters & Demos) 2016
+   Available at http://ceur-ws.org/Vol-1690/paper82.pdf
 
 Contacts
 ----------
