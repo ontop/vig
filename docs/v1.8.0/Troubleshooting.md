@@ -1,3 +1,5 @@
+# Troubleshooting
+
 A list of common issues and possible solutions:
 
 - [NullPointerException](#nullpointerexception)
@@ -20,7 +22,7 @@ Exception in thread "main" java.lang.NullPointerException
 	at it.unibz.inf.data_pumper.core.main.Main.main(Main.java:107)
 ```
 
-The connection could not be established, check that you modified the information about the JDBC connection in your configuration file  (default one src/main/resources/configuration.conf) .
+The connection could not be established, check that you modified the information about the JDBC connection in your configuration file (default configuration file: src/main/resources/configuration.conf) .
 
 ### Connection refused
 
@@ -35,7 +37,7 @@ Exception in thread "main" java.lang.NullPointerException
 	...
 ```
 
-The connection could not be established, check that you modified the information about the JDBC connection in your configuration file  (default one src/main/resources/configuration.conf) 
+The connection could not be established, check that you modified the information about the JDBC connection in your configuration file  (default configuration file: src/main/resources/configuration.conf) 
 
 ### Operation timed out
 
@@ -54,7 +56,7 @@ Exception in thread "main" java.lang.NullPointerException
 	at it.unibz.inf.data_pumper.core.main.Main.main(Main.java:107)
 ```
 
-If pumper-type is ODBA: The timeout can be caused by missing or wrong information, check that your obda file in the SourceDeclaration  contains the same JDBC connection information as you defined in your configuration file (default one src/main/resources/configuration.conf)  
+If pumper-type is ODBA: The timeout can be caused by missing or wrong information, check that your obda file in the SourceDeclaration contains the same JDBC connection information as you defined in your configuration file (default configuration file: src/main/resources/configuration.conf)  
 
 ###  FileNotFoundException src/main/resources/csvs/*.csv 
 
@@ -66,4 +68,4 @@ java.io.FileNotFoundException: src/main/resources/csvs/address.csv (No such file
 	at it.unibz.inf.data_pumper.core.main.DatabasePumperDB.pumpDatabase(DatabasePumperDB.java:98)
 	at it.unibz.inf.data_pumper.core.main.Main.main(Main.java:107)
 ```
-The directory csvs is missing. Create the directory where the csv data will be generated.
+The directory csvs is missing. Create the directory where the csv data will be generated (default location: src/main/resources/csvs).
