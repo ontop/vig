@@ -18,7 +18,7 @@ The jar (with dependencies) can then be found under the vig-distribution/target 
 
 Configure and Run
 ----
-Before running, a few things need to be configured. Please refer to the documentation (http://ontop.github.io/vig/ or _docs_ folder) for more information. 
+Before running, a few things need to be configured. Please refer to the documentation (http://ontop.github.io/vig/ or `docs` folder) for more information. 
 
 Publications
 ----
