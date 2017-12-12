@@ -27,13 +27,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
-import it.unibz.inf.data_pumper.configuration.Conf;
+import it.unibz.inf.data_pumper.configuration.ConfParser;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
+import it.unibz.inf.data_pumper.connection.InstanceNullException;
+import it.unibz.inf.data_pumper.core.main.options.Conf;
+import it.unibz.inf.data_pumper.core.main.options.VigOptionsInterface;
+import it.unibz.inf.data_pumper.persistence.LogToFile;
 import it.unibz.inf.data_pumper.persistence.statistics.xml_model.*;
 import it.unibz.inf.data_pumper.tables.Schema;
 import it.unibz.inf.data_pumper.utils.ExecutionStatisticsProfiler;
@@ -45,45 +50,25 @@ import it.unibz.inf.vig_options.ranges.DoubleRange;
 
 import org.apache.log4j.BasicConfigurator;
 
-enum PumperType{
+
+
+public class Main extends VigOptionsInterface {
+    
+    public static enum PumperType{
 	DB, OBDA
-}
-
-public class Main {
-    
-    private static PumperType pumperType;
-    
-    // configuration file
-    private static Conf conf;
-
-    // Options
-    private static DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
-    public static StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "src/main/resources");
-    public static StringOption optConfig = new StringOption("--conf", "Name of the configuration file", "CONFIGURATION", "configuration.conf");
-    public static StringOption optTables = new StringOption("--tables", "Restrict the generation to a list of tables. E.g., --tables=table1,table2,table3,etc.", "PUMPER", "");
-    public static StringOption optColumns = new StringOption("--columns", "Restrict the generation to a list of columns. E.g., --columns=table1.col1,table2.col2,etc.", "PUMPER", "");
-    
+    }
+           
     // Xml Model of the Data
     private static DatabaseModelCreator dbModelCreator;
     
     public static void main(String[] args) {
-
-	// --- configuration -- //
-	BasicConfigurator.configure();		
-	Option.parseOptions(args);
-	double percentage = optScaling.getValue();
-	conf = Conf.getInstance();
-	boolean randomGen = false;
-	try {
-	    randomGen = conf.pureRandomGeneration();
-	    pumperType = PumperType.valueOf(conf.pumperType());
-	    DBMSConnection.initInstance(conf.jdbcConnector(), conf.dbUrl(), conf.dbUser(), conf.dbPwd());
-	} catch (IOException e) {
-	    e.printStackTrace();
-	    throw new RuntimeException(e);
-	}
-
-	DatabasePumper pumper = pumperType == PumperType.DB ? new DatabasePumperDB() : new DatabasePumperOBDA();
+	
+	BasicConfigurator.configure(); // log4j
+	
+	// Read command-line parameters and configuration file
+	Conf conf = configure(args); 
+	
+	DatabasePumper pumper = conf.pumperType() == PumperType.DB ? new DatabasePumperDB(conf) : new DatabasePumperOBDA(conf);
 	
 	String restrictToTablesPar = optTables.getValue();
 	if( !restrictToTablesPar.equals("") ){
@@ -118,6 +103,69 @@ public class Main {
 	} 
     }
     
+    /** Read command-line parameters and configuration file 
+     * @return **/
+    private static Conf configure(String[] args) {
+	// --- configuration -- //
+	Option.parseOptions(args);
+	// PumperType.valueOf(...
+	
+	
+	
+	double percentage = optScaling.getValue();
+	ConfParser cP = ConfParser.makeInstance(optConfig.getValue()); 
+	
+	Conf conf = new Conf(
+		optjdbcConnector, 
+		dbUrl, 
+		dbUser, 
+		dbPwd, 
+		randomGen, 
+		mappingsFile, 
+		pumperType, 
+		fixed, 
+		nonFixed, 
+		ccAnalysisTimeout, 
+		scale, 
+		resourcesDir, 
+		configurationFile, 
+		tables, 
+		columns)
+		
+	
+	boolean randomGen = false;
+	try {
+	    randomGen = conf.pureRandom();
+	    pumperType = conf.pumperType();
+	    DBMSConnection.initInstance(conf.jdbcConnector(), conf.dbUrl(), conf.dbUser(), conf.dbPwd());
+	} catch (IOException e) {
+	    closeEverythingAndExit(e);
+	}
+    }
+
+    public static void closeEverythingAndExit() {
+	try {
+	    DBMSConnection.getInstance().close();
+	} catch (InstanceNullException e) {
+	    e.printStackTrace();
+	}
+	finally{
+	    LogToFile.getInstance().closeFile();
+	}
+	throw new RuntimeException();
+    }
+    
+    public static void closeEverythingAndExit(Exception e) {
+	try {
+	    DBMSConnection.getInstance().close();
+	} catch (InstanceNullException e1) {
+	    e.printStackTrace();
+	}
+	finally{
+	    LogToFile.getInstance().closeFile();
+	}
+	throw new RuntimeException(e);
+    }
 };
 
 abstract class DatabaseModelCreatorConsts{

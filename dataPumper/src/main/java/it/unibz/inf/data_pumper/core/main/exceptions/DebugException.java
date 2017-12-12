@@ -1,4 +1,4 @@
-package it.unibz.inf.data_pumper.core.main;
+package it.unibz.inf.data_pumper.core.main.exceptions;
 
 public class DebugException extends RuntimeException {
 

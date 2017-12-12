@@ -1,4 +1,5 @@
 package it.unibz.inf.vig_options.core;
+import it.unibz.inf.vig_options.ranges.StringRange;
 
 /************************************************************************************************
 Copyright (c) 2008-2010, Niklas Sorensson
@@ -19,18 +20,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
 
-public class BooleanOption extends Option {
+public class StringOptionWithRange extends StringOption {
 
-	protected boolean value;
+	private StringRange range;
 	
-	public BooleanOption(String name, String description, String category, boolean value) {
-		super(name, description, category, "<bool>");
-	
-		this.value = value;
+	public StringOptionWithRange(
+			String name, String description,
+			String category, String value,
+			StringRange range) {
+		super(name, description, category, value);
+		
+		this.range = range;
 	}
 	
 	/**
-	 *  Does it match with optName ? 
+	 *  Does it match with --optName=valueInRange ?
 	 */
 	@Override
 	public boolean parseImpl(String toParse) {
@@ -38,48 +42,42 @@ public class BooleanOption extends Option {
 		String temp = toParse.trim(); // Eliminate whitespaces
 		
 		if( temp.startsWith(name+"=") ){
+			String value = temp.substring(name.length() + 1);
 			
-			String tmpValue = temp.substring(name.length()+1);
-			
-			if( tmpValue.equalsIgnoreCase("true") ){
-				this.value = true; return true;
+			if( range.isInRange(value) ){
+				this.value = value;
+			}			
+			else{
+				System.err.println("ERROR! Value out of range for the option "+ this.name);
+				System.exit(1);
 			}
-			else if( tmpValue.equalsIgnoreCase("false") ){
-				this.value = false; return true;
-			}
-
-			System.err.println("ERROR! Value out of range for the option "+ this.name);
-			System.exit(1);
-			
+			return true;
 		}
-		
+		// Not name=... 
 		return false;
 	}
-
+	
 	@Override
 	public String help(boolean verbose) {
-		
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(this.name);
 		builder.append(printSpace(this.name));
 		builder.append(this.typeName);
 		builder.append(printSpace(this.typeName));
-		builder.append("[true -- false]");
-		builder.append(printHugeColSpace("[true -- false]"));
+		builder.append("[");
+		builder.append(range.toString());
+		builder.append("]");
+		builder.append(printHugeColSpace("["+range.toString()+"]"));
 		builder.append("(default: ");
-		builder.append(value);
+		builder.append(value == null ? "NULL" : value);
 		builder.append(")");
 		
 		if( verbose ){
-			builder.append(printSpace("(default: "+value+")"));
+			builder.append(printSpace("(default: "+ (value == null ? "NULL" : value) + ")"));
 			builder.append(this.description);
 		}
 		
 		return builder.toString();
-	}
-	
-	public boolean getValue(){
-		return value;
 	}
 }

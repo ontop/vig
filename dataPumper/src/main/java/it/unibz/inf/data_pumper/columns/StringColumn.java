@@ -27,7 +27,7 @@ import it.unibz.inf.data_pumper.columns.intervals.StringInterval;
 import it.unibz.inf.data_pumper.columns.intervals.StringIntervalStandard;
 import it.unibz.inf.data_pumper.columns.intervals.StringIntervalFixedDomain;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.main.DebugException;
+import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 import it.unibz.inf.data_pumper.tables.Schema;
 

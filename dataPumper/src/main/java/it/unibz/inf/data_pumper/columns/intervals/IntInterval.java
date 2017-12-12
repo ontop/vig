@@ -5,7 +5,7 @@ import java.util.List;
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
-import it.unibz.inf.data_pumper.core.main.DebugException;
+import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 
 public class IntInterval extends Interval<Long> {

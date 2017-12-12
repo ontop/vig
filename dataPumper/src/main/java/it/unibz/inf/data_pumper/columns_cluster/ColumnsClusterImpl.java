@@ -3,7 +3,7 @@ package it.unibz.inf.data_pumper.columns_cluster;
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
-import it.unibz.inf.data_pumper.core.main.DebugException;
+import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
 import it.unibz.inf.data_pumper.utils.traversers.Node;
 import it.unibz.inf.data_pumper.utils.traversers.ReachConnectedTraverser;
 import it.unibz.inf.data_pumper.utils.traversers.Traverser;

@@ -1,7 +1,7 @@
 package it.unibz.inf.data_pumper.columns.intervals;
 
 import it.unibz.inf.data_pumper.columns.ColumnPumper;
-import it.unibz.inf.data_pumper.core.main.DebugException;
+import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 
 import java.util.Collection;

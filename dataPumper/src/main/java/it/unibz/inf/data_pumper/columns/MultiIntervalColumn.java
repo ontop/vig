@@ -22,7 +22,7 @@ package it.unibz.inf.data_pumper.columns;
 
 import it.unibz.inf.data_pumper.columns.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
-import it.unibz.inf.data_pumper.core.main.DebugException;
+import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
 import it.unibz.inf.data_pumper.tables.MySqlDatatypes;
 import it.unibz.inf.data_pumper.tables.Schema;
 

@@ -20,7 +20,7 @@ package it.unibz.inf.data_pumper.configuration;
  * #L%
  */
 
-import it.unibz.inf.data_pumper.core.main.Main;
+import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
 
 import java.io.*;
 import java.util.Arrays;
@@ -31,23 +31,28 @@ import java.util.List;
  * @author Davide Lanti
  *
  */
-public class Conf {
+public class ConfParser {
 
     protected String confFile;
-    private static Conf instance = null;
+    private static ConfParser instance = null;
 
-    protected Conf(String confFile){
+    private ConfParser(String confFile){
 	this.confFile = confFile;
     };
-
-    public static Conf getInstance(){
-	if( instance == null ){
-	    String confFile = Main.optResources.getValue() + "/" + Main.optConfig.getValue();
-	    instance = new Conf(confFile);
+    
+    public static ConfParser makeInstance(String confFile) {
+	if( instance == null ) {
+	    instance = new ConfParser(confFile);
 	}
 	return instance;
     }
-
+    
+    public static ConfParser getInstance(){
+	if( instance == null ){
+	    throw new DebugException("ConfParser.getInstance() should be called after a call to the method makeInstance()"); 
+	}
+	return instance;
+    }
 
     /** Returns the name of the database driver **/
     public String jdbcConnector() throws IOException {

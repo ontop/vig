@@ -5,9 +5,11 @@ import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.columns.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
 import it.unibz.inf.data_pumper.columns_cluster.ColumnsCluster;
-import it.unibz.inf.data_pumper.configuration.Conf;
+import it.unibz.inf.data_pumper.configuration.ConfParser;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.InstanceNullException;
+import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
+import it.unibz.inf.data_pumper.core.main.exceptions.ManualParamenterRequiredException;
 import it.unibz.inf.ontop.model.OBDAModel;
 import it.unibz.inf.ontop.sql.DBMetadata;
 import it.unibz.inf.vig_mappings_analyzer.core.FixedDomColsFinder;
@@ -44,7 +46,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
     public DatabasePumperOBDA() {
 	super();	
 	try {
-	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel( Conf.getInstance().mappingsFile() );
+	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel( ConfParser.getInstance().mappingsFile() );
 	    DBMetadata meta = OBDAModelFactory.makeDBMetadata(model);
 	    
 	    fixedDomainCols = FixedDomColsFinder.makeInstance(model, meta).findFixedDomainCols();
@@ -562,7 +564,7 @@ class CorrelatedColumnsExtractor{
 	
 	} catch (Exception e) {
 	    e.printStackTrace();
-	    DatabasePumperOBDA.closeEverything();
+	    DatabasePumper.closeEverything();
 	}
 	return result;
     }
@@ -597,7 +599,7 @@ class CorrelatedColumnsExtractor{
 		    }
 		} catch (InstanceNullException e) {
 		    e.printStackTrace();
-		    DatabasePumperOBDA.closeEverything();
+		    DatabasePumper.closeEverything();
 		}
 	    }
 	    if( fixedFound && !allFixed ){
@@ -605,7 +607,7 @@ class CorrelatedColumnsExtractor{
 		    throw new ManualParamenterRequiredException(msg + msgTrailer);
 		} catch ( ManualParamenterRequiredException e ){
 		    e.printStackTrace();
-		    DatabasePumperOBDA.closeEverything();
+		    DatabasePumper.closeEverything();
 		}
 	    }
 	    else{
@@ -710,7 +712,7 @@ class CorrelatedColumnsExtractor{
 		    cCL.insert(cP);
 		} catch (InstanceNullException e) {
 		    e.printStackTrace();
-		    DatabasePumperOBDA.closeEverything();
+		    DatabasePumper.closeEverything();
 		}
 	    }
 	    result.add(cCL);
