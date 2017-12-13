@@ -24,7 +24,6 @@ import it.unibz.inf.data_pumper.columns.ColumnPumper;
 import it.unibz.inf.data_pumper.columns.exceptions.BoundariesUnsetException;
 import it.unibz.inf.data_pumper.columns.exceptions.ValueUnsetException;
 import it.unibz.inf.data_pumper.columns.intervals.Interval;
-import it.unibz.inf.data_pumper.configuration.ConfParser;
 import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
 import it.unibz.inf.data_pumper.core.main.exceptions.ProblematicCycleForPrimaryKeyException;
@@ -40,6 +39,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -426,25 +427,10 @@ public class DatabasePumperDB implements DatabasePumper {
     }
 
     protected <T> void establishColumnBounds(List<ColumnPumper<? extends Object>> listColumns) throws SQLException{
-	List<String> manuallySpecifiedFixedCols = null;
-	List<String> manuallySpecifiedNonFixedCols = null;
-	try {
-	    manuallySpecifiedFixedCols = Arrays.asList( ConfParser.getInstance().fixed().split("\\s+") );
-	    manuallySpecifiedNonFixedCols = Arrays.asList( ConfParser.getInstance().nonFixed().split("\\s+") );
-	    if( !manuallySpecifiedFixedCols.get(0).equals("error") ){
-		for( String name : manuallySpecifiedFixedCols ){
-		    this.fixedDomainCols.add( QualifiedName.makeFromDotSeparated(name) );
-		}
-	    }
-	    if( !manuallySpecifiedNonFixedCols.get(0).equals("error") ){
-		for( String name : manuallySpecifiedNonFixedCols ){
-		    this.fixedDomainCols.remove( QualifiedName.makeFromDotSeparated(name) );
-		}
-	    }
-	} catch (IOException e) {
-	    Main.closeEverythingAndExit(e);
-	}
-
+	
+	this.fixedDomainCols.addAll(Collections.unmodifiableList(conf.fixed()));
+	this.fixedDomainCols.removeAll(Collections.unmodifiableCollection(conf.nonFixed()));
+	
 	for( ColumnPumper<? extends Object> cP : listColumns ){
 
 	    // TODO Make this thing nicer, and document it
