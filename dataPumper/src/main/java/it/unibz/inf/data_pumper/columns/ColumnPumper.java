@@ -222,7 +222,6 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	return this.generatedCounter;
     }
 
-    @Deprecated
     public List<ColumnPumper<T>> getRefersToClosure() {
 
 	List<ColumnPumper<T>> result = new LinkedList<>();
@@ -241,7 +240,6 @@ public abstract class ColumnPumper<T> extends Column implements ColumnPumperInte
 	return result;
     }
 
-    @Deprecated
     public List<ColumnPumper<T>> getReferredByClosure() {
 
 	List<ColumnPumper<T>> result = new LinkedList<>();

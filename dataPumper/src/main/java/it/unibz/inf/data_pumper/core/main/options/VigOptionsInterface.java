@@ -18,7 +18,7 @@ public abstract class VigOptionsInterface {
     protected static final StringOption optColumns = new StringOption("--columns", "Restrict the generation to a list of columns. E.g., --columns=table1.col1,table2.col2,etc.", "PUMPER", "");
 
     // DB Connection
-    protected static final StringOption jdbcConnector = new StringOption("--jdbc", "Database Driver Class", "PUMPER", "");
+    protected static final StringOption optJdbcConnector = new StringOption("--jdbc", "Database Driver Class", "PUMPER", "");
     protected static final StringOption optDbUrl = new StringOption("--db-url", "Database URL.", "PUMPER", "");
     protected static final StringOption optDbUser = new StringOption("--db-user", "Username for accessing the database", "PUMPER", "");
     protected static final StringOption optDbPwd = new StringOption("--db-pwd", "Password for accessing the database", "PMPER", "");

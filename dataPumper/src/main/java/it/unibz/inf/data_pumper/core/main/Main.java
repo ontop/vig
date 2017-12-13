@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.management.RuntimeErrorException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -43,21 +43,39 @@ import it.unibz.inf.data_pumper.persistence.statistics.xml_model.*;
 import it.unibz.inf.data_pumper.tables.Schema;
 import it.unibz.inf.data_pumper.utils.ExecutionStatisticsProfiler;
 import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
-import it.unibz.inf.vig_options.core.DoubleOption;
 import it.unibz.inf.vig_options.core.Option;
-import it.unibz.inf.vig_options.core.StringOption;
-import it.unibz.inf.vig_options.ranges.DoubleRange;
-
 import org.apache.log4j.BasicConfigurator;
-
+import org.apache.log4j.Logger;
 
 
 public class Main extends VigOptionsInterface {
     
+    public static Logger logger = Logger.getLogger(Main.class.getCanonicalName());
+    
     public static enum PumperType{
-	DB, OBDA
+	DB("DB"), OBDA("OBDA");
+	
+	private String text;
+	
+	PumperType(String typeText){
+	    this.text = typeText;
+	}
+	
+	public String getText() {
+	    return this.text;
+	}
+	public static PumperType fromString(String text) {
+	    if (text != null) {
+		for (PumperType b : PumperType.values()) {
+		    if (text.equalsIgnoreCase(b.text)) {
+			return b;
+		    }
+		}
+	    }
+	    return null;
+	}
     }
-           
+    
     // Xml Model of the Data
     private static DatabaseModelCreator dbModelCreator;
     
@@ -68,34 +86,18 @@ public class Main extends VigOptionsInterface {
 	// Read command-line parameters and configuration file
 	Conf conf = configure(args); 
 	
-	DatabasePumper pumper = conf.pumperType() == PumperType.DB ? new DatabasePumperDB(conf) : new DatabasePumperOBDA(conf);
+	// Init DB connection
+	DBMSConnection.initInstance(conf.jdbcConnector(), conf.dbUrl(), conf.dbUser(), conf.dbPwd());
 	
-	String restrictToTablesPar = optTables.getValue();
-	if( !restrictToTablesPar.equals("") ){
-	    List<String> tableNames = Arrays.asList( restrictToTablesPar.split("\\,") );
-	    for( String tN : tableNames ){
-		pumper.addRestrictToTableElement( new QualifiedName(tN, null) );
-	    }
-	}
-	String restrictToColsPar = optColumns.getValue();
-	if( !restrictToColsPar.equals("") ){
-	    List<String> colFullNames = Arrays.asList( restrictToColsPar.split("\\,") );
-	    for( String colFullName : colFullNames ){
-		String[] splits = colFullName.split("\\.");
-		pumper.addRestrictToColumnElement( new QualifiedName( splits[0], splits[1] ) );
-	    }
-	}
+	DatabasePumper pumper = conf.pumperType() == PumperType.DB ? new DatabasePumperDB(conf) : new DatabasePumperOBDA(conf);	
+	pumper.pumpDatabase(conf.scale());
 	
-	if( randomGen ){
-	    pumper.setPureRandomGeneration();
-	}	
-	pumper.pumpDatabase(percentage);
-
+	// Stats
 	ExecutionStatisticsProfiler.printStats();
 	
 	// Create xml model
 	dbModelCreator = DatabaseModelCreator.INSTANCE;
-	DatabaseModel model = dbModelCreator.createXmlModel(percentage);
+	DatabaseModel model = dbModelCreator.createXmlModel(conf.scale());
 	try {
 	    dbModelCreator.printModelToFile(model);
 	} catch (IOException e) {
@@ -110,39 +112,34 @@ public class Main extends VigOptionsInterface {
 	Option.parseOptions(args);
 	// PumperType.valueOf(...
 	
-	
-	
-	double percentage = optScaling.getValue();
 	ConfParser cP = ConfParser.makeInstance(optConfig.getValue()); 
-	
-	Conf conf = new Conf(
-		optjdbcConnector, 
-		dbUrl, 
-		dbUser, 
-		dbPwd, 
-		randomGen, 
-		mappingsFile, 
-		pumperType, 
-		fixed, 
-		nonFixed, 
-		ccAnalysisTimeout, 
-		scale, 
-		resourcesDir, 
-		configurationFile, 
-		tables, 
-		columns)
-		
-	
-	boolean randomGen = false;
+	// Priority: shell - conf - shell-default
+	Conf conf = null;
 	try {
-	    randomGen = conf.pureRandom();
-	    pumperType = conf.pumperType();
-	    DBMSConnection.initInstance(conf.jdbcConnector(), conf.dbUrl(), conf.dbUser(), conf.dbPwd());
+	    conf = new Conf(
+	    	optJdbcConnector.parsed() ? optJdbcConnector.getValue() : cP.jdbcConnector().equals("") ? optJdbcConnector.getValue() : cP.jdbcConnector(), 
+	    	optDbUrl.parsed() ? optDbUrl.getValue() : cP.dbUrl(),
+	    	optDbUser.parsed() ? optDbUser.getValue() : cP.dbUser(),
+	    	optDbPwd.parsed() ? optDbPwd.getValue() : cP.dbPwd(),
+	    	optRandomGen.parsed() ? optRandomGen.getValue() : cP.pureRandomGeneration().equals("") ? optRandomGen.getValue() : Helpers.parseBool(cP.pureRandomGeneration()),
+	    	optMappingsFile.parsed() ? optMappingsFile.getValue() : cP.mappingsFile(),
+	    	optMode.parsed() ? PumperType.fromString(optMode.getValue()) : cP.mode().equals("") ? PumperType.fromString(optMode.getValue()) : PumperType.fromString(cP.mode()),
+	    	optFixedList.parsed() ? Helpers.parseListToQualifiedNames(optFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.fixed()),	 
+	    	optNonFixedList.parsed() ? Helpers.parseListToQualifiedNames(optNonFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.fixed()),
+	    	optCCAnalysisTimeout.parsed() ? optCCAnalysisTimeout.getValue() : cP.ccAnalysisTimeout().equals("") ? optCCAnalysisTimeout.getValue() : Helpers.parseInt(cP.ccAnalysisTimeout()),
+	    	optScaling.parsed() ? optScaling.getValue() : cP.scale().equals("") ? optScaling.getValue() : Helpers.parseInt(cP.scale()),
+	    	optResources.parsed() ? optResources.getValue() : cP.resources().equals("") ? optResources.getValue() : cP.resources(),
+	    	optConfig.getValue(),
+	    	optTables.parsed() ? Helpers.parseListToQualifiedNames(optTables.getValue()) : Helpers.parseListToQualifiedNames(cP.tables()),
+	    	optColumns.parsed() ? Helpers.parseListToQualifiedNames(optColumns.getValue()) : Helpers.parseListToQualifiedNames(cP.columns())
+	    	);
 	} catch (IOException e) {
-	    closeEverythingAndExit(e);
+	    Main.closeEverythingAndExit(e);
 	}
+	assert conf != null : "Null configuration";
+	return conf;
     }
-
+   
     public static void closeEverythingAndExit() {
 	try {
 	    DBMSConnection.getInstance().close();
@@ -165,6 +162,42 @@ public class Main extends VigOptionsInterface {
 	    LogToFile.getInstance().closeFile();
 	}
 	throw new RuntimeException(e);
+    }
+    
+    public static void closeEverythingAndExit(String msg, Exception e) {
+	try {
+	    DBMSConnection.getInstance().close();
+	} catch (InstanceNullException e1) {
+	    e.printStackTrace();
+	}
+	finally{
+	    LogToFile.getInstance().closeFile();
+	}
+	throw new RuntimeException(e);
+    }
+    
+    private static class Helpers{
+	private static boolean parseBool(String b) {
+	    return Boolean.parseBoolean(b);
+	}
+	
+	private static int parseInt(String i) {
+	    return Integer.valueOf(i);
+	}
+	
+	private static List<String> parseListToStrings(String listS) {	
+	    List<String> result = Arrays.asList( listS.split("\\s+") );
+	    return result;
+	}
+	
+	private static List<QualifiedName> parseListToQualifiedNames(String listS) {
+	    List<String> list = parseListToStrings(listS);
+	    List<QualifiedName> result = 
+		    list.stream()
+		    .map(s -> QualifiedName.makeFromDotSeparated(s) )
+		    .collect(Collectors.toList());
+	    return result;
+	}
     }
 };
 

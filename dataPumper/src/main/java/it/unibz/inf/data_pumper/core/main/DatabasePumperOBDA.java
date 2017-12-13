@@ -10,6 +10,7 @@ import it.unibz.inf.data_pumper.connection.DBMSConnection;
 import it.unibz.inf.data_pumper.connection.InstanceNullException;
 import it.unibz.inf.data_pumper.core.main.exceptions.DebugException;
 import it.unibz.inf.data_pumper.core.main.exceptions.ManualParamenterRequiredException;
+import it.unibz.inf.data_pumper.core.main.options.Conf;
 import it.unibz.inf.ontop.model.OBDAModel;
 import it.unibz.inf.ontop.sql.DBMetadata;
 import it.unibz.inf.vig_mappings_analyzer.core.FixedDomColsFinder;
@@ -18,10 +19,8 @@ import it.unibz.inf.vig_mappings_analyzer.datatypes.Argument;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.Field;
 import it.unibz.inf.vig_mappings_analyzer.datatypes.FunctionTemplate;
 import it.unibz.inf.vig_mappings_analyzer.obda.OBDAModelFactory;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -35,7 +34,7 @@ import org.apache.log4j.Logger;
 import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 /**
- * @author tir
+ * @author Davide Lanti
  *
  */
 public class DatabasePumperOBDA extends DatabasePumperDB {
@@ -43,8 +42,8 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
     // Aggregated classes
     private CorrelatedColumnsExtractor cCE;
 
-    public DatabasePumperOBDA() {
-	super();	
+    public DatabasePumperOBDA( Conf conf ) {
+	super(conf);	
 	try {
 	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel( ConfParser.getInstance().mappingsFile() );
 	    DBMetadata meta = OBDAModelFactory.makeDBMetadata(model);
@@ -55,8 +54,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    
 	    this.cCE = new CorrelatedColumnsExtractor(jCF);
 	} catch (Exception e) {
-	    e.printStackTrace();
-	    DatabasePumperOBDA.closeEverything();
+	    Main.closeEverythingAndExit(e);
 	}
     }
 
@@ -490,8 +488,7 @@ class CorrelatedColumnsList<T>{
 		}
 	    }
 	}catch(ValueUnsetException e){
-	    e.printStackTrace();
-	    DatabasePumper.closeEverything();
+	    Main.closeEverythingAndExit(e);
 	}
     }
 
@@ -563,8 +560,7 @@ class CorrelatedColumnsExtractor{
 	    result = constructCorrelatedColumnsList(maximalMerge, core);
 	
 	} catch (Exception e) {
-	    e.printStackTrace();
-	    DatabasePumper.closeEverything();
+	    Main.closeEverythingAndExit(e);
 	}
 	return result;
     }
@@ -598,16 +594,14 @@ class CorrelatedColumnsExtractor{
 			
 		    }
 		} catch (InstanceNullException e) {
-		    e.printStackTrace();
-		    DatabasePumper.closeEverything();
+		    Main.closeEverythingAndExit(e);
 		}
 	    }
 	    if( fixedFound && !allFixed ){
 		try{
 		    throw new ManualParamenterRequiredException(msg + msgTrailer);
 		} catch ( ManualParamenterRequiredException e ){
-		    e.printStackTrace();
-		    DatabasePumper.closeEverything();
+		    Main.closeEverythingAndExit(e);
 		}
 	    }
 	    else{
@@ -712,7 +706,7 @@ class CorrelatedColumnsExtractor{
 		    cCL.insert(cP);
 		} catch (InstanceNullException e) {
 		    e.printStackTrace();
-		    DatabasePumper.closeEverything();
+		    Main.closeEverythingAndExit();
 		}
 	    }
 	    result.add(cCL);

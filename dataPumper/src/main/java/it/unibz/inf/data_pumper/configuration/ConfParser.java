@@ -39,7 +39,7 @@ public class ConfParser {
     private ConfParser(String confFile){
 	this.confFile = confFile;
     };
-    
+        
     public static ConfParser makeInstance(String confFile) {
 	if( instance == null ) {
 	    instance = new ConfParser(confFile);
@@ -73,9 +73,9 @@ public class ConfParser {
     public  String dbPwd() throws IOException{
 	return searchTag("database-pwd");
     }
-    public  boolean pureRandomGeneration() throws IOException{
+    public String pureRandomGeneration() throws IOException{
 	String randomValue = searchTag("random-gen");
-	return randomValue.equals("true");
+	return randomValue;
     }
     /** Returns the obda file containing the mappings 
      * @throws IOException **/
@@ -83,8 +83,8 @@ public class ConfParser {
 	return searchTag("obda-file");
     }
     /** Returns the configuration scheme for the data generation **/
-    public String pumperType() throws IOException{
-	return searchTag("pumper-type");
+    public String mode() throws IOException{
+	return searchTag("mode");
     }
 
     public String fixed() throws IOException{
@@ -121,5 +121,21 @@ public class ConfParser {
 
     public String ccAnalysisTimeout() throws IOException {
 	return searchTag("ccAnalysisTimeout");
+    }
+    
+    public String scale() throws IOException {
+	return searchTag("scale");
+    }
+    
+    public String resources() throws IOException {
+	return searchTag("resources");
+    }
+    
+    public String tables() throws IOException {
+	return searchTag("tables");
+    }
+    
+    public String columns() throws IOException {
+	return searchTag("columns");
     }
 }

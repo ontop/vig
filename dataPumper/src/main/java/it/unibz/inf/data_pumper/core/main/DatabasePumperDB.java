@@ -62,7 +62,7 @@ public class DatabasePumperDB implements DatabasePumper {
     // This atribute is protected as in OBDA mode there's the automatic
     // search for fixed-domain columns.
     protected Set<QualifiedName> fixedDomainCols = new HashSet<>();
-
+    
     public DatabasePumperDB( Conf conf ){
 	this.dbOriginal = DBMSConnection.getInstance();
 	this.tStatsFinder = new TableStatisticsFinderImpl(dbOriginal, conf.ccAnalysisTimeout());
@@ -89,8 +89,7 @@ public class DatabasePumperDB implements DatabasePumper {
 	    if( !conf.pureRandom() ) updateBoundariesWRTForeignKeys(listColumns);
 	    checkIntervalsAssertions(listColumns); 
 	} catch (SQLException e) {
-	    e.printStackTrace();
-	    DatabasePumper.closeEverything();
+	    Main.closeEverythingAndExit(e);
 	    throw new RuntimeException("Exception while pumping the database"); 
 	}
 
@@ -126,10 +125,7 @@ public class DatabasePumperDB implements DatabasePumper {
 	    printColumnDomain(cP, nRows % LINES_BUF_SIZE);
 	    cP.resetDomain(); // Release Memory
 	} catch (IOException e) {
-	    e.printStackTrace();
-	    dbOriginal.close();
-	    persistence.closeFile();
-	    System.exit(1);
+	    Main.closeEverythingAndExit(e);
 	}
 	persistence.closeFile();
     }
@@ -152,10 +148,12 @@ public class DatabasePumperDB implements DatabasePumper {
 	    printDomain(schema, nRows % LINES_BUF_SIZE);
 	    schema.resetColumnsDomains();
 	} catch (IOException e) {
-	    e.printStackTrace();
-	    dbOriginal.close();
-	    persistence.closeFile();
-	    System.exit(1);
+//	    e.printStackTrace();
+//	    dbOriginal.close();
+//	    persistence.closeFile();
+//	    System.exit(1);
+	    
+	    Main.closeEverythingAndExit(e);
 	}
 	persistence.closeFile();
     }
@@ -345,10 +343,11 @@ public class DatabasePumperDB implements DatabasePumper {
 		persistence.appendLine(value);
 	    }
 	} catch (IOException e) {
-	    e.printStackTrace();
-	    dbOriginal.close();
-	    persistence.closeFile();
-	    System.exit(1);
+//	    e.printStackTrace();
+//	    dbOriginal.close();
+//	    persistence.closeFile();
+//	    System.exit(1);
+	    Main.closeEverythingAndExit(e);
 	}
     }
 
@@ -443,8 +442,7 @@ public class DatabasePumperDB implements DatabasePumper {
 		}
 	    }
 	} catch (IOException e) {
-	    e.printStackTrace();
-	    DatabasePumper.closeEverything();
+	    Main.closeEverythingAndExit(e);
 	}
 
 	for( ColumnPumper<? extends Object> cP : listColumns ){
@@ -471,9 +469,7 @@ public class DatabasePumperDB implements DatabasePumper {
 	try {
 	    filled = cP.generateNValues(cP.getSchema(), originalDb, n);
 	} catch (BoundariesUnsetException | ValueUnsetException e) {
-	    e.printStackTrace();
-	    DatabasePumper.closeEverything();
-	    System.exit(1);
+	    Main.closeEverythingAndExit();
 	}
 	return filled;
     }
@@ -486,9 +482,7 @@ public class DatabasePumperDB implements DatabasePumper {
 	    try {
 		filled = column.generateNValues(schema, originalDb, n);
 	    } catch (BoundariesUnsetException | ValueUnsetException e) {
-		e.printStackTrace();
-		DatabasePumper.closeEverything();
-		System.exit(1);
+		Main.closeEverythingAndExit();
 	    }
 	}
 	return filled;
