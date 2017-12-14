@@ -2,8 +2,8 @@ package it.unibz.inf.data_pumper.core.main.options;
 
 import java.util.List;
 
-import it.unibz.inf.data_pumper.core.main.Main;
-import it.unibz.inf.data_pumper.core.main.Main.PumperType;
+import it.unibz.inf.data_pumper.core.main.VigMain;
+import it.unibz.inf.data_pumper.core.main.VigMain.PumperType;
 import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 public class Conf {
@@ -14,7 +14,7 @@ public class Conf {
     private String dbPwd;
     private boolean randomGen;
     private String mappingsFile;
-    private Main.PumperType pumperType;
+    private VigMain.PumperType pumperType;
     private List<QualifiedName> fixed;
     private List<QualifiedName> nonFixed;
     private int ccAnalysisTimeout;
@@ -98,7 +98,7 @@ public class Conf {
 	return this.mappingsFile;
     }
     /** Returns the configuration scheme for the data generation **/
-    public Main.PumperType pumperType() {
+    public VigMain.PumperType pumperType() {
 	return this.pumperType;
     }
 

@@ -48,9 +48,9 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 
-public class Main extends VigOptionsInterface {
+public class VigMain extends VigOptionsInterface {
     
-    public static Logger logger = Logger.getLogger(Main.class.getCanonicalName());
+    public static Logger logger = Logger.getLogger(VigMain.class.getCanonicalName());
     
     public static enum PumperType{
 	DB("DB"), OBDA("OBDA");
@@ -134,7 +134,7 @@ public class Main extends VigOptionsInterface {
 	    	optColumns.parsed() ? Helpers.parseListToQualifiedNames(optColumns.getValue()) : Helpers.parseListToQualifiedNames(cP.columns())
 	    	);
 	} catch (IOException e) {
-	    Main.closeEverythingAndExit(e);
+	    VigMain.closeEverythingAndExit(e);
 	}
 	assert conf != null : "Null configuration";
 	return conf;

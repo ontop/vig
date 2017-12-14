@@ -90,7 +90,7 @@ public class DatabasePumperDB implements DatabasePumper {
 	    if( !conf.pureRandom() ) updateBoundariesWRTForeignKeys(listColumns);
 	    checkIntervalsAssertions(listColumns); 
 	} catch (SQLException e) {
-	    Main.closeEverythingAndExit(e);
+	    VigMain.closeEverythingAndExit(e);
 	    throw new RuntimeException("Exception while pumping the database"); 
 	}
 
@@ -126,7 +126,7 @@ public class DatabasePumperDB implements DatabasePumper {
 	    printColumnDomain(cP, nRows % LINES_BUF_SIZE);
 	    cP.resetDomain(); // Release Memory
 	} catch (IOException e) {
-	    Main.closeEverythingAndExit(e);
+	    VigMain.closeEverythingAndExit(e);
 	}
 	persistence.closeFile();
     }
@@ -154,7 +154,7 @@ public class DatabasePumperDB implements DatabasePumper {
 //	    persistence.closeFile();
 //	    System.exit(1);
 	    
-	    Main.closeEverythingAndExit(e);
+	    VigMain.closeEverythingAndExit(e);
 	}
 	persistence.closeFile();
     }
@@ -348,7 +348,7 @@ public class DatabasePumperDB implements DatabasePumper {
 //	    dbOriginal.close();
 //	    persistence.closeFile();
 //	    System.exit(1);
-	    Main.closeEverythingAndExit(e);
+	    VigMain.closeEverythingAndExit(e);
 	}
     }
 
@@ -455,7 +455,7 @@ public class DatabasePumperDB implements DatabasePumper {
 	try {
 	    filled = cP.generateNValues(cP.getSchema(), originalDb, n);
 	} catch (BoundariesUnsetException | ValueUnsetException e) {
-	    Main.closeEverythingAndExit();
+	    VigMain.closeEverythingAndExit();
 	}
 	return filled;
     }
@@ -468,7 +468,7 @@ public class DatabasePumperDB implements DatabasePumper {
 	    try {
 		filled = column.generateNValues(schema, originalDb, n);
 	    } catch (BoundariesUnsetException | ValueUnsetException e) {
-		Main.closeEverythingAndExit();
+		VigMain.closeEverythingAndExit();
 	    }
 	}
 	return filled;

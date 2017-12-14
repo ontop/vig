@@ -116,7 +116,7 @@ public class ConfParser {
 	}catch(IOException e){
 	    e.printStackTrace();
 	}
-	return "error";
+	return "";
     }
 
     public String ccAnalysisTimeout() throws IOException {

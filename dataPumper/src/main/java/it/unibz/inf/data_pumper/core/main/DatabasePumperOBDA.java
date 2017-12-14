@@ -54,7 +54,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
 	    
 	    this.cCE = new CorrelatedColumnsExtractor(jCF);
 	} catch (Exception e) {
-	    Main.closeEverythingAndExit(e);
+	    VigMain.closeEverythingAndExit(e);
 	}
     }
 
@@ -488,7 +488,7 @@ class CorrelatedColumnsList<T>{
 		}
 	    }
 	}catch(ValueUnsetException e){
-	    Main.closeEverythingAndExit(e);
+	    VigMain.closeEverythingAndExit(e);
 	}
     }
 
@@ -560,7 +560,7 @@ class CorrelatedColumnsExtractor{
 	    result = constructCorrelatedColumnsList(maximalMerge, core);
 	
 	} catch (Exception e) {
-	    Main.closeEverythingAndExit(e);
+	    VigMain.closeEverythingAndExit(e);
 	}
 	return result;
     }
@@ -594,14 +594,14 @@ class CorrelatedColumnsExtractor{
 			
 		    }
 		} catch (InstanceNullException e) {
-		    Main.closeEverythingAndExit(e);
+		    VigMain.closeEverythingAndExit(e);
 		}
 	    }
 	    if( fixedFound && !allFixed ){
 		try{
 		    throw new ManualParamenterRequiredException(msg + msgTrailer);
 		} catch ( ManualParamenterRequiredException e ){
-		    Main.closeEverythingAndExit(e);
+		    VigMain.closeEverythingAndExit(e);
 		}
 	    }
 	    else{
@@ -706,7 +706,7 @@ class CorrelatedColumnsExtractor{
 		    cCL.insert(cP);
 		} catch (InstanceNullException e) {
 		    e.printStackTrace();
-		    Main.closeEverythingAndExit();
+		    VigMain.closeEverythingAndExit();
 		}
 	    }
 	    result.add(cCL);

@@ -2,7 +2,7 @@ package vig_test.main;
 
 import java.io.IOException;
 
-import it.unibz.inf.data_pumper.core.main.Main;
+import it.unibz.inf.data_pumper.core.main.VigMain;
 import vig_test.constants.NPDConstants;
 import vig_test_unit.constants.DBConstants;
 import vig_test_unit.db_creation.TestDatabaseCreator;
@@ -42,7 +42,7 @@ public class PumpFullDatabase {
 	parameters[0] = parScale;
 	parameters[1] = parNpdDbConf;
 	
-	Main.main(parameters);// That is, pump with size 1
+	VigMain.main(parameters);// That is, pump with size 1
 
 	// Take the csvs, and load them into the database
 	try {
