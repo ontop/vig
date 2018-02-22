@@ -1,7 +1,5 @@
-VIG (v 1.8.0)
+Virtual Instances Generator (VIG) (v 1.8.0)
 ===
-
-# Virtual Instances Generator (VIG)
 
 VIG is a data scaler for OBDA benchmarks. It takes as input a source data instance and a scale factor, and produces a scaled data instance that satisfies the schema constraints and that is “similar” to the source instance according to certain ad-hoc similarity measures. The produced data instance is in form of csv files that can be effectively imported into any relational database management system (RDBMS).
 
