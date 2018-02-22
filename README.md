@@ -1,7 +1,7 @@
 Virtual Instances Generator (VIG) (v 1.8.0)
 ===
 
-VIG is a data scaler for OBDA benchmarks. It takes as input a source data instance and a scale factor, and produces a scaled data instance that satisfies the schema constraints and that is “similar” to the source instance according to certain ad-hoc similarity measures. The produced data instance is in form of csv files that can be effectively imported into any relational database management system (RDBMS).
+VIG is a data scaler, specifically designed for benchmarks of Ontology-based Data Access (OBDA) systems such as [Ontop](https://github.com/ontop/ontop). It takes as input a source database instance and a scale factor, and produces a scaled database instance that satisfies the schema constraints and that is “similar” to the source instance according to certain ad-hoc similarity measures. The produced database instance is in form of csv files that can be effectively imported into any relational database management system (RDBMS).
 
 VIG is currently the official data scaler of the [NPD benchmark](https://github.com/ontop/npd-benchmark). 
 
