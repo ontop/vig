@@ -1,15 +1,5 @@
-====================================
-NPD Benchmark Official Documentation
-====================================
+# VIG Official Documentation
 
 Current version:
 
-* [NPD Benchmark v1.10](v1.9/local-index.md)
-
-Previous versions:
-
-* [NPD Benchmark v1.9](v1.10/local-index.md)
-
-Benchmark Rules:
-
-* [Benchmark Rules](Benchmark Rules.md)
+* [VIG v1.8.0](v1.8.0/local_index.md)
