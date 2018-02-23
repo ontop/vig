@@ -25,8 +25,8 @@ database-url addr:port/sourceDbName    # The address, port, and name of the sour
 database-user userSrc                  # The username for the access to the source database
 database-pwd pwdSrc                    # The password for the access to the source database
 random-gen false                       # If true, then the generator will behave as a pure random generator
-obda-file resources/obda-file.obda     # The location of the mapping file. 
-pumper-type ODBA                       # DB or OBDA. Since VIG 1.1, OBDA mode IS STRONGLY PREFERRED.
+obda-file resources/obda-file.obda     # The location of the mapping file in .obda format
+mode ODBA                              # DB or OBDA. Since VIG 1.1, OBDA mode IS STRONGLY PREFERRED.
                                        # The NPD Benchmark, v1.8.0 onwards, should be run in OBDA mode. 
                                        # OBDA mode reads also statistics from the mappings, and 
                                        # supports fixed-domain columns. 
@@ -35,7 +35,7 @@ non-fixed table1.col1 table2.col2 etc. # Manually specified non fixed-domain col
                                        
 ~~~~~~
 
-If the pumper-type is set to OBDA, then the connection parameters must be set **ALSO** in the specified obda-file.
+If `mode` is set to OBDA, then the connection parameters must be set **ALSO** in the specified `obda-file`.
 
 ### Command Line Options
 
