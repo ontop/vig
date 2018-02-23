@@ -8,7 +8,7 @@ pump () {
     TABLE_NAME=${TABLE_NAME_EXT%.csv}                                                              
     echo [script] Pumping table '"'$TABLE_NAME'"'                              
 
-    /home/tir/git/vig2/vig/vig-test/src/main/resources/bashs/loadCsvToTable.sh $DATA_FILE $DB_NAME $TABLE_NAME $USER mysql 
+    /home/tir/git/vig/vig-test/src/main/resources/bashs/loadCsvToTable.sh $DATA_FILE $DB_NAME $TABLE_NAME $USER mysql
 }
 
 : ${1?"Usage: $0 DB_NAME"}
