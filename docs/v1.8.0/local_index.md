@@ -7,6 +7,10 @@ VIG is a [data scaler](http://www.vldb.org/pvldb/vol4/p1470-tay.pdf) specificall
 
 What differentiates VIG from other data scalers, and makes it more suitable for the context of OBDA benchmarks, is its ability to process an input OBDA mapping file so as to analyze the results for the queries that can be potentially submitted to the underlying RDBMS system. This feature allows a series of benefits, like providing a (limited) support to disjoint classes, reproduce fixed-domain columns in the database, or avoid empty results for queries in the mappings in the produced data. For more details please refer to the page [Characteristics of The Data Produced By VIG](Characteristics of The Data Produced By VIG).
 
+## Quick Start Guide
+
+To use VIG outside the context of the [NPD Benchmark](https://github.com/ontop/npd-benchmark), refer to the page [How To Use VIG in an OBDA Benchmark](How To Use VIG in an OBDA Benchmark).
+
 ## Restrictions
 
 For restriction and limitations, refer to [here](Restrictions).
