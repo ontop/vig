@@ -37,7 +37,7 @@
 	</dependencies>
 
 	<modules>
-		<module>dataPumper</module>
+		<module>vig-data-pumper</module>
 		<!-- <module>csvPlayer</module> -->
 		<!--  <module>tupleSchemaExtractor</module> -->
 		<module>vig-options</module>

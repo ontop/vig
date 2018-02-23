@@ -53,7 +53,7 @@ public class VigMain extends VigOptionsInterface {
     public static Logger logger = Logger.getLogger(VigMain.class.getCanonicalName());
     
     public static enum PumperType{
-	DB("DB"), OBDA("OBDA");
+			DB("DB"), OBDA("OBDA");
 	
 	private String text;
 	

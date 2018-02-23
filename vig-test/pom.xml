@@ -10,7 +10,7 @@
   <dependencies>
 		<dependency>
 			<groupId>it.unibz.inf.vig</groupId>
-			<artifactId>dataPumper</artifactId>
+			<artifactId>vig-data-pumper</artifactId>
 			<version>1.8.1</version>
 		</dependency>
 		<dependency>
