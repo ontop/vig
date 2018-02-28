@@ -25,7 +25,7 @@
           <manifest>
           <addClasspath>true</addClasspath>
       	   <classpathPrefix>lib/</classpathPrefix>
-            <mainClass>core.main.Main</mainClass>
+            <mainClass>core.main.VigMain</mainClass>
           </manifest>
         </archive>
         <descriptorRefs>
