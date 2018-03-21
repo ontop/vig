@@ -8,7 +8,7 @@ VIG is currently the official data scaler of the [NPD benchmark](https://github.
 NOTE
 ----
 
-The version in the `develop` branch is very close to be released. This version solves several critical issues that are currently present in the latest release (`master` branch). We strongly suggest to use the version in `develop` rather than the latest release. In case of problems, please contact the authors.
+The version in the `develop` branch is very close to be released. This version solves several critical issues that are currently present in the latest release (`master` branch). We strongly encourage to use the version in `develop` rather than the latest release. In case of problems, please contact the authors.
 
 Build JAR
 ----
