@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 
 public class LogToFile {
 
-  final static String LOGPATH = "src/main/resources/csvs/"; // TODO: Make this a parameter
+  final static String LOGPATH = "csvs/";
   final static int FLUSH_INTERVAL = 10000;
 
   PrintWriter outCSV = null;

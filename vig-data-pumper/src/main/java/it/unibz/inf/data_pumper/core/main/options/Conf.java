@@ -19,13 +19,13 @@ public class Conf {
   private List<QualifiedName> nonFixed;
   private int ccAnalysisTimeout;
   private double scale;
-  private String configurationFile;
+  private final String configurationFile = "configuration.conf";
   private List<QualifiedName> tables;
   private List<QualifiedName> columns;
 
   public Conf(String jdbcConnector, String dbUrl, String dbUser, String dbPwd, boolean randomGen, String mappingsFile,
               PumperType pumperType, List<QualifiedName> fixed, List<QualifiedName> nonFixed, int ccAnalysisTimeout, double scale,
-              String configurationFile, List<QualifiedName> tables, List<QualifiedName> columns) {
+               List<QualifiedName> tables, List<QualifiedName> columns) {
     super();
     this.jdbcConnector = jdbcConnector;
     this.dbUrl = dbUrl;
@@ -38,7 +38,6 @@ public class Conf {
     this.nonFixed = nonFixed;
     this.ccAnalysisTimeout = ccAnalysisTimeout;
     this.scale = scale;
-    this.configurationFile = configurationFile;
     this.tables = tables;
     this.columns = columns;
   }

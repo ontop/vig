@@ -117,7 +117,7 @@ public class VigMain extends VigOptionsInterface {
     Option.parseOptions(args);
     // PumperType.valueOf(...
 
-    ConfParser cP = ConfParser.makeInstance(optConfig.getValue());
+    ConfParser cP = ConfParser.getInstance();
     // Priority: shell - conf - shell-default
     Conf conf = null;
     try {
@@ -133,8 +133,6 @@ public class VigMain extends VigOptionsInterface {
               optNonFixedList.parsed() ? Helpers.parseListToQualifiedNames(optNonFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.fixed()),
               optCCAnalysisTimeout.parsed() ? optCCAnalysisTimeout.getValue() : cP.ccAnalysisTimeout().equals("") ? optCCAnalysisTimeout.getValue() : Helpers.parseInt(cP.ccAnalysisTimeout()),
               optScaling.parsed() ? optScaling.getValue() : cP.scale().equals("") ? optScaling.getValue() : Helpers.parseInt(cP.scale()),
-//              optResources.parsed() ? optResources.getValue() : cP.resources().equals("") ? optResources.getValue() : cP.resources(),
-              optConfig.getValue(),
               optTables.parsed() ? Helpers.parseListToQualifiedNames(optTables.getValue()) : Helpers.parseListToQualifiedNames(cP.tables()),
               optColumns.parsed() ? Helpers.parseListToQualifiedNames(optColumns.getValue()) : Helpers.parseListToQualifiedNames(cP.columns())
       );

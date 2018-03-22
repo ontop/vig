@@ -17,8 +17,7 @@ from the vig folder. The built jar can be then found in the vig-distribution/tar
 
 ## Launch
 
-
-Vig requires a few parameters in order to run correctly. For a complete list, please refer to the help utility
+Vig requires a few parameters in order to run correctly. For a complete list, you can refer to the help utility
 
 ~~~~~~~~
 $ java -jar vig-distribution-1.8.0-jar-with-dependencies.jar --help
@@ -33,7 +32,39 @@ $ java -jar vig-distribution-1.8.0-jar-with-dependencies.jar --help-verbose
 This second command has the following output:
 
 ~~~
+USAGE: java -jar vig.jar [OPTIONS]
 
+CONFIGURATION OPTIONS
+
+--conf              <string>                                               (default: resources/configuration.conf)Location of the configuration file
+
+PUMPER OPTIONS
+
+--random-gen        <bool>              [true -- false]                    (default: false)    Ignore database statistics, and generate with random statistics.
+
+--scale             <double>            (0.0 -- 1.7976931348623157E308]    (default: 1.0)      It specifies the scaling factor
+
+--cc-timeout        <int>               [0 -- 2147483647]                  (default: 60)       Timeout allowed to the columns-cluster analysis, in seconds. To be used in combination with `OBDA` mode.
+
+--tables            <string>                                               (default: )         Restrict the generation to a list of tables. E.g., --tables=table1,table2,table3,etc.
+
+--columns           <string>                                               (default: )         Restrict the generation to a list of columns. E.g., --columns=table1.col1,table2.col2,etc.
+
+--jdbc              <string>                                               (default: )         Database Driver Class
+
+--db-url            <string>                                               (default: )         Database URL.
+
+--db-user           <string>                                               (default: )         Username for accessing the database
+
+--db-pwd            <string>                                               (default: )         Password for accessing the database
+
+--mappings          <string>                                               (default: )         Path to the Mappings File. This parameter is mandatory in OBDA-mode
+
+--mode              <string>            [DB,OBDA]                          (default: OBDA)     The mode of generation. One of: Database statistics only mode (DB), or Database statistics and Mappings analysis mode (OBDA).
+
+--fixed             <string>                                               (default: )         Space-separated list of fully qualified column names (e.g., tableName.colName) declared as `fixed domain`, that is, attribute names for which no values should be generated apart from those that can be found in the seed database instance.
+
+--non-fixed         <string>                                               (default: )         Space-separated list of qualified attribute names (e.g., tableName.colName) for which fresh values should be generated according to the statistics analysis. Useful in case VIG sets some column as 
 ~~~
 
 Command-line options overwrite the values specified through the configuration file.
@@ -43,38 +74,40 @@ Command-line options overwrite the values specified through the configuration fi
 # Mandatory parameters
 # ====================
 
-jdbc-connector jdbc:mysql				 # The only connector supported, at the moment.
-database-url <addr:port/dbName>		   	 # The address, port, and name of the source database.
-database-user <user>                   	 # The username for the access to the source database.
-database-pwd <pwd>                     	 # The password for the access to the source database.
+jdbc-connector jdbc:mysql                  # The only connector supported, at the moment.
+database-url <addr:port/dbName>            # The address, port, and name of the source database.
+database-user <user>                       # The username for the access to the source database.
+database-pwd <pwd>                         # The password for the access to the source database.
 
 # VIG generation mode. Either DB or OBDA (default). Since VIG 1.1, OBDA mode is preferred.
 # The NPD Benchmark, v1.8.0 onwards, should be run in OBDA mode.
 # OBDA mode reads also statistics from the mappings, and supports fixed-domain columns.
 mode <DB|ODBA>
 
-random-gen [true|false]                	 # If true, then the generator will behave as a pure 
-		   								 # random generator. DB-mode only.
-obda-file <path/mappings.obda>		   	 # The location of the mapping file in .obda format.
-		  								 # OBDA-mode only.
-scale <value> 							 # Scaling factor value. Default: 1.0 
+obda-file <path/mappings.obda>             # The location of the mapping file in .obda format.
+                                           # OBDA-mode only.
+scale <value>                              # Scaling factor value. Default: 1.0 
 
-# ============================================================================================= 
-# Advanced parameters. Usually the defaults values (check through the --help option) are enough.
-# =============================================================================================
+# ====================================================================================== 
+# Advanced parameters. Commented out, as usually the defaults values are enough. You can 
+# check what the default values are set to by running VIG with the --help option.
+# ======================================================================================
 
-fixed <table1.col1> <table2.col2> ...  	 # Manually specified fixed-domain columns. OBDA-mode only.
-non-fixed <table1.col1> <table2.col2> ...# Manually specified non fixed-domain columns. OBDA-mode only.
+# random-gen [true|false]                  # If true, then the generator will behave as a pure 
+                                           # random generator. DB-mode only.
+
+# fixed <table1.col1> <table2.col2> ...    # Manually specified fixed-domain columns. OBDA-mode only.
+# non-fixed <table1.col1> <table2.col2> ...# Manually specified non fixed-domain columns. OBDA-mode only.
 
 # Time (ms) allowed for the columns-cluster analysis. Given a columns cluster {A,B,C} of columns A, B, 
 # and C,VIG tries to compute the cardinality of all possible intersections between these three columns,
 # namely AB, AC, BC and ABC. If timeout is reached, say, while evaluating cardinality of the intersection
 # ABC, then such cardinality is assumed to be zero (hence, no value will be generated in the intersection 
 # of the columns A,B, and C). OBDA-mode only.
-cc-timeout <value>					  	 
+# cc-timeout <value>                       
 
-tables <table1> <table2> ...			 # Generate only the specified tables.
-columns <table1.col1> <table2.col2> ...  # Generate only the specified columns. 
+# tables <table1> <table2> ...             # Generate only the specified tables.
+# columns <table1.col1> <table2.col2> ...  # Generate only the specified columns. 
 ~~~~~~
 
 If `mode` is set to OBDA, then the connection parameters must be set **ALSO** in the specified `obda-file`.

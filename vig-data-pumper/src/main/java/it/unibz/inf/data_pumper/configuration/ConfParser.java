@@ -33,25 +33,14 @@ import java.util.List;
  */
 public class ConfParser {
 
-  protected String confFile;
+  protected final String confFile = "configuration.conf";
   private static ConfParser instance = null;
 
-  private ConfParser(String confFile) {
-    this.confFile = confFile;
-  }
-
-  ;
-
-  public static ConfParser makeInstance(String confFile) {
-    if (instance == null) {
-      instance = new ConfParser(confFile);
-    }
-    return instance;
-  }
+  private ConfParser() { }
 
   public static ConfParser getInstance() {
     if (instance == null) {
-      throw new DebugException("ConfParser.getInstance() should be called after a call to the method makeInstance()");
+      instance = new ConfParser();
     }
     return instance;
   }
