@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <databaseModel>
-    <scaleFactor>1.0</scaleFactor>
+    <scaleFactor>2.0</scaleFactor>
     <tables>
         <table name="offer">
             <size>0</size>
@@ -9,31 +9,31 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="product">
-                <dupsRatio>0.950075089931488</dupsRatio>
+                <dupsRatio>0.9500449895858765</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="producer">
-                <dupsRatio>0.9989489316940308</dupsRatio>
+                <dupsRatio>0.9989699721336365</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="vendor">
-                <dupsRatio>0.9994744658470154</dupsRatio>
+                <dupsRatio>0.9995049834251404</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="price">
-                <dupsRatio>0.006231231149286032</dupsRatio>
+                <dupsRatio>0.09448999911546707</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="validFrom">
-                <dupsRatio>0.9858858585357666</dupsRatio>
+                <dupsRatio>0.9990599751472473</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="validTo">
-                <dupsRatio>0.9866366386413574</dupsRatio>
+                <dupsRatio>0.9991000294685364</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="deliveryDays">
-                <dupsRatio>0.9993243217468262</dupsRatio>
+                <dupsRatio>0.9999499917030334</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="offerWebpage">
@@ -41,11 +41,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publisher">
-                <dupsRatio>0.9994744658470154</dupsRatio>
+                <dupsRatio>0.9995049834251404</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publishDate">
-                <dupsRatio>0.9926426410675049</dupsRatio>
+                <dupsRatio>0.9995099902153015</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
@@ -56,7 +56,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="name">
-                <dupsRatio>0.0</dupsRatio>
+                <dupsRatio>0.026656214147806168</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="mbox_sha1sum">
@@ -68,11 +68,11 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publisher">
-                <dupsRatio>0.9969325065612793</dupsRatio>
+                <dupsRatio>0.9978439807891846</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publishDate">
-                <dupsRatio>0.7116564512252808</dupsRatio>
+                <dupsRatio>0.9813798666000366</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
@@ -103,7 +103,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publishDate">
-                <dupsRatio>0.0</dupsRatio>
+                <dupsRatio>0.04854368790984154</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
@@ -114,7 +114,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="label">
-                <dupsRatio>0.0015015015378594398</dupsRatio>
+                <dupsRatio>0.004800000227987766</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="comment">
@@ -122,32 +122,32 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="producer">
-                <dupsRatio>0.9789789915084839</dupsRatio>
+                <dupsRatio>0.9793999791145325</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="propertyNum1">
-                <dupsRatio>0.17867867648601532</dupsRatio>
+                <dupsRatio>0.8091999888420105</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="propertyNum2">
-                <dupsRatio>0.1921921968460083</dupsRatio>
+                <dupsRatio>0.8101999759674072</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="propertyNum3">
-                <dupsRatio>0.17717717587947845</dupsRatio>
+                <dupsRatio>0.8091999888420105</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="propertyNum4">
-                <dupsRatio>0.03303303197026253</dupsRatio>
-                <nullsRatio>0.5300300121307373</nullsRatio>
+                <dupsRatio>0.3303000032901764</dupsRatio>
+                <nullsRatio>0.5001999735832214</nullsRatio>
             </column>
             <column name="propertyNum5">
-                <dupsRatio>0.06456456333398819</dupsRatio>
-                <nullsRatio>0.45945945382118225</nullsRatio>
+                <dupsRatio>0.37310001254081726</dupsRatio>
+                <nullsRatio>0.45410001277923584</nullsRatio>
             </column>
             <column name="propertyNum6">
-                <dupsRatio>0.012012012302875519</dupsRatio>
-                <nullsRatio>0.7852852940559387</nullsRatio>
+                <dupsRatio>0.08410000056028366</dupsRatio>
+                <nullsRatio>0.7968000173568726</nullsRatio>
             </column>
             <column name="propertyTex1">
                 <dupsRatio>0.0</dupsRatio>
@@ -163,22 +163,22 @@
             </column>
             <column name="propertyTex4">
                 <dupsRatio>0.0</dupsRatio>
-                <nullsRatio>0.5210210084915161</nullsRatio>
+                <nullsRatio>0.4982999861240387</nullsRatio>
             </column>
             <column name="propertyTex5">
                 <dupsRatio>0.0</dupsRatio>
-                <nullsRatio>0.4669669568538666</nullsRatio>
+                <nullsRatio>0.4481000006198883</nullsRatio>
             </column>
             <column name="propertyTex6">
                 <dupsRatio>0.0</dupsRatio>
-                <nullsRatio>0.782282292842865</nullsRatio>
+                <nullsRatio>0.8019999861717224</nullsRatio>
             </column>
             <column name="publisher">
-                <dupsRatio>0.9789789915084839</dupsRatio>
+                <dupsRatio>0.9793999791145325</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publishDate">
-                <dupsRatio>0.12762762606143951</dupsRatio>
+                <dupsRatio>0.7738000154495239</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
@@ -189,7 +189,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="label">
-                <dupsRatio>0.001398601452820003</dupsRatio>
+                <dupsRatio>0.006464492995291948</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="comment">
@@ -197,22 +197,22 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publisher">
-                <dupsRatio>0.9996503591537476</dupsRatio>
+                <dupsRatio>0.9999049305915833</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publishDate">
-                <dupsRatio>0.9884615540504456</dupsRatio>
+                <dupsRatio>0.9968628287315369</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
         <table name="productfeatureproduct">
             <size>0</size>
             <column name="product">
-                <dupsRatio>0.960281491279602</dupsRatio>
+                <dupsRatio>0.9529061317443848</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="productFeature">
-                <dupsRatio>0.8427957892417908</dupsRatio>
+                <dupsRatio>0.9507634043693542</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
@@ -231,15 +231,15 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="parent">
-                <dupsRatio>0.8545454740524292</dupsRatio>
-                <nullsRatio>0.0181818176060915</nullsRatio>
+                <dupsRatio>0.7750759720802307</dupsRatio>
+                <nullsRatio>0.0030395137146115303</nullsRatio>
             </column>
             <column name="publisher">
-                <dupsRatio>0.9818181991577148</dupsRatio>
+                <dupsRatio>0.996960461139679</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publishDate">
-                <dupsRatio>0.5090909004211426</dupsRatio>
+                <dupsRatio>0.8996960520744324</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
@@ -250,7 +250,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="productType">
-                <dupsRatio>0.9279279112815857</dupsRatio>
+                <dupsRatio>0.974399983882904</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
@@ -261,19 +261,19 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="product">
-                <dupsRatio>0.9009009003639221</dupsRatio>
+                <dupsRatio>0.9010000228881836</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="producer">
-                <dupsRatio>0.9978979229927063</dupsRatio>
+                <dupsRatio>0.9979400038719177</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="person">
-                <dupsRatio>0.9510510563850403</dupsRatio>
+                <dupsRatio>0.9490299820899963</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="reviewDate">
-                <dupsRatio>0.945195198059082</dupsRatio>
+                <dupsRatio>0.9963499903678894</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="title">
@@ -289,27 +289,27 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="rating1">
-                <dupsRatio>0.7063062787055969</dupsRatio>
-                <nullsRatio>0.2921921908855438</nullsRatio>
+                <dupsRatio>0.6985200047492981</dupsRatio>
+                <nullsRatio>0.3013800084590912</nullsRatio>
             </column>
             <column name="rating2">
-                <dupsRatio>0.6984984874725342</dupsRatio>
-                <nullsRatio>0.30000001192092896</nullsRatio>
+                <dupsRatio>0.7033699750900269</dupsRatio>
+                <nullsRatio>0.29653000831604004</nullsRatio>
             </column>
             <column name="rating3">
-                <dupsRatio>0.6929429173469543</dupsRatio>
-                <nullsRatio>0.3055555522441864</nullsRatio>
+                <dupsRatio>0.6986200213432312</dupsRatio>
+                <nullsRatio>0.3012799918651581</nullsRatio>
             </column>
             <column name="rating4">
-                <dupsRatio>0.7001501321792603</dupsRatio>
-                <nullsRatio>0.2983483374118805</nullsRatio>
+                <dupsRatio>0.7002000212669373</dupsRatio>
+                <nullsRatio>0.299699991941452</nullsRatio>
             </column>
             <column name="publisher">
-                <dupsRatio>0.9998498558998108</dupsRatio>
+                <dupsRatio>0.9998900294303894</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publishDate">
-                <dupsRatio>0.9481981992721558</dupsRatio>
+                <dupsRatio>0.9963600039482117</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>
@@ -340,7 +340,7 @@
                 <nullsRatio>0.0</nullsRatio>
             </column>
             <column name="publishDate">
-                <dupsRatio>0.0</dupsRatio>
+                <dupsRatio>0.3333333432674408</dupsRatio>
                 <nullsRatio>0.0</nullsRatio>
             </column>
         </table>

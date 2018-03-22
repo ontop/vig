@@ -97,14 +97,14 @@ public class VigMain extends VigOptionsInterface {
     // Stats
     ExecutionStatisticsProfiler.printStats();
 
-    // Create xml model
-    dbModelCreator = DatabaseModelCreator.INSTANCE;
-    DatabaseModel model = dbModelCreator.createXmlModel(conf.scale());
-    try {
-      dbModelCreator.printModelToFile(model);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    // Create xml model TODO: Do this
+//    dbModelCreator = DatabaseModelCreator.INSTANCE;
+//    DatabaseModel model = dbModelCreator.createXmlModel(conf.scale());
+//    <></>ry {
+//    dbModelCreator.printModelToFile(model);
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
   }
 
   /**
@@ -133,7 +133,7 @@ public class VigMain extends VigOptionsInterface {
               optNonFixedList.parsed() ? Helpers.parseListToQualifiedNames(optNonFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.fixed()),
               optCCAnalysisTimeout.parsed() ? optCCAnalysisTimeout.getValue() : cP.ccAnalysisTimeout().equals("") ? optCCAnalysisTimeout.getValue() : Helpers.parseInt(cP.ccAnalysisTimeout()),
               optScaling.parsed() ? optScaling.getValue() : cP.scale().equals("") ? optScaling.getValue() : Helpers.parseInt(cP.scale()),
-              optResources.parsed() ? optResources.getValue() : cP.resources().equals("") ? optResources.getValue() : cP.resources(),
+//              optResources.parsed() ? optResources.getValue() : cP.resources().equals("") ? optResources.getValue() : cP.resources(),
               optConfig.getValue(),
               optTables.parsed() ? Helpers.parseListToQualifiedNames(optTables.getValue()) : Helpers.parseListToQualifiedNames(cP.tables()),
               optColumns.parsed() ? Helpers.parseListToQualifiedNames(optColumns.getValue()) : Helpers.parseListToQualifiedNames(cP.columns())

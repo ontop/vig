@@ -12,8 +12,8 @@ import it.unibz.inf.vig_options.ranges.StringRange;
 public abstract class VigOptionsInterface {
     // Options
     protected static final DoubleOption optScaling = new DoubleOption("--scale", "It specifies the scaling factor", "PUMPER", 1, new DoubleRange(0, Double.MAX_VALUE, false, true));	
-    protected static final StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "resources");
-    protected static final StringOption optConfig = new StringOption("--conf", "Name of the configuration file", "CONFIGURATION", "resources/configuration.conf");
+//    protected static final StringOption optResources = new StringOption("--res", "Location of the resources directory", "CONFIGURATION", "resources");
+    protected static final StringOption optConfig = new StringOption("--conf", "Location of the configuration file", "CONFIGURATION", "resources/configuration.conf");
     protected static final StringOption optTables = new StringOption("--tables", "Restrict the generation to a list of tables. E.g., --tables=table1,table2,table3,etc.", "PUMPER", "");
     protected static final StringOption optColumns = new StringOption("--columns", "Restrict the generation to a list of columns. E.g., --columns=table1.col1,table2.col2,etc.", "PUMPER", "");
 
