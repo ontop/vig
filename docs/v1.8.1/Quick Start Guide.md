@@ -31,8 +31,7 @@ mode ODBA                              # DB or OBDA. Since VIG 1.1, OBDA mode IS
                                        # OBDA mode reads also statistics from the mappings, and 
                                        # supports fixed-domain columns. 
 fixed table1.col1 table2.col2 etc.     # Manually specified fixed-domain columns
-non-fixed table1.col1 table2.col2 etc. # Manually specified non fixed-domain columns. 
-                                       
+non-fixed table1.col1 table2.col2 etc. # Manually specified non fixed-domain columns.                                        
 ~~~~~~
 
 If `mode` is set to OBDA, then the connection parameters must be set **ALSO** in the specified `obda-file`.
