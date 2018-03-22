@@ -28,7 +28,7 @@ public abstract class VigOptionsInterface {
     protected static final StringOption optMappingsFile = new StringOption("--mappings", "Path to the Mappings File. This parameter is mandatory in OBDA-mode", "PUMPER", "");
     protected static final StringOptionWithRange optMode = new StringOptionWithRange("--mode", "The mode of generation. "
 	    + "One of: Database statistics only mode (DB), or Database statistics and Mappings analysis mode (OBDA).", "PUMPER", "OBDA", new StringRange("[DB,OBDA]"));
-    protected static final IntOption optCCAnalysisTimeout = new IntOption("--ccAnalysisTimeout", "Timeout allowed to the columns-cluster analysis, in seconds. "
+    protected static final IntOption optCCAnalysisTimeout = new IntOption("--cc-timeout", "Timeout allowed to the columns-cluster analysis, in seconds. "
 	    + "To be used in combination with `OBDA` mode.", "PUMPER", 60, new IntRange(0, Integer.MAX_VALUE, true, true));    
     protected static final StringOption optFixedList = new StringOption("--fixed", "Space-separated list of fully qualified column names (e.g., tableName.colName) declared as `fixed domain`, "
 	    + "that is, attribute names for which "

@@ -7,40 +7,40 @@ import java.io.PrintWriter;
 
 public class LogToFile {
 
-    final static String LOGPATH = "src/main/resources/csvs/"; // TODO: Make this a parameter
-    final static int FLUSH_INTERVAL = 10000;
+  final static String LOGPATH = "src/main/resources/csvs/"; // TODO: Make this a parameter
+  final static int FLUSH_INTERVAL = 10000;
 
-    PrintWriter outCSV = null; 
+  PrintWriter outCSV = null;
 
-    private static LogToFile instance = null;
-    private long cnt;
+  private static LogToFile instance = null;
+  private long cnt;
 
-    private LogToFile(){cnt = 0;}
+  private LogToFile(){cnt = 0;}
 
-    public static LogToFile getInstance(){
-	if( instance == null ) instance = new LogToFile();
-	return instance;
+  public static LogToFile getInstance(){
+    if( instance == null ) instance = new LogToFile();
+    return instance;
+  }
+
+  public void openFile(String fileName) throws IOException{
+    outCSV = new PrintWriter(new BufferedWriter(new FileWriter(LOGPATH + fileName)));
+  }
+
+  public void appendLine( String line ){
+    outCSV.println(line);
+    ++cnt;
+    if( cnt % FLUSH_INTERVAL == 0 ) outCSV.flush();
+  }
+
+  public void closeFile(){
+    if( outCSV != null ){
+      outCSV.flush();
+      outCSV.close();
     }
+  }
 
-    public void openFile(String fileName) throws IOException{
-	outCSV = new PrintWriter(new BufferedWriter(new FileWriter(LOGPATH + fileName)));
-    }
-
-    public void appendLine( String line ){
-	outCSV.println(line);
-	++cnt;
-	if( cnt % FLUSH_INTERVAL == 0 ) outCSV.flush();
-    }
-
-    public void closeFile(){
-	if( outCSV != null ){ 
-	    outCSV.flush();
-	    outCSV.close();
-	}
-    }
-
-    public void flush(){
-	outCSV.flush();
-    }
+  public void flush(){
+    outCSV.flush();
+  }
 
 };

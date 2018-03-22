@@ -144,15 +144,11 @@ public class ConfParser {
   }
 
   public String ccAnalysisTimeout() throws IOException {
-    return searchTag("ccAnalysisTimeout");
+    return searchTag("cc-timeout");
   }
 
   public String scale() throws IOException {
     return searchTag("scale");
-  }
-
-  public String resources() throws IOException {
-    return searchTag("resources");
   }
 
   public String tables() throws IOException {
