@@ -8,6 +8,7 @@ import it.unibz.inf.vig_mappings_analyzer.core.utils.QualifiedName;
 
 public class Conf {
 
+  private String resources;
   private String jdbcConnector;
   private String dbUrl;
   private String dbUser;
@@ -23,10 +24,11 @@ public class Conf {
   private List<QualifiedName> tables;
   private List<QualifiedName> columns;
 
-  public Conf(String jdbcConnector, String dbUrl, String dbUser, String dbPwd, boolean randomGen, String mappingsFile,
+  public Conf(String resources, String jdbcConnector, String dbUrl, String dbUser, String dbPwd, boolean randomGen, String mappingsFile,
               PumperType pumperType, List<QualifiedName> fixed, List<QualifiedName> nonFixed, int ccAnalysisTimeout, double scale,
                List<QualifiedName> tables, List<QualifiedName> columns) {
     super();
+    this.resources = resources;
     this.jdbcConnector = jdbcConnector;
     this.dbUrl = dbUrl;
     this.dbUser = dbUser;

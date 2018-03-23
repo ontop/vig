@@ -122,6 +122,7 @@ public class VigMain extends VigOptionsInterface {
     Conf conf = null;
     try {
       conf = new Conf(
+              optRes.getValue(),
               optJdbcConnector.parsed() ? optJdbcConnector.getValue() : cP.jdbcConnector().equals("") ? optJdbcConnector.getValue() : cP.jdbcConnector(),
               optDbUrl.parsed() ? optDbUrl.getValue() : cP.dbUrl(),
               optDbUser.parsed() ? optDbUser.getValue() : cP.dbUser(),

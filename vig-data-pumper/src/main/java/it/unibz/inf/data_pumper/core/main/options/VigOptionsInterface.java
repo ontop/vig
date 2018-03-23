@@ -12,8 +12,8 @@ import it.unibz.inf.vig_options.ranges.StringRange;
 public abstract class VigOptionsInterface {
 
     // Configuration
-    protected static final StringOption optJdbcConnector =
-            new StringOption("--jdbc", "Database Driver Class", "Configuration", "configuration.conf");
+    protected static final StringOption optRes =
+            new StringOption("--res", "Resources Folder", "Mandatory", "resources");
 
     // Options
     protected static final DoubleOption optScaling =
@@ -30,7 +30,7 @@ public abstract class VigOptionsInterface {
 
     // DB Connection
     protected static final StringOption optJdbcConnector =
-            new StringOption("--jdbc", "Database Driver Class", "Mandatory", "");
+            new StringOption("--jdbc", "Database Connector", "Mandatory", "jdbc:mysql");
     protected static final StringOption optDbUrl =
             new StringOption("--db-url", "Database URL.", "Mandatory", "");
     protected static final StringOption optDbUser =
