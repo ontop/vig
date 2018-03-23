@@ -38,9 +38,10 @@ public class PumpFullDatabase {
     TestDatabaseCreator creator = new TestDatabaseCreator( npdConsts );
     creator.createTestDatabase();
 
-    String[] parameters = new String[2];
-    parameters[0] = parScale;
-    parameters[1] = parNpdDbConf;
+    String[] parameters = new String[1];
+//    parameters[0] = parScale;
+
+    parameters[0] = parNpdDbConf;
 	
     VigMain.main(parameters);// That is, pump with size 1
 
@@ -65,7 +66,7 @@ public class PumpFullDatabase {
 
       }
       SQLScriptsExecuter.loadCsvsToDB( npdConsts );
-      System.out.println("Check Fkeys for " + parameters[1]);
+      System.out.println("Check Fkeys for " + parameters[0]);
       SQLScriptsExecuter.checkForeignKeys( npdConsts );
     } catch (IOException e) {
       throw new RuntimeException(e);

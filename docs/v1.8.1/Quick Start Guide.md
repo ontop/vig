@@ -182,21 +182,36 @@ $ mysql --user="username" --host="address" --password="password" npdSource < npd
 
 ~~~
 jdbc-connector jdbc:mysql
-database-url localhost/db_name
+database-url db_host/db_name
 database-user user
 database-pwd pwd
 mode OBDA
-obda-file src/main/resources/npd-v2-ql_a.obda
+obda-file resources/npd-v2-ql_a.obda
 scale 2
 ~~~
 
-4) Run VIG, specifying the location of the __resources__ folder and the __desired scaling factor__ for the target database, e.g. a scaling factor of two times---each table T in the schema will contain nRows(T)*2 rows, where nRows(T) is the number of rows that T contains in the source database.
+In our configuration, we have set up the scaling factor to 2 through the parameter `scale 2`.
+
+5) If we have set the mode to OBDA, as in our example, then we need to put mappings in the location we specified in the configuration file (`resources/npd-v2-ql_a.obda` in our example). Morover, we need to set up the connection parameters in the mappings file:
+
+~~~
+[SourceDeclaration]
+sourceUri	http://sws.ifi.uio.no/vocab/npd-v2
+connectionUrl	jdbc:mysql://db_host/db_name
+username	user
+password	pwd
+driverClass	com.mysql.jdbc.Driver
+~~~
+
+4) We are now ready to run VIG, specifying the location of the __resources__ folder.
 
 ~~~~~~~~
-$ java -jar vig.jar --res=resources --scale=2
+$ java -jar vig.jar --res="resources"
 ~~~~~~~~
 
-5) The csv files will be generated in the directory vig-distribution/target/src/main/resources/csvs/.
+5) The csv files will be generated in the directory `resources/csvs`.
+
+6) Import the csv files in the RDBMS.
 If `mode` is set to OBDA, then the connection parameters must be set **ALSO** in the specified `obda-file`.
 
 ### Command Line Options

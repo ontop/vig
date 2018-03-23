@@ -133,7 +133,7 @@ public class VigMain extends VigOptionsInterface {
               optFixedList.parsed() ? Helpers.parseListToQualifiedNames(optFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.fixed()),
               optNonFixedList.parsed() ? Helpers.parseListToQualifiedNames(optNonFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.fixed()),
               optCCAnalysisTimeout.parsed() ? optCCAnalysisTimeout.getValue() : cP.ccAnalysisTimeout().equals("") ? optCCAnalysisTimeout.getValue() : Helpers.parseInt(cP.ccAnalysisTimeout()),
-              optScaling.parsed() ? optScaling.getValue() : cP.scale().equals("") ? optScaling.getValue() : Helpers.parseInt(cP.scale()),
+              optScaling.parsed() ? optScaling.getValue() : cP.scale().equals("") ? optScaling.getValue() : (Double.parseDouble(cP.scale())),
               optTables.parsed() ? Helpers.parseListToQualifiedNames(optTables.getValue()) : Helpers.parseListToQualifiedNames(cP.tables()),
               optColumns.parsed() ? Helpers.parseListToQualifiedNames(optColumns.getValue()) : Helpers.parseListToQualifiedNames(cP.columns())
       );
