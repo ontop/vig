@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 
 public class LogToFile {
 
-  private String res;
   final static int FLUSH_INTERVAL = 10000;
 
   PrintWriter outCSV = null;
@@ -17,30 +16,18 @@ public class LogToFile {
   private static LogToFile instance = null;
   private long cnt;
 
-  private LogToFile(Builder builder){
-    this.res = builder.res;
+  private LogToFile(){
     this.cnt = 0;
   }
 
-  public static class Builder {
-    private String res;
-    public Builder setResources(String resourcesPath){
-      this.res = resourcesPath;
-      return this;
-    }
-
-    public LogToFile build(){
-      return new LogToFile(this);
-    }
-  }
-
   public static LogToFile getInstance(){
-    if( instance == null ) throw new DebugException("LogToFile not initialized");
+    if( instance == null )
+      instance = new LogToFile();
     return instance;
   }
 
-  public void openFile(String fileName) throws IOException{
-    outCSV = new PrintWriter(new BufferedWriter(new FileWriter(res + fileName)));
+  public void openFile(String filePath) throws IOException{
+    outCSV = new PrintWriter(new BufferedWriter(new FileWriter(filePath)));
   }
 
   public void appendLine( String line ){

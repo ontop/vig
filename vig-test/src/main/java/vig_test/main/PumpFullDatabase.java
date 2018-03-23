@@ -11,9 +11,9 @@ import vig_test_unit_scripts.SQLScriptsExecuter;
 public class PumpFullDatabase {
 
   private static final String PAR_SCALE = "--scale=1";
-  private static final String PAR_NPD_OBDA_CONF = "--conf=src/main/resources/configuration-npd-obda.conf";
-  private static final String PAR_NPD_DB_CONF = "--conf=src/main/resources/configuration-npd-db.conf";
-  private static final String PAR_NPD_RAND_CONF = "--conf=src/main/resources/configuration-npd-rand.conf";
+  private static final String PAR_NPD_OBDA_CONF = "--res=src/main/resources/npd-obda";
+  private static final String PAR_NPD_DB_CONF = "--res=src/main/resources/npd-db";
+  private static final String PAR_NPD_RAND_CONF = "--res=src/main/resources/npd-rand";
 
   public static void main( String[] args ){
 
@@ -27,8 +27,8 @@ public class PumpFullDatabase {
 
   private static void npdTests() {
 
-    npdTestsOfType(PAR_SCALE, PAR_NPD_DB_CONF);
-//	npdTestsOfType(PAR_SCALE, PAR_NPD_OBDA_CONF);
+//    npdTestsOfType(PAR_SCALE, PAR_NPD_DB_CONF);
+	npdTestsOfType(PAR_SCALE, PAR_NPD_OBDA_CONF);
 //  npdTestsOfType(PAR_SCALE, PAR_NPD_RAND_CONF);
   }
 
@@ -46,6 +46,24 @@ public class PumpFullDatabase {
 
     // Take the csvs, and load them into the database
     try {
+      switch( parNpdDbConf ){
+        case PAR_NPD_DB_CONF :
+          Process p = Runtime.getRuntime().exec("ls");
+          SQLScriptsExecuter.printErrorAndOutputStream(p);
+          p = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", "cp src/main/resources/npd-db/csvs/* src/main/resources/csvs/"});
+          SQLScriptsExecuter.printErrorAndOutputStream(p);
+          break;
+        case PAR_NPD_OBDA_CONF :
+          p = Runtime.getRuntime().exec( "cp src/main/resources/npd-obda/csvs/* src/main/resources/csvs/" );
+          SQLScriptsExecuter.printErrorAndOutputStream(p);
+          break;
+        case PAR_NPD_RAND_CONF :
+          p = Runtime.getRuntime().exec( "cp src/main/resources/npd-rand/csvs/* src/main/resources/csvs/" );
+          SQLScriptsExecuter.printErrorAndOutputStream(p);
+          break;
+        default :
+
+      }
       SQLScriptsExecuter.loadCsvsToDB( npdConsts );
       System.out.println("Check Fkeys for " + parameters[1]);
       SQLScriptsExecuter.checkForeignKeys( npdConsts );

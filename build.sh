@@ -51,17 +51,21 @@ mvn assembly:single
 cd ..
 echo 
 echo
-echo "[SCRIPT] Creating folder ${PWD}/csvs"
-mkdir -p csvs
-echo "[SCRIPT] Creating template configuration file ${PWD}/configuration.conf" 
-createConfFile > configuration.conf
+echo "[SCRIPT] Creating resources folder ${PWD}/resources"
+mkdir -p resources
 echo
-echo "[SCRIPT] Creating file ${PWD}/vig.jar"
+echo "[SCRIPT] Creating csvs folder ${PWD}/resources/csvs"
+mkdir -p resources/csvs
+echo "[SCRIPT] Creating template configuration file in ${PWD}/resources/configuration.conf" 
+createConfFile > "resources/configuration.conf"
+echo
+echo "[SCRIPT] Creating jar file ${PWD}/vig.jar"
 mv 'vig-distribution/target/vig-distribution-1.8.1-jar-with-dependencies.jar' 'vig.jar'
 echo "[SCRIPT] Installation completed."
 echo "[SCRIPT] This is your config information:"
 echo
-echo "[SCRIPT] configuration file:    ${PWD}/configuration.conf"
-echo "[SCRIPT] csvs folder:           ${PWD}/csvs"
+echo "[SCRIPT] resources folder:      ${PWD}/resources"
+echo "[SCRIPT] configuration file:    ${PWD}/resources/configuration.conf"
+echo "[SCRIPT] csvs folder:           ${PWD}/resources/csvs"
 echo
-echo "[SCRIPT] Before the first run, set up the configuration in ${PWD}/configuration.conf"
+echo "[SCRIPT] Before the first run, set up the configuration in ${PWD}/resources/configuration.conf"

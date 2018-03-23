@@ -45,7 +45,7 @@ public class DatabasePumperOBDA extends DatabasePumperDB {
     public DatabasePumperOBDA( Conf conf ) {
 	super(conf);	
 	try {
-	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel( ConfParser.getInstance().mappingsFile() );
+	    OBDAModel model = OBDAModelFactory.getSingletonOBDAModel( conf.mappingsFile() );
 	    DBMetadata meta = OBDAModelFactory.makeDBMetadata(model);
 	    
 	    fixedDomainCols = FixedDomColsFinder.makeInstance(model, meta).findFixedDomainCols();

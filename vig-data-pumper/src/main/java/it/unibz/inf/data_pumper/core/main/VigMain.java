@@ -117,7 +117,7 @@ public class VigMain extends VigOptionsInterface {
     Option.parseOptions(args);
     // PumperType.valueOf(...
 
-    ConfParser cP = ConfParser.getInstance();
+    ConfParser cP = ConfParser.getInstance(optRes.getValue());
     // Priority: shell - conf - shell-default
     Conf conf = null;
     try {

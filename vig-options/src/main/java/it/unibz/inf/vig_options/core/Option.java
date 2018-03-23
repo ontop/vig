@@ -145,9 +145,9 @@ public abstract class Option {
       @Override
       public int compare(Option o1, Option o2) {
         if (o1.category.compareTo(o2.category) == 0) {
-          return o1.typeName.compareTo(o2.typeName);
+          return o2.typeName.compareTo(o1.typeName);
         }
-        return o1.category.compareTo(o2.category);
+        return o2.category.compareTo(o1.category);
       }
     });
   }

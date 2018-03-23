@@ -44,6 +44,9 @@ public class Conf {
     this.columns = columns;
   }
 
+  /** Resources Folder **/
+  public String getResources() { return this.resources; }
+
   /** Restrict the generation to a list of columns. E.g., --columns="table1.col1 table2.col" **/
   public List<QualifiedName> restrictToColumns() {
     return this.columns;
@@ -55,9 +58,9 @@ public class Conf {
   }
 
   /** Path to the configuration file **/
-  public String configurationFile() {
-    return this.configurationFile;
-  }
+//  public String configurationFile() {
+//    return this.configurationFile;
+//  }
 
   /** It specifies the scaling factor **/
   public double scale() {

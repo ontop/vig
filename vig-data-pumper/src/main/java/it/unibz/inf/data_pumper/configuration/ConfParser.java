@@ -33,14 +33,16 @@ import java.util.List;
  */
 public class ConfParser {
 
-  protected final String confFile = "configuration.conf";
+  protected final String confFile;
   private static ConfParser instance = null;
 
-  private ConfParser() { }
+  private ConfParser(String resources) {
+    this.confFile = resources + "/" + "configuration.conf";
+  }
 
-  public static ConfParser getInstance() {
+  public static ConfParser getInstance(String resources) {
     if (instance == null) {
-      instance = new ConfParser();
+      instance = new ConfParser(resources);
     }
     return instance;
   }
