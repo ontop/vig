@@ -23,6 +23,6 @@ For restriction and limitations, refer to [here](Restrictions).
 
 Check [here](Troubleshooting) for troubleshooting.
 
-## Coming Soon ...
+## Changelog
 
-For a list of the new features currently under development, refer to [Development](CHANGELOG.md) page.
+Check the [Changelog](CHANGELOG.md) page.
