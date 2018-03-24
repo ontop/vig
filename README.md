@@ -5,20 +5,9 @@ VIG is a [data scaler](http://www.vldb.org/pvldb/vol4/p1470-tay.pdf) specificall
 
 VIG is currently the official data scaler of the [NPD benchmark](https://github.com/ontop/npd-benchmark). 
 
-Build JAR
+Download, Configure, and Run
 ----
-
-VIG is bundled as a maven project, therefore it can be built using the standard maven commands. We provide a bash script to save time:
-
-~~~
-$ bash build.sh
-~~~
-
-The jar (with dependencies) containing the application will be generated under the vig-distribution/target folder.
-
-Configure and Run
-----
-Before running, a few things need to be configured. Please refer to the documentation (http://ontop.github.io/vig/ or `docs` folder) for more information. 
+Please refer to the documentation (http://ontop.github.io/vig/ or `docs` folder) for more information. 
 
 Publications
 ----
