@@ -1,4 +1,4 @@
-## Supported Databases (as input)
+## Supported Input Databases
 
 * MySQL
 

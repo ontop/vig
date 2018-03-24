@@ -1,4 +1,5 @@
-# VIG Performance
+VIG Performance
+---
 
 We here report the generation times that we encountered for producing data for the NPD Benchmark. 
 

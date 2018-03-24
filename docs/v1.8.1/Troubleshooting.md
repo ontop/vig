@@ -1,4 +1,5 @@
-# Troubleshooting
+Troubleshooting
+---
 
 A list of common issues and possible solutions:
 

@@ -1,6 +1,5 @@
-### Supported Datatypes
-
-[Supported datatypes](Supported-Datatypes.md)
+Changelog
+---
 
 ### VIG v1.8.0
 

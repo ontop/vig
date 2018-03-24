@@ -1,3 +1,6 @@
+How to Use VIG in an OBDA Benchmark
+---
+
 Under the Semantic Web view of OBDA, OBDA systems take as input an OWL 2 QL ontology (TBox), a database instance over some database schema, and a mapping file that relates queries over the database to assertions in the ontology (ABox). 
 
 Benchmarks for OBDA systems should ideally give means to perform scalability analyses with respect to each of these measures of the input. The [NPD benchmark](https://github.com/ontop/npd-benchmark) allows for scalability analyses with respect to the size of the data component by using VIG to scale a real-world data instance containing data from the [NPD FactPages](http://factpages.npd.no/factpages/).

@@ -1,4 +1,5 @@
-# Characteristics of the Data Produced by VIG
+Characteristics of the Data Produced by VIG
+---
 
 We here explain how VIG scales up an initial data instance through an example based on the NPD benchmark. The example is constructed upon the following components:
 

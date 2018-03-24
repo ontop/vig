@@ -1,4 +1,5 @@
-# Parallelization Support
+Parallelization Support
+---
 
 VIG provides a command line parameter that restricts the data to be generated to a granularity up to the level of a single column in the database.
 
