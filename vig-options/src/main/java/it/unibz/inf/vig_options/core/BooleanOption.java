@@ -23,18 +23,17 @@ public class BooleanOption extends Option {
 
 	protected boolean value;
 	
-	protected BooleanOption(String name, String description, String category,
-			String typeName, boolean value) {
-		super(name, description, category, typeName);
+	public BooleanOption(String name, String description, String category, boolean value) {
+		super(name, description, category, "<bool>");
 	
 		this.value = value;
 	}
 	
 	/**
-	 *  Does it match with <i>optName<\i> ? 
+	 *  Does it match with optName ? 
 	 */
 	@Override
-	public boolean parse(String toParse) {
+	public boolean parseImpl(String toParse) {
 		
 		String temp = toParse.trim(); // Eliminate whitespaces
 		
@@ -42,10 +41,10 @@ public class BooleanOption extends Option {
 			
 			String tmpValue = temp.substring(name.length()+1);
 			
-			if( tmpValue.equalsIgnoreCase("on") ){
+			if( tmpValue.equalsIgnoreCase("true") ){
 				this.value = true; return true;
 			}
-			else if( tmpValue.equalsIgnoreCase("off") ){
+			else if( tmpValue.equalsIgnoreCase("false") ){
 				this.value = false; return true;
 			}
 
@@ -66,8 +65,8 @@ public class BooleanOption extends Option {
 		builder.append(printSpace(this.name));
 		builder.append(this.typeName);
 		builder.append(printSpace(this.typeName));
-		builder.append("[on -- off]");
-		builder.append(printHugeColSpace("[on -- off]"));
+		builder.append("[true -- false]");
+		builder.append(printHugeColSpace("[true -- false]"));
 		builder.append("(default: ");
 		builder.append(value);
 		builder.append(")");

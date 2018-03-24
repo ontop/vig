@@ -21,7 +21,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 public class StringOption extends Option {
 
-	private String value;
+	protected String value;
 	
 	public StringOption(String name, String description, String category, String value) {
 		super(name, description, category, "<string>");
@@ -30,7 +30,7 @@ public class StringOption extends Option {
 	}
 
 	@Override
-	public boolean parse(String toParse) {
+	public boolean parseImpl(String toParse) {
 		String temp = toParse.trim(); // Eliminate whitespaces
 		
 		if( temp.startsWith(name+"=") ){

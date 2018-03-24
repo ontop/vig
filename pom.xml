@@ -3,9 +3,9 @@
 	<groupId>it.unibz.inf.vig</groupId>
 	<artifactId>vig</artifactId>
 	<packaging>pom</packaging>
-	<version>1.8.0</version>
+	<version>1.8.1</version>
 	<name>vig</name>
-	<url></url>
+	<url />
 
 	<licenses>
 		<license>
@@ -37,15 +37,11 @@
 	</dependencies>
 
 	<modules>
-		<module>dataPumper</module>
-		<!--  <module>csvPlayer</module> -->
-		<!--  <module>tupleSchemaExtractor</module> -->
+		<module>vig-data-pumper</module>
 		<module>vig-options</module>
 		<module>vig-distribution</module>
-		<module>vig-mappings-analyzer-2</module>
-		<!-- <module>vig-test</module> -->
+		<module>vig-mappings-analyzer</module>
 		<module>vig-cpsolver</module>
-		<module>vig-dead</module>
 	</modules>
 
 
@@ -151,7 +147,7 @@
 					</execution>
 				</executions>
 			</plugin>
-            <!-- Uncomment the following block when releasing/deploying
+            <!-- Uncomment the following block when releasing/deploying             
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
@@ -165,7 +161,7 @@
 					</execution>
 				</executions>
 			</plugin>
-            -->
+		-->
 		</plugins>
 	</build>
 

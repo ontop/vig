@@ -1,18 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>it.unibz.inf.vig</groupId>
 		<artifactId>vig</artifactId>
-		<version>1.8.0</version>
+		<version>1.8.1</version>
 	</parent>
 	<artifactId>vig-distribution</artifactId>
 
 	<dependencies>
 		<dependency>
 			<groupId>it.unibz.inf.vig</groupId>
-			<artifactId>dataPumper</artifactId>
-			<version>1.8.0</version>
+			<artifactId>vig-data-pumper</artifactId>
+			<version>1.8.1</version>
 		</dependency>
 	</dependencies>
 
@@ -33,7 +32,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>it.unibz.inf.data_pumper.core.main.Main</mainClass>
+							<mainClass>it.unibz.inf.data_pumper.core.main.VigMain</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

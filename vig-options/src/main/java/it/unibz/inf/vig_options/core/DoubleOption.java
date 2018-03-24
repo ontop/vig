@@ -38,7 +38,7 @@ public class DoubleOption extends Option {
 	 *  Does it match with <i>--optName=valueInRange ?<\i>
 	 */
 	@Override
-	public boolean parse(String toParse) {
+	public boolean parseImpl(String toParse) {
 		
 		String temp = toParse.trim(); // Eliminate whitespaces
 		
