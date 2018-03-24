@@ -38,12 +38,12 @@
 
 	<modules>
 		<module>dataPumper</module>
-		<!-- <module>csvPlayer</module> -->
+		<!--  <module>csvPlayer</module> -->
 		<!--  <module>tupleSchemaExtractor</module> -->
 		<module>vig-options</module>
 		<module>vig-distribution</module>
 		<module>vig-mappings-analyzer-2</module>
-		<module>vig-test</module>
+		<!-- <module>vig-test</module> -->
 		<module>vig-cpsolver</module>
 		<module>vig-dead</module>
 	</modules>

@@ -9,8 +9,6 @@ echo
 else
     mkdir vig-distribution/target/src/
     mkdir vig-distribution/target/src/main
-    
-    cp -r dataPumper/src/main/resources vig-distribution/target/src/main/
 fi
 
 cd vig-distribution/

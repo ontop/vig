@@ -33,3 +33,9 @@ plugin-runtime
 # CSVs
 
 *.csv
+
+# vig-test
+vig-test
+
+# .orig
+*.orig

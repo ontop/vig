@@ -1,29 +1,42 @@
-vig (v 1.8.0)
+Virtual Instances Generator (VIG) (v 1.8.0)
 ===
 
-Virtual Instances Generator
+VIG is a [data scaler](http://www.vldb.org/pvldb/vol4/p1470-tay.pdf) specifically designed for benchmarks of [Ontology-based Data Access (OBDA) systems](https://www.slideshare.net/guohuixiao/ontop-answering-sparql-queries-over-relational-databases) such as [Ontop](https://github.com/ontop/ontop). VIG takes as input a source database instance and a scale factor, and produces a scaled database instance that satisfies the schema constraints and that is “similar” to the source instance according to certain ad-hoc similarity measures. The produced database instance is in form of csv files that can be effectively imported into any relational database management system (RDBMS).
 
-This repository contains the source code for the generator used in the NPD benchmark (https://github.com/ontop/npd-benchmark).
+VIG is currently the official data scaler of the [NPD benchmark](https://github.com/ontop/npd-benchmark). 
 
-The generator is bundled as a multi-module maven (http://maven.apache.org/) project.
-
-Build and JAR
+NOTE
 ----
 
-VIG is bundled as a maven project, therefore it can be built using the standard maven commands. In order to save time, there is a build script that does the job as well.
+The version in the `develop` branch is very close to be released. This version solves several critical issues that are currently present in the latest release (`master` branch). We strongly encourage to use the version in `develop` rather than the latest release. In case of questions, please contact the authors.
 
-$ ./build.sh
+Build JAR
+----
 
-The jar (with dependencies) can then be found under the vig-distribution/target folder.
+VIG is bundled as a maven project, therefore it can be built using the standard maven commands. We provide a bash script to save time:
+
+$ bash build.sh
+
+The jar (with dependencies) containing the application will be generated under the vig-distribution/target folder.
 
 Configure and Run
 ----
-Before running, a few things need to be configured. Please refer to the wiki page (https://github.com/ontop/vig/wiki) for more information. 
+Before running, a few things need to be configured. Please refer to the documentation (http://ontop.github.io/vig/ or `docs` folder) for more information. 
 
 Publications
 ----
+The following list contains a few publications describing VIG. We suggest to skim through them, so as to save time and understand *exactly* how VIG works and what data it can generate for you. 
 
+- [Longest Technical Description and Evaluation of VIG (Submission to SWJ)](http://www.semantic-web-journal.net/content/vig-data-scaling-obda-benchmarks-0)
+- [Long Technical Description and Evaluation of VIG (@BLINK '16)](http://ceur-ws.org/Vol-1700/paper-06.pdf)
 - [Short Technical Description of VIG](https://arxiv.org/abs/1607.06343)
+- [Evaluation of VIG with the BSBM Benchmark (@ISWC Posters '16)](http://ceur-ws.org/Vol-1690/paper82.pdf)
+
+
+Experimental Evaluations
+----
+
+Checkout to the `evaluations/results` branch. Evaluations will be in the "evaluations" folder.
 
 Contacts
 ----------
