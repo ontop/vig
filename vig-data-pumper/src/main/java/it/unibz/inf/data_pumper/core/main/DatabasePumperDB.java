@@ -424,10 +424,14 @@ public class DatabasePumperDB implements DatabasePumper {
     this.fixedDomainCols.addAll(Collections.unmodifiableList(conf.fixed()));
     this.fixedDomainCols.removeAll(Collections.unmodifiableCollection(conf.nonFixed()));
 
+    // Constant: If the datatype length is less than 3, then consider the
+    //           column fixed.
+    // TODO: Parameter?
+    final int MIN_NON_FIXED_DATATYPE_LENGTH = 3;
+
     for (ColumnPumper<? extends Object> cP : listColumns) {
 
-      // TODO Make this thing nicer, and document it
-      if (this.fixedDomainCols.contains(cP.getQualifiedName()) || cP.getDatatypeLength() < 3) {
+      if (this.fixedDomainCols.contains(cP.getQualifiedName()) || cP.getDatatypeLength() < MIN_NON_FIXED_DATATYPE_LENGTH) {
         if (!conf.pureRandom()) cP.setFixed(); // Fixed-domain cols forbidden in pure-random
       }
       cP.fillFirstIntervalBoundaries(cP.getSchema(), dbOriginal);
