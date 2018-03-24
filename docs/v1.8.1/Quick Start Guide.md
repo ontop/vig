@@ -49,8 +49,8 @@ mode <DB|ODBA>
 random-gen [true|false]                    # If true, then the generator will behave as a pure 
                                            # random generator. DB-mode only.
 obda-file <path/mappings.obda>             # The location of the mapping file in .obda format.
-		  								   # IMPORTANT: Connection parameters should be set 
-										   # also in this file. OBDA-mode only.
+                                           # IMPORTANT: Connection parameters should be set 
+                                           # also in this file. OBDA-mode only.
 scale <value>                              # Scaling factor value. Default: 1.0 
 
 # ====================================================================================== 
