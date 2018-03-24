@@ -1,3 +1,0 @@
-mappingId	Mapping:00655:Literal:apaAreaNet:qdrName
-target		npd:quadrant/{qdrName}/block/{blkName}/award/{prvName}/area/{apaAreaNet_id} npdv:quadrantLocation npd:quadrant/{qdrName} . 
-source		SELECT apaAreaNet_id,qdrName,blkName,prvName,blkId FROM apaAreaNet

@@ -15,11 +15,9 @@ database-pwd <pwd>                         # The password for the access to the 
 # The NPD Benchmark, v1.8.0 onwards, should be run in OBDA mode.
 # OBDA mode reads also statistics from the mappings, and supports fixed-domain columns.
 mode <DB|ODBA>
-
-random-gen [true|false]                    # If true, then the generator will behave as a pure 
-                                           # random generator. DB-mode only.
 obda-file <path/mappings.obda>             # The location of the mapping file in .obda format.
-                                           # OBDA-mode only.
+                                           # IMPORTANT: Connection parameters should be set 
+                                           # also in this file. OBDA-mode only.
 scale <value>                              # Scaling factor value. Default: 1.0 
 
 # ====================================================================================== 
@@ -39,6 +37,9 @@ scale <value>                              # Scaling factor value. Default: 1.0
 
 # tables <table1> <table2> ...             # Generate only the specified tables.
 # columns <table1.col1> <table2.col2> ...  # Generate only the specified columns. 
+
+random-gen [true|false]                    # If true, then the generator will behave as a pure 
+                                           # random generator. DB-mode only. Default: false.
 EOF
 }
 
