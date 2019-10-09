@@ -81,10 +81,11 @@
   	<version>1.8.1</version>
   	<scope>compile</scope>
   </dependency>
-  <dependency>
+  <!--<dependency>
   	<groupId>it.unibz.inf.vig</groupId>
   	<artifactId>vig-test-unit</artifactId>
     <version>1.8.1</version>  
   </dependency>
+  !-->
   </dependencies>
 </project>
