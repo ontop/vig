@@ -13,7 +13,7 @@ Publications
 ----
 The following list contains a few publications describing VIG. We suggest to skim through them, so as to save time and understand *exactly* how VIG works and what data it can generate for you. 
 
-- [Longest Technical Description and Evaluation of VIG (Submission to SWJ)](http://www.semantic-web-journal.net/content/vig-data-scaling-obda-benchmarks-1)
+- [Longest Technical Description and Evaluation of VIG (Semantic Web 10(2): 413-433 (2019))](http://www.semantic-web-journal.net/content/vig-data-scaling-obda-benchmarks-1)
 - [Long Technical Description and Evaluation of VIG (@BLINK '16)](http://ceur-ws.org/Vol-1700/paper-06.pdf)
 - [Short Technical Description of VIG](https://arxiv.org/abs/1607.06343)
 - [Evaluation of VIG with the BSBM Benchmark (@ISWC Posters '16)](http://ceur-ws.org/Vol-1690/paper82.pdf)
