@@ -131,7 +131,7 @@ public class VigMain extends VigOptionsInterface {
               optMappingsFile.parsed() ? optMappingsFile.getValue() : cP.mappingsFile(),
               optMode.parsed() ? PumperType.fromString(optMode.getValue()) : cP.mode().equals("") ? PumperType.fromString(optMode.getValue()) : PumperType.fromString(cP.mode()),
               optFixedList.parsed() ? Helpers.parseListToQualifiedNames(optFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.fixed()),
-              optNonFixedList.parsed() ? Helpers.parseListToQualifiedNames(optNonFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.fixed()),
+              optNonFixedList.parsed() ? Helpers.parseListToQualifiedNames(optNonFixedList.getValue()) : Helpers.parseListToQualifiedNames(cP.nonFixed()),
               optCCAnalysisTimeout.parsed() ? optCCAnalysisTimeout.getValue() : cP.ccAnalysisTimeout().equals("") ? optCCAnalysisTimeout.getValue() : Helpers.parseInt(cP.ccAnalysisTimeout()),
               optScaling.parsed() ? optScaling.getValue() : cP.scale().equals("") ? optScaling.getValue() : (Double.parseDouble(cP.scale())),
               optTables.parsed() ? Helpers.parseListToQualifiedNames(optTables.getValue()) : Helpers.parseListToQualifiedNames(cP.tables()),
